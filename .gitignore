@@ -65,4 +65,7 @@ puma.state
 # Other
 .sass-cache/
 *.bak
+*.backup
 *.orig
+people.csv
+
