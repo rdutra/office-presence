@@ -11,12 +11,12 @@ This directory contains a Ruby port of the office presence dashboard built with 
 ## Setup
 
 ```bash
-cd ruby_app
+cd office-presence
 cp .env.example .env   # optional – adjust values as needed
 bundle install
 ```
 
-Configuration, device mappings, and the SQLite database live inside this directory (`ruby_app/.env`, `ruby_app/people.csv`, `ruby_app/data/presence.sqlite`), leaving the Python app untouched.
+Configuration, device mappings, and the SQLite database live inside this directory (`/.env`, `people.csv`, `data/presence.sqlite`), leaving the Ruby app untouched.
 
 ## Running
 
@@ -28,8 +28,3 @@ The app starts a background scanner thread as soon as it boots. It honours the s
 
 Visit [http://localhost:9292](http://localhost:9292) (or the port shown in the Rack output) to view the dashboard.
 
-## Notes
-
-* The scanner stores results in `data/presence.sqlite`, keeping schema compatibility with the original app.
-* Because scans invoke external utilities, make sure the process has the same permissions as the Python version (you may still need `sudo` for richer `nmap` output).
-* The Sinatra view is a direct port of the Jinja template so the UI remains identical.
