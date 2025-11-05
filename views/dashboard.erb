@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Office Presence Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🏢 Office Presence</h1>
+        <div class="time">
+          <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%H:%M") %></span>
+          <span class="date"><%= now.strftime("%A, %B %d") %></span>
+        </div>
+      </header>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-number"><%= present_count %></div>
+          <div class="stat-label">In Office</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number"><%= total_people %></div>
+          <div class="stat-label">Total People</div>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column">
+          <div class="section-header">
+            <span class="icon">✅</span> Currently In Office
+          </div>
+          <% if mapped_present.empty? %>
+            <div class="empty-state">Nobody here yet today</div>
+          <% else %>
+            <div class="people-list">
+              <% mapped_present.each do |person| %>
+                <div class="person-card">
+                  <div class="person-avatar"><%= person[:person][0].upcase %></div>
+                  <div class="person-info">
+                    <div class="person-name"><%= person[:person] %></div>
+                    <div class="person-device"><%= person[:device] || 'Device' %></div>
+                  </div>
+                  <div class="person-time timestamp" data-utc="<%= person[:last_seen_utc] %>">
+                    <%= person[:last_seen_utc] %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="column">
+          <div class="section-header">
+            <span class="icon">🏆</span> Top Attendees
+          </div>
+          <div class="leaderboard">
+            <% top_attendees.each_with_index do |attendee, index| %>
+              <div class="leaderboard-item">
+                <div class="rank rank-<%= index + 1 %>"><%= index + 1 %></div>
+                <div class="attendee-info">
+                  <div class="attendee-name"><%= attendee[:person] %></div>
+                  <div class="attendee-stats"><%= attendee[:days] %> days</div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="section-header" style="margin-top: 2rem;">
+            <span class="icon">🕐</span> Recently Left
+          </div>
+          <% if mapped_absent.empty? %>
+            <div class="empty-state">No recent activity</div>
+          <% else %>
+            <div class="recent-list">
+              <% mapped_absent.take(5).each do |person| %>
+                <div class="recent-item">
+                  <div class="recent-name"><%= person[:person] %></div>
+                  <div class="recent-time timestamp" data-utc="<%= person[:last_seen_utc] %>">
+                    <%= person[:last_seen_utc] %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/dashboard.js"></script>
+  </body>
+</html>

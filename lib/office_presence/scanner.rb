@@ -195,6 +195,8 @@ module OfficePresence
 
     def store_entries(entries)
       timestamp = Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
+      date = Time.now.utc.strftime("%Y-%m-%d")
+      
       @db.transaction do
         entries.each do |entry|
           mac = Utils.normalize_mac(entry[:mac])
@@ -214,6 +216,19 @@ module OfficePresence
               mac: mac,
               ip: ip,
               hostname: hostname,
+              last_seen_utc: timestamp
+            )
+          end
+
+          # Record daily attendance
+          attendance = @db[:attendance].where(mac: mac, date: date).first
+          if attendance
+            @db[:attendance].where(mac: mac, date: date).update(last_seen_utc: timestamp)
+          else
+            @db[:attendance].insert(
+              mac: mac,
+              date: date,
+              first_seen_utc: timestamp,
               last_seen_utc: timestamp
             )
           end

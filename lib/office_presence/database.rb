@@ -30,6 +30,15 @@ module OfficePresence
         String :person
         String :device
       end
+
+      db.create_table?(:attendance) do
+        primary_key :id
+        String :mac, null: false
+        String :date, null: false # YYYY-MM-DD format
+        String :first_seen_utc
+        String :last_seen_utc
+        index [:mac, :date], unique: true
+      end
     end
   end
 end

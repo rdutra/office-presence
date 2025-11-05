@@ -98,6 +98,24 @@ module OfficePresence
         JSON.parse(request.body.read)
       end
 
+      def calculate_top_attendees
+        # Count unique days per person from attendance table
+        attendance_counts = db[:attendance]
+          .join(:people, mac: :mac)
+          .select(
+            Sequel[:people][:person],
+            Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
+          )
+          .group(Sequel[:people][:person])
+          .order(Sequel.desc(:days))
+          .limit(10)
+          .all
+        
+        attendance_counts.map do |row|
+          { person: row[:person], days: row[:days] }
+        end
+      end
+
       def write_to_csv(mac, person, device)
         require "csv"
         csv_path = File.join(settings.root, "people.csv")
@@ -148,6 +166,23 @@ module OfficePresence
         unmapped_present: unmapped_present,
         unmapped_past: unmapped_past,
         present_window_minutes: present_window_minutes
+      }
+    end
+
+    get "/dashboard" do
+      mapped_rows = fetch_mapped_devices
+      mapped_present, mapped_absent = split_presence(mapped_rows)
+      
+      # Calculate attendance stats
+      top_attendees = calculate_top_attendees
+
+      erb :dashboard, locals: {
+        now: Time.now,
+        mapped_present: mapped_present,
+        mapped_absent: mapped_absent,
+        present_count: mapped_present.length,
+        total_people: db[:people].count,
+        top_attendees: top_attendees
       }
     end
 
