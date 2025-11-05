@@ -17,18 +17,68 @@
       .mac { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #444; }
       .small { font-size: .9rem; color:#666; }
     </style>
+    <script>
+      function formatLocalTime(utcString) {
+        if (!utcString || utcString === '—') return utcString;
+        try {
+          // Parse the UTC time - it already has Z suffix if in ISO8601 format
+          // Otherwise add Z to indicate UTC
+          const dateString = utcString.includes('Z') || utcString.includes('+') 
+            ? utcString 
+            : utcString + 'Z';
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return utcString;
+          
+          // Format as YYYY-MM-DD HH:MM in local timezone
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          
+          return `${year}-${month}-${day} ${hours}:${minutes}`;
+        } catch (e) {
+          return utcString;
+        }
+      }
+
+      function getTimezoneAbbr() {
+        const date = new Date();
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const short = date.toLocaleTimeString('en-us', { timeZoneName: 'short' }).split(' ')[2];
+        return short || timeZone;
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.timestamp').forEach(function(el) {
+          const utcTime = el.getAttribute('data-utc');
+          el.textContent = formatLocalTime(utcTime);
+        });
+
+        const currentTimeEl = document.querySelector('.current-time');
+        if (currentTimeEl) {
+          const utcTime = currentTimeEl.getAttribute('data-utc');
+          currentTimeEl.textContent = formatLocalTime(utcTime);
+        }
+
+        const tzLabel = document.querySelector('.tz-label');
+        if (tzLabel) {
+          tzLabel.textContent = getTimezoneAbbr();
+        }
+      });
+    </script>
   </head>
   <body>
     <h1>Who's in the office?</h1>
     <div class="ts">
-      <%= now.utc.strftime("%Y-%m-%d %H:%M") %> — Present if seen in last <%= present_window_minutes %> min
+      <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span> — Present if seen in last <%= present_window_minutes %> min
     </div>
 
     <div class="section">
       <h2>Mapped — Present <span class="badge ok"><%= mapped_present.length %></span></h2>
       <table>
         <thead>
-          <tr><th>Person</th><th>Device</th><th>Last Seen (UTC)</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+          <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
         </thead>
         <tbody>
           <% if mapped_present.empty? %>
@@ -38,7 +88,7 @@
               <tr>
                 <td><strong><%= r[:person] || '—' %></strong></td>
                 <td><%= r[:device] || '—' %></td>
-                <td><%= r[:last_seen_utc] || '—' %></td>
+                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
                 <td><%= r[:ip] || '—' %></td>
                 <td><%= r[:hostname] || '—' %></td>
                 <td class="mac"><%= r[:mac] || '—' %></td>
@@ -53,7 +103,7 @@
       <h2>Mapped — Not recently seen</h2>
       <table>
         <thead>
-          <tr><th>Person</th><th>Device</th><th>Last Seen (UTC)</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+          <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
         </thead>
         <tbody>
           <% if mapped_absent.empty? %>
@@ -63,7 +113,7 @@
               <tr class="muted">
                 <td><strong><%= r[:person] || '—' %></strong></td>
                 <td><%= r[:device] || '—' %></td>
-                <td><%= r[:last_seen_utc] || '—' %></td>
+                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
                 <td><%= r[:ip] || '—' %></td>
                 <td><%= r[:hostname] || '—' %></td>
                 <td class="mac"><%= r[:mac] || '—' %></td>
@@ -79,7 +129,7 @@
       <div class="small">Detected on the network but not in <code>people.csv</code>. Add a row to map MAC → person.</div>
       <table>
         <thead>
-          <tr><th>Last Seen (UTC)</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+          <tr><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
         </thead>
         <tbody>
           <% if unmapped_present.empty? %>
@@ -87,7 +137,7 @@
           <% else %>
             <% unmapped_present.each do |r| %>
               <tr>
-                <td><%= r[:last_seen_utc] || '—' %></td>
+                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
                 <td><%= r[:ip] || '—' %></td>
                 <td><%= r[:hostname] || '—' %></td>
                 <td class="mac"><%= r[:mac] || '—' %></td>
@@ -102,7 +152,7 @@
       <h2>Unmapped devices — Not recently seen</h2>
       <table>
         <thead>
-          <tr><th>Last Seen (UTC)</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+          <tr><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
         </thead>
         <tbody>
           <% if unmapped_past.empty? %>
@@ -110,7 +160,7 @@
           <% else %>
             <% unmapped_past.each do |r| %>
               <tr class="muted">
-                <td><%= r[:last_seen_utc] || '—' %></td>
+                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
                 <td><%= r[:ip] || '—' %></td>
                 <td><%= r[:hostname] || '—' %></td>
                 <td class="mac"><%= r[:mac] || '—' %></td>
