@@ -1,0 +1,46 @@
+<div class="section">
+  <h2>Unmapped devices — Present <span class="badge ok"><%= unmapped_present.length %></span></h2>
+  <div class="small">Detected on the network but not in <code>people.csv</code>. Add a row to map MAC → person.</div>
+  <table>
+    <thead>
+      <tr><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+    </thead>
+    <tbody>
+      <% if unmapped_present.empty? %>
+        <tr><td colspan="4" class="muted">No unmapped devices seen recently.</td></tr>
+      <% else %>
+        <% unmapped_present.each do |r| %>
+          <tr>
+            <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
+            <td><%= r[:ip] || '—' %></td>
+            <td><%= r[:hostname] || '—' %></td>
+            <td class="mac"><%= r[:mac] || '—' %></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Unmapped devices — Not recently seen</h2>
+  <table>
+    <thead>
+      <tr><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+    </thead>
+    <tbody>
+      <% if unmapped_past.empty? %>
+        <tr><td colspan="4" class="muted">—</td></tr>
+      <% else %>
+        <% unmapped_past.each do |r| %>
+          <tr class="muted">
+            <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
+            <td><%= r[:ip] || '—' %></td>
+            <td><%= r[:hostname] || '—' %></td>
+            <td class="mac"><%= r[:mac] || '—' %></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,148 @@
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  margin: 2rem;
+}
+
+h1 {
+  margin: 0 0 0.25rem 0;
+}
+
+.ts {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+th,
+td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.ok {
+  background: #e6f6ee;
+  color: #0a7a43;
+}
+
+.muted {
+  color: #888;
+}
+
+.section {
+  margin-top: 2rem;
+}
+
+.mac {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #444;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Registration styles */
+.register-section {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.register-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.form-group input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #0969da;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0860ca;
+}
+
+.btn-primary:disabled {
+  background: #94c6ff;
+  cursor: not-allowed;
+}
+
+.register-info {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.info {
+  background: #ddf4ff;
+  color: #0969da;
+  border: 1px solid #54aeff;
+}
+
+.success {
+  background: #ddf4ff;
+  color: #0a7a43;
+  border: 1px solid #4ac97a;
+}
+
+.error {
+  background: #ffebe9;
+  color: #d1242f;
+  border: 1px solid #ff8182;
+}
+
+.warning {
+  background: #fff8c5;
+  color: #7d4e00;
+  border: 1px solid #d4a72c;
+}
+
+#deviceInfo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+}

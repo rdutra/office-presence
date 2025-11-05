@@ -4,69 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Office Presence</title>
-    <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
-      h1 { margin: 0 0 0.25rem 0; }
-      .ts { color: #666; margin-bottom: 1.5rem; }
-      table { width: 100%; border-collapse: collapse; margin-top: .5rem; }
-      th, td { padding: .5rem .6rem; border-bottom: 1px solid #eee; text-align: left; }
-      .badge { display: inline-block; padding: .1rem .5rem; border-radius: .5rem; font-size: .8rem; }
-      .ok { background: #e6f6ee; color: #0a7a43; }
-      .muted { color: #888; }
-      .section { margin-top: 2rem; }
-      .mac { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #444; }
-      .small { font-size: .9rem; color:#666; }
-    </style>
-    <script>
-      function formatLocalTime(utcString) {
-        if (!utcString || utcString === '—') return utcString;
-        try {
-          // Parse the UTC time - it already has Z suffix if in ISO8601 format
-          // Otherwise add Z to indicate UTC
-          const dateString = utcString.includes('Z') || utcString.includes('+') 
-            ? utcString 
-            : utcString + 'Z';
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) return utcString;
-          
-          // Format as YYYY-MM-DD HH:MM in local timezone
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          const hours = String(date.getHours()).padStart(2, '0');
-          const minutes = String(date.getMinutes()).padStart(2, '0');
-          
-          return `${year}-${month}-${day} ${hours}:${minutes}`;
-        } catch (e) {
-          return utcString;
-        }
-      }
-
-      function getTimezoneAbbr() {
-        const date = new Date();
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const short = date.toLocaleTimeString('en-us', { timeZoneName: 'short' }).split(' ')[2];
-        return short || timeZone;
-      }
-
-      document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.timestamp').forEach(function(el) {
-          const utcTime = el.getAttribute('data-utc');
-          el.textContent = formatLocalTime(utcTime);
-        });
-
-        const currentTimeEl = document.querySelector('.current-time');
-        if (currentTimeEl) {
-          const utcTime = currentTimeEl.getAttribute('data-utc');
-          currentTimeEl.textContent = formatLocalTime(utcTime);
-        }
-
-        const tzLabel = document.querySelector('.tz-label');
-        if (tzLabel) {
-          tzLabel.textContent = getTimezoneAbbr();
-        }
-      });
-    </script>
+    <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
     <h1>Who's in the office?</h1>
@@ -74,101 +12,19 @@
       <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span> — Present if seen in last <%= present_window_minutes %> min
     </div>
 
-    <div class="section">
-      <h2>Mapped — Present <span class="badge ok"><%= mapped_present.length %></span></h2>
-      <table>
-        <thead>
-          <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
-        </thead>
-        <tbody>
-          <% if mapped_present.empty? %>
-            <tr><td colspan="6" class="muted">No mapped people seen recently.</td></tr>
-          <% else %>
-            <% mapped_present.each do |r| %>
-              <tr>
-                <td><strong><%= r[:person] || '—' %></strong></td>
-                <td><%= r[:device] || '—' %></td>
-                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
-                <td><%= r[:ip] || '—' %></td>
-                <td><%= r[:hostname] || '—' %></td>
-                <td class="mac"><%= r[:mac] || '—' %></td>
-              </tr>
-            <% end %>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <%= erb :_registration %>
 
-    <div class="section">
-      <h2>Mapped — Not recently seen</h2>
-      <table>
-        <thead>
-          <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
-        </thead>
-        <tbody>
-          <% if mapped_absent.empty? %>
-            <tr><td colspan="6" class="muted">—</td></tr>
-          <% else %>
-            <% mapped_absent.each do |r| %>
-              <tr class="muted">
-                <td><strong><%= r[:person] || '—' %></strong></td>
-                <td><%= r[:device] || '—' %></td>
-                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
-                <td><%= r[:ip] || '—' %></td>
-                <td><%= r[:hostname] || '—' %></td>
-                <td class="mac"><%= r[:mac] || '—' %></td>
-              </tr>
-            <% end %>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <%= erb :_mapped_devices, locals: { mapped_present: mapped_present, mapped_absent: mapped_absent } %>
 
-    <div class="section">
-      <h2>Unmapped devices — Present <span class="badge ok"><%= unmapped_present.length %></span></h2>
-      <div class="small">Detected on the network but not in <code>people.csv</code>. Add a row to map MAC → person.</div>
-      <table>
-        <thead>
-          <tr><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
-        </thead>
-        <tbody>
-          <% if unmapped_present.empty? %>
-            <tr><td colspan="4" class="muted">No unmapped devices seen recently.</td></tr>
-          <% else %>
-            <% unmapped_present.each do |r| %>
-              <tr>
-                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
-                <td><%= r[:ip] || '—' %></td>
-                <td><%= r[:hostname] || '—' %></td>
-                <td class="mac"><%= r[:mac] || '—' %></td>
-              </tr>
-            <% end %>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <%= erb :_unmapped_devices, locals: { unmapped_present: unmapped_present, unmapped_past: unmapped_past } %>
 
-    <div class="section">
-      <h2>Unmapped devices — Not recently seen</h2>
-      <table>
-        <thead>
-          <tr><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
-        </thead>
-        <tbody>
-          <% if unmapped_past.empty? %>
-            <tr><td colspan="4" class="muted">—</td></tr>
-          <% else %>
-            <% unmapped_past.each do |r| %>
-              <tr class="muted">
-                <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
-                <td><%= r[:ip] || '—' %></td>
-                <td><%= r[:hostname] || '—' %></td>
-                <td class="mac"><%= r[:mac] || '—' %></td>
-              </tr>
-            <% end %>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        initializeTimezone();
+        initializeRegistration();
+      });
+    </script>
   </body>
 </html>

@@ -21,7 +21,7 @@ Configuration, device mappings, and the SQLite database live inside this directo
 ## Running
 
 ```bash
-bundle exec rackup
+bundle exec puma -C config/puma.rb
 ```
 
 The app starts a background scanner thread as soon as it boots. It honours the shared `SUBNETS`, `SCAN_INTERVAL`, and `PRESENT_WINDOW_MINUTES` environment variables.

@@ -1,0 +1,16 @@
+<div class="register-section">
+  <h3 style="margin: 0 0 0.5rem 0;">Register Your Device</h3>
+  <div id="deviceInfo" class="small muted">Loading your device info...</div>
+  <form id="registerForm" class="register-form" onsubmit="registerDevice(event)">
+    <div class="form-group">
+      <label for="personName">Your Name *</label>
+      <input type="text" id="personName" placeholder="John Doe" required />
+    </div>
+    <div class="form-group">
+      <label for="deviceName">Device Name (optional)</label>
+      <input type="text" id="deviceName" placeholder="Laptop, Phone, etc." />
+    </div>
+    <button type="submit" id="submitBtn" class="btn btn-primary">Register</button>
+  </form>
+  <div id="registerInfo" class="register-info info">Checking your device...</div>
+</div>
