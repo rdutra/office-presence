@@ -215,6 +215,21 @@ module OfficePresence
       json(mapped + unmapped)
     end
 
+    get "/api/dashboard" do
+      mapped_rows = fetch_mapped_devices
+      mapped_present, mapped_absent = split_presence(mapped_rows)
+      top_attendees = calculate_top_attendees
+
+      json(
+        now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
+        mapped_present: mapped_present,
+        mapped_absent: mapped_absent.take(5),
+        present_count: mapped_present.length,
+        total_people: db[:people].count,
+        top_attendees: top_attendees
+      )
+    end
+
     get "/api/my-device" do
       ip = client_ip
       device = db[:devices].where(ip: ip).first
