@@ -1,7 +1,5 @@
 source "https://rubygems.org"
 
-ruby "3.2.2" if respond_to?(:ruby)
-
 gem "sinatra", "~> 3.1"
 gem "sinatra-contrib", "~> 3.1"
 gem "sequel", "~> 5.74"

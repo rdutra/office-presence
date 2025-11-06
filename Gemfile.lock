@@ -43,6 +43,7 @@ GEM
       concurrent-ruby (~> 1.0)
 
 PLATFORMS
+  arm64-darwin-23
   arm64-darwin-24
 
 DEPENDENCIES
@@ -53,9 +54,6 @@ DEPENDENCIES
   sinatra (~> 3.1)
   sinatra-contrib (~> 3.1)
   sqlite3 (~> 1.7)
-
-RUBY VERSION
-   ruby 3.2.2p53
 
 BUNDLED WITH
    2.4.10
