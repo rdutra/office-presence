@@ -8,12 +8,18 @@ require "time"
 require_relative "utils"
 require_relative "config"
 require_relative "database"
+require_relative "models/device"
+require_relative "models/person"
+require_relative "models/attendance"
 
 module OfficePresence
   class Scanner
     def initialize(config: Config.new, db: Database.connection)
       @config = config
       @db = db
+      @device_model = Models::Device.new(db)
+      @person_model = Models::Person.new(db)
+      @attendance_model = Models::Attendance.new(db)
       @mutex = Mutex.new
       @scheduler = Rufus::Scheduler.new
       @people_mtime = nil
@@ -102,27 +108,10 @@ module OfficePresence
     end
 
     def load_people_mapping
-      mtime = File.exist?(PEOPLE_CSV) ? File.mtime(PEOPLE_CSV) : nil
+      mtime = File.exist?(Models::Person::PEOPLE_CSV) ? File.mtime(Models::Person::PEOPLE_CSV) : nil
       return if mtime == @people_mtime
 
-      @db.transaction do
-        @db[:people].truncate
-        if mtime
-          CSV.foreach(PEOPLE_CSV, headers: true) do |row|
-            mac = Utils.normalize_mac(row["mac_address"])
-            next unless mac
-            @db[:people].insert_conflict(target: :mac, update: {
-              person: row["person"].to_s.strip,
-              device: row["device"].to_s.strip
-            }).insert(
-              mac: mac,
-              person: row["person"].to_s.strip,
-              device: row["device"].to_s.strip
-            )
-          end
-        end
-      end
-
+      @person_model.load_from_csv
       @people_mtime = mtime
       log "people.csv loaded (#{mtime})"
     end
@@ -202,36 +191,16 @@ module OfficePresence
           mac = Utils.normalize_mac(entry[:mac])
           next unless mac  # Skip entries without a valid MAC address
           
-          ip = entry[:ip]
-          hostname = entry[:hostname]
-
-          existing = @db[:devices].where(mac: mac).first
-          if existing
-            updates = { last_seen_utc: timestamp }
-            updates[:ip] = ip if ip && !ip.empty?
-            updates[:hostname] = hostname if hostname && !hostname.empty?
-            @db[:devices].where(mac: mac).update(updates)
-          else
-            @db[:devices].insert(
-              mac: mac,
-              ip: ip,
-              hostname: hostname,
-              last_seen_utc: timestamp
-            )
-          end
+          # Update device
+          @device_model.create_or_update(
+            mac: mac,
+            ip: entry[:ip],
+            hostname: entry[:hostname],
+            last_seen_utc: timestamp
+          )
 
           # Record daily attendance
-          attendance = @db[:attendance].where(mac: mac, date: date).first
-          if attendance
-            @db[:attendance].where(mac: mac, date: date).update(last_seen_utc: timestamp)
-          else
-            @db[:attendance].insert(
-              mac: mac,
-              date: date,
-              first_seen_utc: timestamp,
-              last_seen_utc: timestamp
-            )
-          end
+          @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
         end
       end
       log "Updated #{entries.size} hosts at #{timestamp}"
