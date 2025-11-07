@@ -42,7 +42,7 @@ module OfficePresence
         person = find_by_mac(mac)
         return false unless person
         
-        new_visibility = !person[:visible]
+        new_visibility = !person.fetch(:visible, true)
         db[:people].where(mac: mac).update(visible: new_visibility)
         new_visibility
       end
