@@ -41,7 +41,7 @@ function updateDashboard(data) {
     if (list) {
       list.innerHTML = data.mapped_present.map(person => `
         <div class="person-card">
-          <div class="person-avatar">${person.person[0].toUpperCase()}</div>
+          <div class="person-avatar">${person.person && person.person.length > 0 ? person.person[0].toUpperCase() : '?'}</div>
           <div class="person-info">
             <div class="person-name">${person.person}</div>
             <div class="person-device">${person.device || 'Device'}</div>
