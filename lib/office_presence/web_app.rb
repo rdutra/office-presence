@@ -103,7 +103,6 @@ module OfficePresence
         return json(
           ip: ip,
           mac: nil,
-          hostname: nil,
           registered: false,
           error: "No device found with your IP address (#{ip}). Make sure you're connected to the network and have been scanned."
         )
@@ -114,7 +113,6 @@ module OfficePresence
       json(
         ip: ip,
         mac: device[:mac],
-        hostname: device[:hostname],
         registered: !person.nil?,
         person: person&.[](:person),
         device: person&.[](:device)

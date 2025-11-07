@@ -21,7 +21,6 @@ module OfficePresence
       db.create_table?(:devices) do
         String :mac, primary_key: true
         String :ip
-        String :hostname
         String :last_seen_utc
       end
 

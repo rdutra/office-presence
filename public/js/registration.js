@@ -16,7 +16,7 @@ async function loadDeviceInfo() {
       return;
     }
 
-    deviceInfoDiv.textContent = `Your IP: ${data.ip} | MAC: ${data.mac} | Hostname: ${data.hostname || 'Unknown'}`;
+    deviceInfoDiv.textContent = `Your IP: ${data.ip} | MAC: ${data.mac}`;
 
     if (data.registered) {
       infoDiv.className = 'register-info success';

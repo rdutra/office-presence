@@ -124,8 +124,8 @@ async function fetchDashboardData() {
 function initializeDashboard() {
   initializeTimezone();
   
-  // Poll every 10 seconds
-  setInterval(fetchDashboardData, 10000);
+  // Poll every 30 seconds
+  setInterval(fetchDashboardData, 30000);
 }
 
 document.addEventListener('DOMContentLoaded', initializeDashboard);

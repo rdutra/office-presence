@@ -23,20 +23,18 @@ module OfficePresence
         db[:devices].where(ip: ip).first
       end
 
-      def create_or_update(mac:, ip: nil, hostname: nil, last_seen_utc: nil)
+      def create_or_update(mac:, ip: nil, last_seen_utc: nil)
         last_seen_utc ||= Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
         
         existing = find_by_mac(mac)
         if existing
           updates = { last_seen_utc: last_seen_utc }
           updates[:ip] = ip if ip && !ip.empty?
-          updates[:hostname] = hostname if hostname && !hostname.empty?
           db[:devices].where(mac: mac).update(updates)
         else
           db[:devices].insert(
             mac: mac,
             ip: ip,
-            hostname: hostname,
             last_seen_utc: last_seen_utc
           )
         end
