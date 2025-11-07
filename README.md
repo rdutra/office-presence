@@ -7,7 +7,7 @@ This directory contains a Ruby port of the office presence dashboard built with 
 The application follows an MVC (Model-View-Controller) pattern:
 
 ### Models (`lib/office_presence/models/`)
-- **Device** - Manages network devices (MAC, IP, hostname, last_seen)
+- **Device** - Manages network devices (MAC, IP, last_seen)
 - **Person** - Manages people and their registered devices
 - **Attendance** - Tracks daily attendance records
 - **Presence** - Service layer combining models for presence queries
@@ -23,7 +23,7 @@ The application follows an MVC (Model-View-Controller) pattern:
 
 ## Prerequisites
 
-* Ruby 3.2+
+* Ruby 3.3+
 * Bundler (`gem install bundler`)
 * `nmap` and the system `arp` utility available on the host
 

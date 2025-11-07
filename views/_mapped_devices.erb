@@ -2,11 +2,11 @@
   <h2>Mapped — Present <span class="badge ok"><%= mapped_present.length %></span></h2>
   <table>
     <thead>
-      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
     </thead>
     <tbody>
       <% if mapped_present.empty? %>
-        <tr><td colspan="6" class="muted">No mapped people seen recently.</td></tr>
+        <tr><td colspan="5" class="muted">No mapped people seen recently.</td></tr>
       <% else %>
         <% mapped_present.each do |r| %>
           <tr>
@@ -14,7 +14,6 @@
             <td><%= r[:device] || '—' %></td>
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
             <td><%= r[:ip] || '—' %></td>
-            <td><%= r[:hostname] || '—' %></td>
             <td class="mac"><%= r[:mac] || '—' %></td>
           </tr>
         <% end %>
@@ -27,11 +26,11 @@
   <h2>Mapped — Not recently seen</h2>
   <table>
     <thead>
-      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>Hostname</th><th>MAC</th></tr>
+      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
     </thead>
     <tbody>
       <% if mapped_absent.empty? %>
-        <tr><td colspan="6" class="muted">—</td></tr>
+        <tr><td colspan="5" class="muted">—</td></tr>
       <% else %>
         <% mapped_absent.each do |r| %>
           <tr class="muted">
@@ -39,7 +38,6 @@
             <td><%= r[:device] || '—' %></td>
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
             <td><%= r[:ip] || '—' %></td>
-            <td><%= r[:hostname] || '—' %></td>
             <td class="mac"><%= r[:mac] || '—' %></td>
           </tr>
         <% end %>
