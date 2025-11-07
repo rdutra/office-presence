@@ -26,15 +26,29 @@ module OfficePresence
         db[:people].where(mac: mac).first
       end
 
-      def create_or_update(mac:, person:, device:)
+      def create_or_update(mac:, person:, device:, visible: true)
         db[:people].insert_conflict(
           target: :mac,
-          update: { person: person, device: device }
+          update: { person: person, device: device, visible: visible }
         ).insert(
           mac: mac,
           person: person,
-          device: device
+          device: device,
+          visible: visible
         )
+      end
+      
+      def toggle_visibility(mac:)
+        person = find_by_mac(mac)
+        return false unless person
+        
+        new_visibility = !person[:visible]
+        db[:people].where(mac: mac).update(visible: new_visibility)
+        new_visibility
+      end
+      
+      def set_visibility(mac:, visible:)
+        db[:people].where(mac: mac).update(visible: visible)
       end
 
       def load_from_csv

@@ -28,6 +28,16 @@ module OfficePresence
         String :mac, primary_key: true
         String :person
         String :device
+        TrueClass :visible, default: true
+      end
+      
+      # Add visible column if it doesn't exist (for existing databases)
+      unless db[:people].columns.include?(:visible)
+        db.alter_table(:people) do
+          add_column :visible, TrueClass, default: true
+        end
+        # Set existing records to visible by default
+        db[:people].update(visible: true)
       end
 
       db.create_table?(:attendance) do
