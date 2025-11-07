@@ -12,7 +12,6 @@
 /tmp/
 
 # RVM / rbenv
-.ruby-version
 .ruby-gemset
 
 # Bundler

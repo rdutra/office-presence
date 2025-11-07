@@ -8,12 +8,18 @@ require "time"
 require_relative "utils"
 require_relative "config"
 require_relative "database"
+require_relative "models/device"
+require_relative "models/person"
+require_relative "models/attendance"
 
 module OfficePresence
   class Scanner
     def initialize(config: Config.new, db: Database.connection)
       @config = config
       @db = db
+      @device_model = Models::Device.new(db)
+      @person_model = Models::Person.new(db)
+      @attendance_model = Models::Attendance.new(db)
       @mutex = Mutex.new
       @scheduler = Rufus::Scheduler.new
       @people_mtime = nil
@@ -117,27 +123,10 @@ module OfficePresence
     end
 
     def load_people_mapping
-      mtime = File.exist?(PEOPLE_CSV) ? File.mtime(PEOPLE_CSV) : nil
+      mtime = File.exist?(Models::Person::PEOPLE_CSV) ? File.mtime(Models::Person::PEOPLE_CSV) : nil
       return if mtime == @people_mtime
 
-      @db.transaction do
-        @db[:people].truncate
-        if mtime
-          CSV.foreach(PEOPLE_CSV, headers: true) do |row|
-            mac = Utils.normalize_mac(row["mac_address"])
-            next unless mac
-            @db[:people].insert_conflict(target: :mac, update: {
-              person: row["person"].to_s.strip,
-              device: row["device"].to_s.strip
-            }).insert(
-              mac: mac,
-              person: row["person"].to_s.strip,
-              device: row["device"].to_s.strip
-            )
-          end
-        end
-      end
-
+      @person_model.load_from_csv
       @people_mtime = mtime
       log "people.csv loaded (#{mtime})"
     end
@@ -217,36 +206,16 @@ module OfficePresence
           mac = Utils.normalize_mac(entry[:mac])
           next unless mac  # Skip entries without a valid MAC address
 
-          ip = entry[:ip]
-          hostname = entry[:hostname]
+          # Update device using model
+          @device_model.create_or_update(
+            mac: mac,
+            ip: entry[:ip],
+            hostname: entry[:hostname],
+            last_seen_utc: timestamp
+          )
 
-          existing = @db[:devices].where(mac: mac).first
-          if existing
-            updates = { last_seen_utc: timestamp }
-            updates[:ip] = ip if ip && !ip.empty?
-            updates[:hostname] = hostname if hostname && !hostname.empty?
-            @db[:devices].where(mac: mac).update(updates)
-          else
-            @db[:devices].insert(
-              mac: mac,
-              ip: ip,
-              hostname: hostname,
-              last_seen_utc: timestamp
-            )
-          end
-
-          # Record daily attendance
-          attendance = @db[:attendance].where(mac: mac, date: date).first
-          if attendance
-            @db[:attendance].where(mac: mac, date: date).update(last_seen_utc: timestamp)
-          else
-            @db[:attendance].insert(
-              mac: mac,
-              date: date,
-              first_seen_utc: timestamp,
-              last_seen_utc: timestamp
-            )
-          end
+          # Record daily attendance using model
+          @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
         end
       end
       log "Updated #{entries.size} hosts at #{timestamp}"
@@ -267,8 +236,8 @@ module OfficePresence
             cutoff_time = Time.now.utc - (present_window_minutes * 60)
             cutoff_string = cutoff_time.iso8601.gsub(/\+00:00\z/, "Z")
 
-            # Get list of known/registered MACs from people table
-            known_macs = @db[:people].select_map(:mac)
+            # Get list of known/registered MACs from people table using model
+            known_macs = @person_model.all.map { |p| p[:mac] }
 
             entries = []
             new_count = 0
@@ -280,7 +249,7 @@ module OfficePresence
 
               if known_macs.include?(mac_norm)
                 # This is a registered device - check if it's currently absent
-                device = @db[:devices].where(mac: mac_norm).first
+                device = @device_model.find_by_mac(mac_norm)
 
                 if device.nil?
                   # Device never seen before - add it
@@ -299,7 +268,7 @@ module OfficePresence
                 end
               else
                 # Unmapped device - track via ARP as usual
-                existing = @db[:devices].where(mac: mac_norm).first
+                existing = @device_model.find_by_mac(mac_norm)
                 new_count += 1 if existing.nil?
                 entries << { ip: ip, mac: mac_norm, hostname: nil }
               end
@@ -337,8 +306,8 @@ module OfficePresence
         cutoff_time = Time.now.utc - (present_window_minutes * 60)
         cutoff_string = cutoff_time.iso8601.gsub(/\+00:00\z/, "Z")
 
-        # Get all known MACs from people table
-        known_macs = @db[:people].select(:mac).all.map { |row| row[:mac] }
+        # Get all known MACs from people table using model
+        known_macs = @person_model.all.map { |p| p[:mac] }
 
         if known_macs.empty?
           log "Ping validation: no registered devices"
