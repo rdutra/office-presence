@@ -146,3 +146,22 @@ td {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85rem;
 }
+
+/* Status indicator styles */
+.status-indicator {
+  font-size: 1.2rem;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.status-indicator[data-status="active"] {
+  color: #08a805; /* Green */
+}
+
+.status-indicator[data-status="inactive"] {
+  color: #a4a4a4; /* Gray */
+}
+
+.status-indicator[data-status="calculating"] {
+  color: #ccc; /* Light gray for initial state */
+}

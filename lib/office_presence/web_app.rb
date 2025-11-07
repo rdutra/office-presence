@@ -83,6 +83,12 @@ module OfficePresence
           .all
       end
 
+      def enrich_with_status(devices)
+        devices.map do |device|
+          device.merge(status: calculate_device_status(device[:last_seen_utc]))
+        end
+      end
+
       def fetch_unmapped_devices
         unmapped_dataset
           .order(Sequel[:devices][:last_seen_utc].desc)
@@ -110,16 +116,33 @@ module OfficePresence
           .order(Sequel.desc(:days))
           .limit(10)
           .all
-        
+
         attendance_counts.map do |row|
           { person: row[:person], days: row[:days] }
+        end
+      end
+
+      def calculate_device_status(last_seen_utc)
+        return 'calculating' unless last_seen_utc
+
+        last_seen = parse_timestamp(last_seen_utc)
+        return 'calculating' unless last_seen
+
+        diff_seconds = Time.now.utc - last_seen
+
+        if diff_seconds < 20 # Active: responded to recent ping (2x ping interval buffer)
+          'active'
+        elsif diff_seconds < (10 * 60) # Inactive: not responding but still within presence window
+          'inactive'
+        else
+          'inactive'
         end
       end
 
       def write_to_csv(mac, person, device)
         require "csv"
         csv_path = File.join(settings.root, "people.csv")
-        
+
         # Read existing entries
         existing_rows = []
         if File.exist?(csv_path)
@@ -159,6 +182,10 @@ module OfficePresence
       mapped_present, mapped_absent = split_presence(mapped_rows)
       unmapped_present, unmapped_past = split_presence(unmapped_rows)
 
+      # Enrich with server-calculated status
+      mapped_present = enrich_with_status(mapped_present)
+      mapped_absent = enrich_with_status(mapped_absent)
+
       erb :index, locals: {
         now: Time.now,
         mapped_present: mapped_present,
@@ -172,7 +199,7 @@ module OfficePresence
     get "/dashboard" do
       mapped_rows = fetch_mapped_devices
       mapped_present, mapped_absent = split_presence(mapped_rows)
-      
+
       # Calculate attendance stats
       top_attendees = calculate_top_attendees
 
@@ -196,7 +223,8 @@ module OfficePresence
           mac: row[:mac],
           ip: row[:ip],
           hostname: row[:hostname],
-          last_seen_utc: row[:last_seen_utc]
+          last_seen_utc: row[:last_seen_utc],
+          status: calculate_device_status(row[:last_seen_utc])
         }
       end
 
@@ -208,7 +236,8 @@ module OfficePresence
           mac: row[:mac],
           ip: row[:ip],
           hostname: row[:hostname],
-          last_seen_utc: row[:last_seen_utc]
+          last_seen_utc: row[:last_seen_utc],
+          status: calculate_device_status(row[:last_seen_utc])
         }
       end
 
@@ -250,7 +279,7 @@ module OfficePresence
 
       ip = client_ip
       device = db[:devices].where(ip: ip).first
-      
+
       halt 404, json(error: "No device found with your IP address (#{ip}). Make sure you're connected to the network and have been scanned.") unless device
 
       existing = db[:people].where(mac: device[:mac]).first

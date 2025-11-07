@@ -15,7 +15,7 @@ module OfficePresence
     end
 
     def present_window_minutes
-      integer_env("PRESENT_WINDOW_MINUTES", 30, 1..(24 * 60))
+      integer_env("PRESENT_WINDOW_MINUTES", 15, 1..(24 * 60))
     end
 
     def subnets

@@ -18,6 +18,10 @@ module OfficePresence
       @scheduler = Rufus::Scheduler.new
       @people_mtime = nil
       @started = false
+      @ping_mutex = Mutex.new
+      @ping_running = false
+      @arp_mutex = Mutex.new
+      @arp_running = false
     end
 
     def start
@@ -43,8 +47,19 @@ module OfficePresence
     private
 
     def schedule_scans
-      run_scan
-      @scheduler.every "#{@config.scan_interval}s" do
+      # TIER 1: Quick ARP check every 5 seconds - detects new arrivals instantly
+      @scheduler.every "5s" do
+        quick_arp_check
+      end
+
+      # TIER 2: Ping known devices every 10 seconds - validates continued presence
+      @scheduler.every "10s" do
+        ping_registered_devices
+      end
+
+      # TIER 3: Full nmap scan every 15 minutes - comprehensive backup scan
+      run_scan  # Run immediately on startup
+      @scheduler.every "15m" do
         run_scan
       end
     end
@@ -196,12 +211,12 @@ module OfficePresence
     def store_entries(entries)
       timestamp = Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
       date = Time.now.utc.strftime("%Y-%m-%d")
-      
+
       @db.transaction do
         entries.each do |entry|
           mac = Utils.normalize_mac(entry[:mac])
           next unless mac  # Skip entries without a valid MAC address
-          
+
           ip = entry[:ip]
           hostname = entry[:hostname]
 
@@ -235,6 +250,144 @@ module OfficePresence
         end
       end
       log "Updated #{entries.size} hosts at #{timestamp}"
+    end
+
+    def quick_arp_check
+      # Skip if already running (atomic check)
+      return unless @arp_mutex.try_lock
+
+      begin
+        @arp_running = true
+        @mutex.synchronize do
+          begin
+            log "Quick ARP check starting..."
+            arp_map = read_arp_cache
+
+            # Calculate cutoff time for present window
+            cutoff_time = Time.now.utc - (present_window_minutes * 60)
+            cutoff_string = cutoff_time.iso8601.gsub(/\+00:00\z/, "Z")
+
+            # Get list of known/registered MACs from people table
+            known_macs = @db[:people].select_map(:mac)
+
+            entries = []
+            new_count = 0
+            reconnected_count = 0
+
+            arp_map.each do |ip, mac|
+              mac_norm = Utils.normalize_mac(mac)
+              next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
+
+              if known_macs.include?(mac_norm)
+                # This is a registered device - check if it's currently absent
+                device = @db[:devices].where(mac: mac_norm).first
+
+                if device.nil?
+                  # Device never seen before - add it
+                  entries << { ip: ip, mac: mac_norm, hostname: nil }
+                  log "  → Registered device #{mac_norm} detected in ARP (first time)"
+                  new_count += 1
+                else
+                  # Check if device is currently absent (beyond present window)
+                  last_seen = device[:last_seen_utc]
+                  if last_seen.nil? || last_seen < cutoff_string
+                    entries << { ip: ip, mac: mac_norm, hostname: nil }
+                    log "  → Registered device #{mac_norm} reconnected via ARP"
+                    reconnected_count += 1
+                  end
+                  # If device is already present, skip it (let ping handle it)
+                end
+              else
+                # Unmapped device - track via ARP as usual
+                existing = @db[:devices].where(mac: mac_norm).first
+                new_count += 1 if existing.nil?
+                entries << { ip: ip, mac: mac_norm, hostname: nil }
+              end
+            end
+
+            unless entries.empty?
+              store_entries(entries)
+              if new_count > 0 || reconnected_count > 0
+                log "Quick ARP check: #{new_count} NEW devices, #{reconnected_count} reconnected, #{entries.size} total updated"
+              else
+                log "Quick ARP check: updated #{entries.size} devices"
+              end
+            else
+              log "Quick ARP check: no new devices in cache"
+            end
+          rescue => e
+            log "Quick ARP check error: #{e.class}: #{e.message}"
+          end
+        end
+      ensure
+        @arp_running = false
+        @arp_mutex.unlock
+      end
+    end
+
+    def ping_registered_devices
+      # Skip if already running (atomic check)
+      return unless @ping_mutex.try_lock
+
+      begin
+        @ping_running = true
+        log "Ping validation starting..."
+
+        # Calculate cutoff time - only ping devices seen within present_window
+        cutoff_time = Time.now.utc - (present_window_minutes * 60)
+        cutoff_string = cutoff_time.iso8601.gsub(/\+00:00\z/, "Z")
+
+        # Get all known MACs from people table
+        known_macs = @db[:people].select(:mac).all.map { |row| row[:mac] }
+
+        if known_macs.empty?
+          log "Ping validation: no registered devices"
+        else
+
+          # Get only PRESENT devices (last_seen within window)
+          devices_to_check = @db[:devices]
+            .where(mac: known_macs)
+            .where { last_seen_utc >= cutoff_string }
+            .select(:mac, :ip)
+            .all
+
+          log "Ping validation: checking #{devices_to_check.size} present devices (out of #{known_macs.size} registered)"
+
+          entries = []
+
+          devices_to_check.each do |device|
+            next unless device[:ip]
+
+            # Quick ping check (1 second timeout)
+            if ping_host(device[:ip])
+              entries << {
+                ip: device[:ip],
+                mac: device[:mac],
+                hostname: nil
+              }
+              log "  ✓ #{device[:mac]} (#{device[:ip]}) is responding"
+            else
+              log "  ✗ #{device[:mac]} (#{device[:ip]}) not responding"
+            end
+          end
+
+          @mutex.synchronize do
+            store_entries(entries) unless entries.empty?
+          end
+
+          log "Ping validation complete: #{entries.size}/#{devices_to_check.size} devices responded"
+        end
+      rescue => e
+        log "Ping validation error: #{e.class}: #{e.message}"
+      ensure
+        @ping_running = false
+        @ping_mutex.unlock
+      end
+    end
+
+    def ping_host(ip)
+      # -c 1: one packet, -W 1: 1 second timeout, -q: quiet mode
+      system("ping", "-c", "1", "-W", "1", "-q", ip, out: File::NULL, err: File::NULL)
     end
 
     def log(message)
