@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "csv"
 require "open3"
 require "rufus-scheduler"
 require "time"
@@ -9,8 +8,8 @@ require_relative "utils"
 require_relative "config"
 require_relative "database"
 require_relative "models/device"
-require_relative "models/person"
 require_relative "models/attendance"
+require_relative "models/person"
 
 module OfficePresence
   class Scanner
@@ -18,11 +17,10 @@ module OfficePresence
       @config = config
       @db = db
       @device_model = Models::Device.new(db)
-      @person_model = Models::Person.new(db)
       @attendance_model = Models::Attendance.new(db)
+      @person_model = Models::Person.new(db)
       @mutex = Mutex.new
       @scheduler = Rufus::Scheduler.new
-      @people_mtime = nil
       @started = false
       @ping_mutex = Mutex.new
       @ping_running = false
@@ -34,7 +32,6 @@ module OfficePresence
       return if @started
 
       @started = true
-      load_people_mapping
       schedule_scans
     end
 
@@ -74,7 +71,6 @@ module OfficePresence
     def run_scan
       Thread.new do
         begin
-          load_people_mapping
           entries = collect_entries
           # Only lock mutex for the database write, not the entire scan
           @mutex.synchronize do
@@ -122,15 +118,6 @@ module OfficePresence
       end
 
       entries
-    end
-
-    def load_people_mapping
-      mtime = File.exist?(Models::Person::PEOPLE_CSV) ? File.mtime(Models::Person::PEOPLE_CSV) : nil
-      return if mtime == @people_mtime
-
-      @person_model.load_from_csv
-      @people_mtime = mtime
-      log "people.csv loaded (#{mtime})"
     end
 
     def run_nmap(subnet)
