@@ -64,7 +64,8 @@ module OfficePresence
       end
 
       # TIER 3: Full nmap scan every 15 minutes - comprehensive backup scan
-      run_scan  # Run immediately on startup
+      # Mainly refreshes ARP cache for devices not actively communicating
+      Thread.new { run_scan }  # Run immediately on startup
       @scheduler.every "15m" do
         run_scan
       end
@@ -72,15 +73,16 @@ module OfficePresence
 
     def run_scan
       Thread.new do
-        @mutex.synchronize do
-          begin
-            load_people_mapping
-            entries = collect_entries
+        begin
+          load_people_mapping
+          entries = collect_entries
+          # Only lock mutex for the database write, not the entire scan
+          @mutex.synchronize do
             store_entries(entries)
-          rescue => e
-            backtrace = Array(e.backtrace).first(5).join("\n")
-            log "Scanner error: #{e.class}: #{e.message}\n#{backtrace}"
           end
+        rescue => e
+          backtrace = Array(e.backtrace).first(5).join("\n")
+          log "Scanner error: #{e.class}: #{e.message}\n#{backtrace}"
         end
       end
     end
@@ -133,8 +135,11 @@ module OfficePresence
 
     def run_nmap(subnet)
       cmd = ["nmap", "-sn", "-n", "-T4", "--min-rate", "100", subnet, "-oG", "-"]
-      log "Running: #{cmd.join(' ')}"
+      log "Running nmap scan on #{subnet} (this may take 30-60 seconds)..."
+      start_time = Time.now
       stdout, stderr, status = Open3.capture3(*cmd)
+      elapsed = (Time.now - start_time).round(1)
+      log "nmap scan completed in #{elapsed}s"
       log "nmap stderr: #{stderr.strip}" unless stderr.to_s.strip.empty?
       parse_nmap(stdout)
     rescue Errno::ENOENT
