@@ -161,7 +161,6 @@ module OfficePresence
         return json(
           ip: ip,
           mac: nil,
-          hostname: nil,
           registered: false,
           error: "No device found with your IP address (#{ip}). Make sure you're connected to the network and have been scanned."
         )
@@ -172,10 +171,10 @@ module OfficePresence
       json(
         ip: ip,
         mac: device[:mac],
-        hostname: device[:hostname],
         registered: !person.nil?,
         person: person&.[](:person),
-        device: person&.[](:device)
+        device: person&.[](:device),
+        visible: person&.[](:visible) != false
       )
     end
 
@@ -196,18 +195,22 @@ module OfficePresence
         halt 409, json(error: "This device is already registered to #{existing[:person]}")
       end
 
+      visible = data["visible"] != false
+
       # Write to database
       person_model.create_or_update(
         mac: device[:mac],
         person: person_name,
-        device: device_name || ""
+        device: device_name || "",
+        visible: visible
       )
 
       # Write to people.csv
       person_model.save_to_csv(
         mac: device[:mac],
         person: person_name,
-        device: device_name || ""
+        device: device_name || "",
+        visible: visible
       )
 
       json(
@@ -219,6 +222,34 @@ module OfficePresence
       )
     rescue StandardError => e
       halt 500, json(error: "Failed to register: #{e.message}")
+    end
+    
+    post "/api/toggle-visibility" do
+      ip = client_ip
+      device = db[:devices].where(ip: ip).first
+      
+      halt 404, json(error: "No device found with your IP address") unless device
+      
+      person = person_model.find_by_mac(device[:mac])
+      halt 404, json(error: "Device is not registered") unless person
+      
+      new_visibility = person_model.toggle_visibility(mac: device[:mac])
+      
+      # Update CSV with new visibility state
+      person_model.save_to_csv(
+        mac: device[:mac],
+        person: person[:person],
+        device: person[:device] || "",
+        visible: new_visibility
+      )
+      
+      json(
+        success: true,
+        visible: new_visibility,
+        message: new_visibility ? "You are now visible on the list" : "You are now hidden from the list"
+      )
+    rescue StandardError => e
+      halt 500, json(error: "Failed to toggle visibility: #{e.message}")
     end
 
     # Error Handlers

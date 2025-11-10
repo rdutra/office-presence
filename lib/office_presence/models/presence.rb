@@ -19,6 +19,7 @@ module OfficePresence
       def mapped_devices
         device_model.db[:devices]
           .join(:people, mac: :mac)
+          .where(Sequel[:people][:visible] => true)
           .select_all(:devices)
           .select_append(Sequel[:people][:person], Sequel[:people][:device].as(:device_name))
           .order(Sequel.desc(:last_seen_utc))
@@ -29,7 +30,6 @@ module OfficePresence
               device: row[:device_name],
               mac: row[:mac],
               ip: row[:ip],
-              hostname: row[:hostname],
               last_seen_utc: row[:last_seen_utc]
             }
           end
@@ -46,7 +46,6 @@ module OfficePresence
             {
               mac: row[:mac],
               ip: row[:ip],
-              hostname: row[:hostname],
               last_seen_utc: row[:last_seen_utc]
             }
           end

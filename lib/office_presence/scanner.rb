@@ -98,7 +98,7 @@ module OfficePresence
         arp_map.each do |ip, mac|
           mac_norm = Utils.normalize_mac(mac)
           next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
-          entries << { ip: ip, mac: mac_norm, hostname: nil }
+          entries << { ip: ip, mac: mac_norm }
         end
       else
         entries.each do |entry|
@@ -115,7 +115,7 @@ module OfficePresence
           next if entries.any? { |entry| entry[:ip] == ip }
           mac_norm = Utils.normalize_mac(mac)
           next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
-          entries << { ip: ip, mac: mac_norm, hostname: nil }
+          entries << { ip: ip, mac: mac_norm }
         end
       end
 
@@ -151,12 +151,10 @@ module OfficePresence
         next unless line.start_with?("Host: ")
         parts = line.split
         ip = parts[1]
-        hostname = line[/\(([^)]+)\)/, 1]
         mac = if line.include?("MAC Address:")
                 line.split("MAC Address:")[1].split.first rescue nil
               end
-        current = entries[ip] || { ip: ip, hostname: nil, mac: nil }
-        current[:hostname] = hostname unless hostname.to_s.empty?
+        current = entries[ip] || { ip: ip, mac: nil }
         current[:mac] = mac unless mac.to_s.empty?
         entries[ip] = current
       end
@@ -168,8 +166,7 @@ module OfficePresence
       entries.each do |entry|
         ip = entry[:ip]
         next if ip.nil?
-        current = merged[ip] ||= { ip: ip, hostname: nil, mac: nil }
-        current[:hostname] = entry[:hostname] if entry[:hostname]
+        current = merged[ip] ||= { ip: ip, mac: nil }
         current[:mac] = entry[:mac] if entry[:mac]
       end
       merged.values
@@ -210,7 +207,6 @@ module OfficePresence
           @device_model.create_or_update(
             mac: mac,
             ip: entry[:ip],
-            hostname: entry[:hostname],
             last_seen_utc: timestamp
           )
 
