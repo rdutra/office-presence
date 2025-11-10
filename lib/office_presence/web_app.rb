@@ -139,16 +139,7 @@ module OfficePresence
 
       visible = data["visible"] != false
 
-      # Write to database
       person_model.create_or_update(
-        mac: device[:mac],
-        person: person_name,
-        device: device_name || "",
-        visible: visible
-      )
-
-      # Write to people.csv
-      person_model.save_to_csv(
         mac: device[:mac],
         person: person_name,
         device: device_name || "",
@@ -176,14 +167,6 @@ module OfficePresence
       halt 404, json(error: "Device is not registered") unless person
       
       new_visibility = person_model.toggle_visibility(mac: device[:mac])
-      
-      # Update CSV with new visibility state
-      person_model.save_to_csv(
-        mac: device[:mac],
-        person: person[:person],
-        device: person[:device] || "",
-        visible: new_visibility
-      )
       
       json(
         success: true,
