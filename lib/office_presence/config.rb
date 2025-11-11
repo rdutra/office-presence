@@ -18,6 +18,14 @@ module OfficePresence
       integer_env("PRESENT_WINDOW_MINUTES", 15, 1..(24 * 60))
     end
 
+    def arp_check_interval
+      integer_env("ARP_CHECK_INTERVAL", 5, 1..300)
+    end
+
+    def ping_interval
+      integer_env("PING_INTERVAL", 10, 1..300)
+    end
+
     def subnets
       list = Utils.split_env_list(@env["SUBNETS"] || @env["SUBNET"])
       list.empty? ? [DEFAULT_SUBNET] : list

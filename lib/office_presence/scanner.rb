@@ -50,13 +50,13 @@ module OfficePresence
     private
 
     def schedule_scans
-      # TIER 1: Quick ARP check every 5 seconds - detects new arrivals instantly
-      @scheduler.every "5s" do
+      # TIER 1: Quick ARP check - detects new arrivals instantly
+      @scheduler.every "#{@config.arp_check_interval}s" do
         quick_arp_check
       end
 
-      # TIER 2: Ping known devices every 10 seconds - validates continued presence
-      @scheduler.every "10s" do
+      # TIER 2: Ping known devices - validates continued presence
+      @scheduler.every "#{@config.ping_interval}s" do
         ping_registered_devices
       end
 
