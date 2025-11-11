@@ -39,6 +39,7 @@ module OfficePresence
       def top_attendees(limit: 10)
         db[:attendance]
           .join(:people, mac: :mac)
+          .where(Sequel[:people][:visible] => [true, nil])
           .select(
             Sequel[:people][:person],
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
