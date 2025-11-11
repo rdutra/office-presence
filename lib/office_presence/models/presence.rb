@@ -11,7 +11,6 @@ module OfficePresence
 
       # Status thresholds (in seconds)
       ACTIVE_THRESHOLD = 20      # Device responded to recent ping
-      INACTIVE_THRESHOLD = 10 * 60 # Device within presence window but not responding
 
       def initialize(db, present_window_minutes: 5)
         @device_model = Device.new(db)
@@ -34,8 +33,6 @@ module OfficePresence
 
         if diff_seconds < ACTIVE_THRESHOLD
           'active'
-        elsif diff_seconds < INACTIVE_THRESHOLD
-          'inactive'
         else
           'inactive'
         end
@@ -91,17 +88,17 @@ module OfficePresence
 
       def split_by_presence(devices)
         cutoff = (Time.now.utc - (present_window_minutes * 60)).iso8601.gsub(/\+00:00\z/, "Z")
-        
+
         present = devices.select { |d| d[:last_seen_utc] >= cutoff }
         absent = devices.select { |d| d[:last_seen_utc] < cutoff }
-        
+
         [present, absent]
       end
 
       def dashboard_data
         mapped = mapped_devices
         mapped_present, mapped_absent = split_by_presence(mapped)
-        
+
         {
           now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
           mapped_present: mapped_present,
