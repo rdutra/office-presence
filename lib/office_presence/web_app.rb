@@ -50,36 +50,6 @@ module OfficePresence
         request.body.rewind
         JSON.parse(request.body.read)
       end
-
-      def parse_timestamp(value)
-        return nil if value.nil? || value.empty?
-        Time.parse(value)
-      rescue ArgumentError
-        nil
-      end
-
-      def calculate_device_status(last_seen_utc)
-        return 'calculating' unless last_seen_utc
-
-        last_seen = parse_timestamp(last_seen_utc)
-        return 'calculating' unless last_seen
-
-        diff_seconds = Time.now.utc - last_seen
-
-        if diff_seconds < 20 # Active: responded to recent ping (2x ping interval buffer)
-          'active'
-        elsif diff_seconds < (10 * 60) # Inactive: not responding but still within presence window
-          'inactive'
-        else
-          'inactive'
-        end
-      end
-
-      def enrich_with_status(devices)
-        devices.map do |device|
-          device.merge(status: calculate_device_status(device[:last_seen_utc]))
-        end
-      end
     end
 
     # Routes - Web Pages
@@ -89,10 +59,6 @@ module OfficePresence
 
       mapped_present, mapped_absent = presence_model.split_by_presence(mapped)
       unmapped_present, unmapped_past = presence_model.split_by_presence(unmapped)
-
-      # Enrich with server-calculated status
-      mapped_present = enrich_with_status(mapped_present)
-      mapped_absent = enrich_with_status(mapped_absent)
 
       erb :index, locals: {
         now: Time.now,
@@ -119,31 +85,13 @@ module OfficePresence
 
     # Routes - API
     get "/api/presence" do
-      # Get devices from presence model
+      # Get devices from presence model (already includes status)
       mapped = presence_model.mapped_devices.map do |row|
-        {
-          mapped: true,
-          person: row[:person],
-          device: row[:device],
-          mac: row[:mac],
-          ip: row[:ip],
-          hostname: row[:hostname],
-          last_seen_utc: row[:last_seen_utc],
-          status: calculate_device_status(row[:last_seen_utc])
-        }
+        row.merge(mapped: true)
       end
 
       unmapped = presence_model.unmapped_devices.map do |row|
-        {
-          mapped: false,
-          person: nil,
-          device: nil,
-          mac: row[:mac],
-          ip: row[:ip],
-          hostname: row[:hostname],
-          last_seen_utc: row[:last_seen_utc],
-          status: calculate_device_status(row[:last_seen_utc])
-        }
+        row.merge(mapped: false, person: nil, device: nil)
       end
 
       json(mapped + unmapped)

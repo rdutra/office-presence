@@ -9,6 +9,10 @@ module OfficePresence
     class Presence
       attr_reader :device_model, :person_model, :attendance_model, :present_window_minutes
 
+      # Status thresholds (in seconds)
+      ACTIVE_THRESHOLD = 20      # Device responded to recent ping
+      INACTIVE_THRESHOLD = 10 * 60 # Device within presence window but not responding
+
       def initialize(db, present_window_minutes: 5)
         @device_model = Device.new(db)
         @person_model = Person.new(db)
@@ -16,8 +20,36 @@ module OfficePresence
         @present_window_minutes = present_window_minutes
       end
 
+      # Calculate device status based on last_seen timestamp
+      def calculate_status(last_seen_utc)
+        return 'calculating' unless last_seen_utc
+
+        begin
+          last_seen = Time.parse(last_seen_utc)
+        rescue ArgumentError
+          return 'calculating'
+        end
+
+        diff_seconds = Time.now.utc - last_seen
+
+        if diff_seconds < ACTIVE_THRESHOLD
+          'active'
+        elsif diff_seconds < INACTIVE_THRESHOLD
+          'inactive'
+        else
+          'inactive'
+        end
+      end
+
+      # Enrich device records with calculated status
+      def enrich_with_status(devices)
+        devices.map do |device|
+          device.merge(status: calculate_status(device[:last_seen_utc]))
+        end
+      end
+
       def mapped_devices
-        device_model.db[:devices]
+        devices = device_model.db[:devices]
           .join(:people, mac: :mac)
           .where(Sequel[:people][:visible] => true)
           .select_all(:devices)
@@ -30,13 +62,16 @@ module OfficePresence
               device: row[:device_name],
               mac: row[:mac],
               ip: row[:ip],
+              hostname: row[:hostname],
               last_seen_utc: row[:last_seen_utc]
             }
           end
+
+        enrich_with_status(devices)
       end
 
       def unmapped_devices
-        device_model.db[:devices]
+        devices = device_model.db[:devices]
           .left_join(:people, mac: :mac)
           .where(Sequel[:people][:mac] => nil)
           .select_all(:devices)
@@ -46,9 +81,12 @@ module OfficePresence
             {
               mac: row[:mac],
               ip: row[:ip],
+              hostname: row[:hostname],
               last_seen_utc: row[:last_seen_utc]
             }
           end
+
+        enrich_with_status(devices)
       end
 
       def split_by_presence(devices)
