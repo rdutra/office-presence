@@ -303,29 +303,54 @@ module OfficePresence
 
         log "Ping validation: checking #{devices_to_check.size} present devices (out of #{known_macs.size} registered)"
 
-        entries = []
-
-        # TODO: Parallelize pings to improve performance when checking many devices
-        # Consider using a thread pool or concurrent-ruby gem to ping multiple devices simultaneously
-        devices_to_check.each do |device|
-          next unless device[:ip]
-
-          if ping_host(device[:ip])
-            entries << { ip: device[:ip], mac: device[:mac], hostname: nil }
-            log "  ✓ #{device[:mac]} (#{device[:ip]}) is responding"
-          else
-            log "  ✗ #{device[:mac]} (#{device[:ip]}) not responding"
-          end
-        end
+        entries = ping_hosts_batch(devices_to_check)
 
         store_entries_safely(entries)
         log "Ping validation complete: #{entries.size}/#{devices_to_check.size} devices responded"
       end
     end
 
-    def ping_host(ip)
-      # -c 1: one packet, -W 1: 1 second timeout, -q: quiet mode
-      system("ping", "-c", "1", "-W", "1", "-q", ip, out: File::NULL, err: File::NULL)
+    def ping_hosts_batch(devices)
+      ips = devices.map { |d| d[:ip] }.compact
+      return [] if ips.empty?
+
+      # Create a mapping of IP to device info for quick lookup
+      ip_to_device = devices.each_with_object({}) do |device, hash|
+        hash[device[:ip]] = device if device[:ip]
+      end
+
+      # fping options:
+      # -c1: send 1 ping packet
+      # -t 750: timeout of 750ms (slightly less than 1 second to match original behavior)
+      # -q: quiet mode (only show summary)
+      # -A: show targets by address (not hostname)
+      result = `fping -c1 -t 750 -q -A #{ips.join(' ')} 2>&1`
+
+      entries = []
+
+      # Parse fping output - alive hosts will have lines like "192.168.1.1 : xmt/rcv/%loss = 1/1/0%"
+      result.each_line do |line|
+        if line =~ /^(\S+)\s+:\s+xmt\/rcv\/%loss\s+=\s+\d+\/(\d+)/
+          ip = $1
+          received = $2.to_i
+
+          if received > 0 && ip_to_device[ip]
+            device = ip_to_device[ip]
+            entries << { ip: device[:ip], mac: device[:mac], hostname: nil }
+            log "  ✓ #{device[:mac]} (#{device[:ip]}) is responding"
+          end
+        end
+      end
+
+      # Log devices that didn't respond
+      ips.each do |ip|
+        unless entries.any? { |e| e[:ip] == ip }
+          device = ip_to_device[ip]
+          log "  ✗ #{device[:mac]} (#{ip}) not responding" if device
+        end
+      end
+
+      entries
     end
 
     def log(message)
