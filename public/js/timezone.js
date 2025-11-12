@@ -4,19 +4,19 @@ function formatLocalTime(utcString) {
   try {
     // Parse the UTC time - it already has Z suffix if in ISO8601 format
     // Otherwise add Z to indicate UTC
-    const dateString = utcString.includes('Z') || utcString.includes('+') 
-      ? utcString 
+    const dateString = utcString.includes('Z') || utcString.includes('+')
+      ? utcString
       : utcString + 'Z';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return utcString;
-    
+
     // Format as YYYY-MM-DD HH:MM in local timezone
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   } catch (e) {
     return utcString;
@@ -39,7 +39,8 @@ function initializeTimezone() {
   const currentTimeEl = document.querySelector('.current-time');
   if (currentTimeEl) {
     const utcTime = currentTimeEl.getAttribute('data-utc');
-    currentTimeEl.textContent = formatLocalTime(utcTime);
+    const fullTime = formatLocalTime(utcTime);
+    currentTimeEl.textContent = fullTime.split(' ')[1]; // Extract just the HH:MM part
   }
 
   const tzLabel = document.querySelector('.tz-label');
