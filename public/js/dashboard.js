@@ -3,7 +3,8 @@ function updateDashboard(data) {
   const timeElement = document.querySelector('.current-time');
   if (timeElement) {
     timeElement.setAttribute('data-utc', data.now);
-    timeElement.textContent = formatLocalTimeOnly(data.now);
+    const fullTime = formatLocalTime(data.now);
+    timeElement.textContent = fullTime.split(' ')[1]; // Extract just the HH:MM part
   }
 
   // Update stats
