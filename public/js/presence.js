@@ -57,7 +57,7 @@ function updateTable(devices) {
 
   // If no devices, show empty message
   if (presentDevices.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="muted">No mapped people seen recently.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="muted">No mapped people seen recently.</td></tr>';
     return;
   }
 
@@ -105,11 +105,10 @@ function updateRow(row, device, now) {
     indicator.setAttribute('data-status', device.status);
   }
 
-  // Update other fields (IP, hostname might change)
+  // Update other fields (IP might change)
   const cells = row.querySelectorAll('td');
-  if (cells.length >= 7) {
+  if (cells.length >= 6) {
     cells[4].textContent = device.ip || '—'; // IP
-    cells[5].textContent = device.hostname || '—'; // Hostname
   }
 }
 
@@ -127,7 +126,6 @@ function createRow(device, now) {
     <td>${device.device || '—'}</td>
     <td><span class="timestamp" data-utc="${device.last_seen_utc || ''}">${formattedTime}</span></td>
     <td>${device.ip || '—'}</td>
-    <td>${device.hostname || '—'}</td>
     <td class="mac">${device.mac || '—'}</td>
   `;
 
