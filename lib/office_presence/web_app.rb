@@ -72,7 +72,7 @@ module OfficePresence
 
     get "/dashboard" do
       data = presence_model.dashboard_data
-      
+
       erb :dashboard, locals: {
         now: Time.now,
         mapped_present: data[:mapped_present],
@@ -85,14 +85,27 @@ module OfficePresence
 
     # Routes - API
     get "/api/presence" do
-      mapped = presence_model.mapped_devices
-      unmapped = presence_model.unmapped_devices
-      
+      # Get devices from presence model (already includes status)
+      mapped = presence_model.mapped_devices.map do |row|
+        row.merge(mapped: true)
+      end
+
+      unmapped = presence_model.unmapped_devices.map do |row|
+        row.merge(mapped: false, person: nil, device: nil)
+      end
+
       json(mapped + unmapped)
     end
 
     get "/api/dashboard" do
       json(presence_model.dashboard_data)
+    end
+
+    get "/api/config" do
+      json(
+        present_window_minutes: present_window_minutes,
+        ping_interval: settings.scanner.ping_interval
+      )
     end
 
     get "/api/my-device" do
@@ -129,7 +142,7 @@ module OfficePresence
 
       ip = client_ip
       device = db[:devices].where(ip: ip).first
-      
+
       halt 404, json(error: "No device found with your IP address (#{ip}). Make sure you're connected to the network and have been scanned.") unless device
 
       existing = person_model.find_by_mac(device[:mac])

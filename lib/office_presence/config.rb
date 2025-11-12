@@ -15,7 +15,15 @@ module OfficePresence
     end
 
     def present_window_minutes
-      integer_env("PRESENT_WINDOW_MINUTES", 30, 1..(24 * 60))
+      integer_env("PRESENT_WINDOW_MINUTES", 10, 1..(24 * 60))
+    end
+
+    def arp_check_interval
+      integer_env("ARP_CHECK_INTERVAL", 5, 1..300)
+    end
+
+    def ping_interval
+      integer_env("PING_INTERVAL", 10, 1..300)
     end
 
     def subnets

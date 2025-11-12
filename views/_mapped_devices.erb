@@ -1,15 +1,16 @@
 <div class="section">
   <h2>Mapped — Present <span class="badge ok"><%= mapped_present.length %></span></h2>
-  <table>
+  <table id="mapped-table">
     <thead>
-      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
+      <tr><th>Status</th><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
     </thead>
     <tbody>
       <% if mapped_present.empty? %>
-        <tr><td colspan="5" class="muted">No mapped people seen recently.</td></tr>
+        <tr><td colspan="6" class="muted">No mapped people seen recently.</td></tr>
       <% else %>
         <% mapped_present.each do |r| %>
-          <tr>
+          <tr data-mac="<%= r[:mac] %>" data-last-seen="<%= r[:last_seen_utc] %>">
+            <td><span class="status-indicator" data-status="<%= r[:status] %>">●</span></td>
             <td><strong><%= r[:person] || '—' %></strong></td>
             <td><%= r[:device] || '—' %></td>
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
