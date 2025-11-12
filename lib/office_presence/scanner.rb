@@ -35,6 +35,10 @@ module OfficePresence
       @config.present_window_minutes
     end
 
+    def ping_interval
+      @config.ping_interval
+    end
+
     def debug?
       @config.debug?
     end

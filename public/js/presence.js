@@ -1,21 +1,49 @@
 // Real-time presence updates for the mapped devices table
 
-const INACTIVE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes (remove from table)
-const POLL_INTERVAL_MS = 10 * 1000; // Poll every 10 seconds
+// Config values - will be fetched from API
+let INACTIVE_THRESHOLD_MS;
+let POLL_INTERVAL_MS;
 
-function initializePresence() {
+async function initializePresence() {
   const table = document.getElementById('mapped-table');
   if (!table) return; // Not on the page with the table
 
+  // Fetch config from API first
+  await loadConfig();
+
   // Poll the API for updates
   startPolling();
+}
+
+async function loadConfig() {
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) {
+      console.error('Failed to fetch config, using defaults');
+      setDefaultConfig();
+      return;
+    }
+
+    const config = await response.json();
+    INACTIVE_THRESHOLD_MS = config.present_window_minutes * 60 * 1000;
+    POLL_INTERVAL_MS = config.ping_interval * 1000;
+  } catch (error) {
+    console.error('Error fetching config:', error);
+    setDefaultConfig();
+  }
+}
+
+function setDefaultConfig() {
+  // Fallback defaults if API fails
+  INACTIVE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+  POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
 }
 
 async function startPolling() {
   // Initial update - wait for it to complete before starting interval
   await fetchAndUpdateTable();
 
-  // Poll every 10 seconds
+  // Poll using the configured interval
   setInterval(fetchAndUpdateTable, POLL_INTERVAL_MS);
 }
 
@@ -74,11 +102,11 @@ function updateTable(devices) {
 
     if (existingRow) {
       // Update existing row
-      updateRow(existingRow, device, now);
+      updateRow(existingRow, device);
       existingRows.delete(device.mac); // Mark as processed
     } else {
       // Create new row
-      const newRow = createRow(device, now);
+      const newRow = createRow(device);
       tbody.appendChild(newRow);
     }
   });
@@ -89,7 +117,7 @@ function updateTable(devices) {
   });
 }
 
-function updateRow(row, device, now) {
+function updateRow(row, device) {
   // Update last seen timestamp
   row.setAttribute('data-last-seen', device.last_seen_utc);
 
@@ -112,7 +140,7 @@ function updateRow(row, device, now) {
   }
 }
 
-function createRow(device, now) {
+function createRow(device) {
   const row = document.createElement('tr');
   row.setAttribute('data-mac', device.mac);
   row.setAttribute('data-last-seen', device.last_seen_utc);

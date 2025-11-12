@@ -101,6 +101,13 @@ module OfficePresence
       json(presence_model.dashboard_data)
     end
 
+    get "/api/config" do
+      json(
+        present_window_minutes: present_window_minutes,
+        ping_interval: settings.scanner.ping_interval
+      )
+    end
+
     get "/api/my-device" do
       ip = client_ip
       device = db[:devices].where(ip: ip).first
