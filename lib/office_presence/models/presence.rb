@@ -102,7 +102,7 @@ module OfficePresence
         {
           now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
           mapped_present: mapped_present,
-          mapped_absent: mapped_absent.take(5),
+          mapped_absent: mapped_absent.take(8),
           present_count: mapped_present.length,
           total_people: person_model.count,
           top_attendees: attendance_model.top_attendees(limit: 10)

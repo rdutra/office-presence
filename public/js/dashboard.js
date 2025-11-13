@@ -3,7 +3,8 @@ function updateDashboard(data) {
   const timeElement = document.querySelector('.current-time');
   if (timeElement) {
     timeElement.setAttribute('data-utc', data.now);
-    timeElement.textContent = formatLocalTime(data.now);
+    const fullTime = formatLocalTime(data.now);
+    timeElement.textContent = fullTime.split(' ')[1]; // Extract just the HH:MM part
   }
 
   // Update stats
@@ -21,7 +22,7 @@ function updateDashboard(data) {
         if (peopleList) peopleList.remove();
         const div = document.createElement('div');
         div.className = 'empty-state';
-        div.textContent = 'Nobody here yet today';
+        div.textContent = 'No one here yet — be the first! ☕';
         currentlyInOfficeColumn.appendChild(div);
       }
     }
@@ -29,49 +30,49 @@ function updateDashboard(data) {
     if (currentlyInOfficeColumn) {
       const emptyState = currentlyInOfficeColumn.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
-      
+
       if (!peopleList) {
         const div = document.createElement('div');
         div.className = 'people-list';
         currentlyInOfficeColumn.appendChild(div);
       }
     }
-    
+
     const list = document.querySelector('.people-list');
     if (list) {
       list.innerHTML = data.mapped_present.map(person => `
-        <div class="person-card">
-          <div class="person-avatar">${person.person && person.person.length > 0 ? person.person[0].toUpperCase() : '?'}</div>
+        <div class="person-card status-${person.status || 'inactive'}">
+          <div class="person-avatar">
+            ${person.person && person.person.length > 0 ? person.person[0].toUpperCase() : '?'}
+          </div>
           <div class="person-info">
             <div class="person-name">${person.person}</div>
             <div class="person-device">${person.device || 'Device'}</div>
-          </div>
-          <div class="person-time timestamp" data-utc="${person.last_seen_utc}">
-            ${formatLocalTime(person.last_seen_utc)}
           </div>
         </div>
       `).join('');
     }
   }
 
-  // Update leaderboard
-  const leaderboard = document.querySelector('.leaderboard');
-  if (leaderboard) {
-    leaderboard.innerHTML = data.top_attendees.map((attendee, index) => `
-      <div class="leaderboard-item">
-        <div class="rank rank-${index + 1}">${index + 1}</div>
-        <div class="attendee-info">
-          <div class="attendee-name">${attendee.person}</div>
-          <div class="attendee-stats">${attendee.days} days</div>
+  // Update top 3 podium
+  const podiumContainer = document.querySelector('.podium-container');
+  if (podiumContainer && data.top_attendees.length > 0) {
+    const medals = ['🥇', '🥈', '🥉'];
+    podiumContainer.innerHTML = data.top_attendees.slice(0, 3).map((attendee, index) => `
+      <div class="podium-item rank-${index + 1}">
+        <div class="podium-rank">${medals[index]}</div>
+        <div class="podium-info">
+          <div class="podium-name">${attendee.person}</div>
+          <div class="podium-days">${attendee.days} days</div>
         </div>
       </div>
     `).join('');
   }
 
-  // Update recently left
+  // Update earlier today
   const recentList = document.querySelector('.recent-list');
   const recentlyLeftColumn = recentList?.parentElement;
-  
+
   if (data.mapped_absent.length === 0) {
     if (recentlyLeftColumn) {
       const emptyState = recentlyLeftColumn.querySelector('.empty-state');
@@ -79,7 +80,7 @@ function updateDashboard(data) {
         if (recentList) recentList.remove();
         const div = document.createElement('div');
         div.className = 'empty-state';
-        div.textContent = 'No recent activity';
+        div.textContent = 'No one has left yet';
         recentlyLeftColumn.appendChild(div);
       }
     }
@@ -87,22 +88,19 @@ function updateDashboard(data) {
     if (recentlyLeftColumn) {
       const emptyState = recentlyLeftColumn.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
-      
+
       if (!recentList) {
         const div = document.createElement('div');
         div.className = 'recent-list';
         recentlyLeftColumn.appendChild(div);
       }
     }
-    
+
     const list = document.querySelector('.recent-list');
     if (list) {
-      list.innerHTML = data.mapped_absent.map(person => `
+      list.innerHTML = data.mapped_absent.slice(0, 8).map(person => `
         <div class="recent-item">
           <div class="recent-name">${person.person}</div>
-          <div class="recent-time timestamp" data-utc="${person.last_seen_utc}">
-            ${formatLocalTime(person.last_seen_utc)}
-          </div>
         </div>
       `).join('');
     }
