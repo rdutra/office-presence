@@ -23,6 +23,16 @@ Gemfile.lock
 .env
 .env.local
 .env.*.local
+.env.firebase
+
+# Firebase
+.firebase/
+firebase-service-account.json
+.firebaserc
+firebase-debug.log
+logs/
+firebase_public/index.html.bak
+firebase_public/index.html.tmp
 
 # Database files
 *.sqlite

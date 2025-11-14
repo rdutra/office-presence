@@ -121,7 +121,7 @@ module OfficePresence
       cmd = ["nmap", "-sn", "-n", "-T4", "--min-rate", "100", subnet, "-oG", "-"]
       log "Running nmap scan on #{subnet} (this may take 30-60 seconds)..."
       start_time = Time.now
-      stdout, stderr, status = Open3.capture3(*cmd)
+      stdout, stderr, _status = Open3.capture3(*cmd)
       elapsed = (Time.now - start_time).round(1)
       log "nmap scan completed in #{elapsed}s"
       log "nmap stderr: #{stderr.strip}" unless stderr.to_s.strip.empty?
