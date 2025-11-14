@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "dashboard": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
