@@ -5,7 +5,7 @@ require_relative "utils"
 
 module OfficePresence
   class Config
-    DEFAULT_SUBNET = "192.168.1.0/24"
+    DEFAULT_SUBNET = "192.168.12.0/24"
 
     attr_reader :logger
 
@@ -19,7 +19,7 @@ module OfficePresence
     end
 
     def scan_interval
-      integer_env("SCAN_INTERVAL", 120, 10..86_400)
+      integer_env("SCAN_INTERVAL", 300, 10..86_400)
     end
 
     def present_window_minutes
@@ -31,7 +31,7 @@ module OfficePresence
     end
 
     def ping_interval
-      integer_env("PING_INTERVAL", 10, 1..300)
+      integer_env("PING_INTERVAL", 30, 1..300)
     end
 
     def subnets
