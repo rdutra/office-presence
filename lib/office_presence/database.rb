@@ -22,6 +22,21 @@ module OfficePresence
         String :mac, primary_key: true
         String :ip
         String :last_seen_utc
+        String :hostname
+        String :device_id  # AirPlay device ID or Bluetooth address (persistent)
+      end
+      
+      # Add new columns if they don't exist (for existing databases)
+      unless db[:devices].columns.include?(:hostname)
+        db.alter_table(:devices) do
+          add_column :hostname, String
+        end
+      end
+      
+      unless db[:devices].columns.include?(:device_id)
+        db.alter_table(:devices) do
+          add_column :device_id, String
+        end
       end
 
       db.create_table?(:people) do

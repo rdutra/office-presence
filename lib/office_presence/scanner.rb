@@ -83,54 +83,61 @@ module OfficePresence
     def collect_entries
       entries = []
       @config.subnets.each do |subnet|
-        entries.concat(run_nmap(subnet))
+        subnet_entries = run_nmap(subnet)
+        warn "[SCANNER] Subnet #{subnet} returned #{subnet_entries.size} entries"
+        entries.concat(subnet_entries)
       end
 
+      warn "[SCANNER] Total entries before merge: #{entries.size}"
       entries = merge_entries(entries)
+      warn "[SCANNER] Total entries after first merge: #{entries.size}"
+      
       arp_map = read_arp_cache
 
-      if entries.empty? && !arp_map.empty?
-        arp_map.each do |ip, mac|
-          mac_norm = Utils.normalize_mac(mac)
-          next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
-          entries << { ip: ip, mac: mac_norm }
-        end
-      else
-        entries.each do |entry|
-          mac_norm = Utils.normalize_mac(entry[:mac])
-          if mac_norm.nil?
-            arp_mac = arp_map[entry[:ip]]
-            entry[:mac] = Utils.normalize_mac(arp_mac)
-          else
-            entry[:mac] = mac_norm
-          end
-        end
-
-        arp_map.each do |ip, mac|
-          next if entries.any? { |entry| entry[:ip] == ip }
-          mac_norm = Utils.normalize_mac(mac)
-          next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
-          entries << { ip: ip, mac: mac_norm }
+      # First pass: fill in missing MACs from ARP cache
+      entries.each do |entry|
+        if entry[:mac].nil? || entry[:mac].empty?
+          arp_mac = arp_map[entry[:ip]]
+          entry[:mac] = Utils.normalize_mac(arp_mac) if arp_mac
+        else
+          entry[:mac] = Utils.normalize_mac(entry[:mac])
         end
       end
 
-      entries
+      # Second pass: add ARP-only entries (devices not found by nmap)
+      arp_only = 0
+      arp_map.each do |ip, mac|
+        next if entries.any? { |entry| entry[:ip] == ip }
+        mac_norm = Utils.normalize_mac(mac)
+        next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
+        entries << { ip: ip, mac: mac_norm, hostname: nil, device_id: nil }
+        arp_only += 1
+      end
+      warn "[SCANNER] Added #{arp_only} ARP-only entries"
+
+      # Final merge to eliminate any duplicates created
+      merged = merge_entries(entries)
+      warn "[SCANNER] Total entries after final merge: #{merged.size}"
+      
+      merged
     end
 
     def run_nmap(subnet)
-      cmd = ["nmap", "-sn", "-n", "-T4", "--min-rate", "100", subnet, "-oG", "-"]
-      log "Running nmap scan on #{subnet} (this may take 30-60 seconds)..."
+      # Use DNS-SD to discover services and get persistent identifiers
+      # -Pn skips host discovery (many devices block ping)
+      cmd = ["sudo", "nmap", "-Pn", "-sU", "-p", "5353", "--script=dns-service-discovery", subnet]
+      warn "[SCANNER] Running nmap DNS-SD scan on #{subnet} (this may take 60-90 seconds)..."
       start_time = Time.now
       stdout, stderr, _status = Open3.capture3(*cmd)
       elapsed = (Time.now - start_time).round(1)
-      log "nmap scan completed in #{elapsed}s"
-      log "nmap stderr: #{stderr.strip}" unless stderr.to_s.strip.empty?
-      parse_nmap(stdout)
+      warn "[SCANNER] nmap DNS-SD scan completed in #{elapsed}s"
+      warn "[SCANNER] nmap stderr: #{stderr.strip}" unless stderr.to_s.strip.empty?
+      parse_nmap_dnsd(stdout)
     rescue Errno::ENOENT
-      log "nmap not found"
+      warn "[SCANNER] nmap not found"
       []
     rescue => e
-      log "nmap error: #{e.message}"
+      warn "[SCANNER] nmap error: #{e.message}"
       []
     end
 
@@ -149,16 +156,140 @@ module OfficePresence
       end
       entries.values
     end
+    
+    def parse_nmap_dnsd(output)
+      entries = {}
+      current_ip = nil
+      current_hostname = nil
+      current_device_id = nil
+      current_mac = nil
+      in_airplay = false
+      in_companion_link = false
+      
+      output.to_s.each_line do |line|
+        # Capture IP address
+        if line =~ /Nmap scan report for ([\d.]+)/
+          # Save previous entry if it exists
+          if current_ip
+            entries[current_ip] = {
+              ip: current_ip,
+              mac: current_mac,
+              hostname: current_hostname,
+              device_id: current_device_id
+            }
+          end
+          
+          # Start new entry
+          current_ip = $1
+          current_hostname = nil
+          current_device_id = nil
+          current_mac = nil
+          in_airplay = false
+          in_companion_link = false
+          
+        # Capture MAC address
+        elsif line =~ /MAC Address: ([0-9A-F:]{17})/i
+          current_mac = $1
+          
+        # Detect AirPlay section
+        elsif line.include?("7000/tcp airplay:")
+          in_airplay = true
+          in_companion_link = false
+          
+        # Detect companion-link section  
+        elsif line.include?("companion-link:")
+          in_companion_link = true
+          in_airplay = false
+          
+        # Detect other service sections (exit AirPlay/companion-link)
+        elsif line =~ /\d+\/tcp \w+:/ && !line.include?("airplay") && !line.include?("companion-link")
+          in_airplay = false
+          in_companion_link = false
+          
+        # Capture hostname
+        elsif line =~ /hostname: (.+)/i
+          hostname = $1.strip
+          next if hostname.empty?
+
+          # Ignore raw IP addresses reported as hostnames and prefer readable names
+          unless ip_address?(hostname)
+            current_hostname = hostname if current_hostname.nil? || ip_address?(current_hostname)
+          end
+          
+        # Capture deviceid from AirPlay
+        elsif in_airplay && line =~ /deviceid=([A-F0-9:]{17})/i
+          current_device_id ||= $1
+          
+        # Capture rpBA (Bluetooth address) from companion-link as fallback
+        elsif in_companion_link && line =~ /rpBA=([A-F0-9:]{17})/i
+          current_device_id ||= $1
+        end
+      end
+      
+      # Don't forget the last entry
+      if current_ip
+        entries[current_ip] = {
+          ip: current_ip,
+          mac: current_mac,
+          hostname: current_hostname,
+          device_id: current_device_id
+        }
+      end
+      
+      # Log what was found for debugging
+      entries.values.each do |entry|
+        if entry[:device_id] || entry[:hostname]
+          warn "[SCANNER]   Device: #{entry[:ip]} | MAC: #{entry[:mac] || 'none'} | Hostname: #{entry[:hostname] || 'none'} | DeviceID: #{entry[:device_id] || 'none'}"
+        end
+      end
+      
+      warn "[SCANNER] Found #{entries.size} devices with DNS-SD data"
+      entries.values
+    end
 
     def merge_entries(entries)
-      merged = {}
+      # First pass: merge by IP
+      by_ip = {}
       entries.each do |entry|
         ip = entry[:ip]
         next if ip.nil?
-        current = merged[ip] ||= { ip: ip, mac: nil }
-        current[:mac] = entry[:mac] if entry[:mac]
+        
+        current = by_ip[ip] ||= { ip: ip, mac: nil, hostname: nil, device_id: nil }
+        current[:mac] ||= entry[:mac]
+        current[:hostname] ||= entry[:hostname]
+        current[:device_id] ||= entry[:device_id]
       end
-      merged.values
+      
+      # Second pass: deduplicate by MAC or device_id
+      by_key = {}
+      by_ip.values.each do |entry|
+        mac = entry[:mac]
+        device_id = entry[:device_id]
+        
+        # Create unique key for deduplication
+        # Priority: device_id > mac
+        key = nil
+        if device_id && !device_id.empty?
+          key = "devid:#{device_id}"
+        elsif mac && !mac.empty?
+          key = "mac:#{mac}"
+        end
+        
+        next unless key
+        
+        if by_key[key]
+          # Merge with existing - keep most complete data
+          existing = by_key[key]
+          existing[:hostname] ||= entry[:hostname]
+          existing[:device_id] ||= entry[:device_id]
+          existing[:mac] ||= entry[:mac]
+          existing[:ip] ||= entry[:ip]
+        else
+          by_key[key] = entry
+        end
+      end
+      
+      by_key.values
     end
 
     def read_arp_cache
@@ -187,23 +318,45 @@ module OfficePresence
       timestamp = Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
       date = Time.now.utc.strftime("%Y-%m-%d")
 
+      # Final deduplication by MAC before storing
+      by_mac = {}
+      entries.each do |entry|
+        mac = Utils.normalize_mac(entry[:mac])
+        device_id = entry[:device_id]
+        
+        # Skip if we have neither MAC nor device_id
+        next unless mac || (device_id && !device_id.empty?)
+        
+        # If we have device_id but no MAC, use device_id as the MAC (primary key)
+        mac ||= device_id
+        
+        # Keep only one entry per MAC (last one wins)
+        by_mac[mac] = entry.merge(mac: mac)
+      end
+
       @db.transaction do
-        entries.each do |entry|
-          mac = Utils.normalize_mac(entry[:mac])
-          next unless mac  # Skip entries without a valid MAC address
+        by_mac.each do |mac, entry|
+          device_id = entry[:device_id]
 
-          # Update device using model
-          @device_model.create_or_update(
-            mac: mac,
-            ip: entry[:ip],
-            last_seen_utc: timestamp
-          )
+          begin
+            # Store all fields including device_id and hostname
+            @device_model.create_or_update(
+              mac: mac,
+              ip: entry[:ip],
+              last_seen_utc: timestamp,
+              hostname: entry[:hostname],
+              device_id: device_id
+            )
 
-          # Record daily attendance using model
-          @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
+            # Record daily attendance
+            @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
+          rescue Sequel::UniqueConstraintViolation => e
+            warn "[SCANNER] Duplicate key error for entry: IP=#{entry[:ip]} MAC=#{mac} DeviceID=#{device_id} Hostname=#{entry[:hostname]}"
+            raise e
+          end
         end
       end
-      log "Updated #{entries.size} hosts at #{timestamp}"
+      log "Updated #{by_mac.size} hosts at #{timestamp}"
     end
 
     # Helper to safely store entries with mutex protection
@@ -355,6 +508,10 @@ module OfficePresence
       end
 
       entries
+    end
+
+    def ip_address?(value)
+      value.to_s.match?(/\A(?:\d{1,3}\.){3}\d{1,3}\z/)
     end
 
     def log(message)
