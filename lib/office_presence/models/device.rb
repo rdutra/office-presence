@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "time"
+require_relative "../services/device_identity_service"
 
 module OfficePresence
   module Models
@@ -9,6 +10,7 @@ module OfficePresence
 
       def initialize(db)
         @db = db
+        @identity_service = Services::DeviceIdentityService.new(db)
       end
 
       def all
@@ -17,6 +19,13 @@ module OfficePresence
 
       def find_by_mac(mac)
         db[:devices].where(mac: mac).first
+      end
+      
+      def find_by_hostname(hostname, exclude_mac: nil)
+        return nil if hostname.nil? || hostname.strip.empty?
+        ds = db[:devices].where(hostname: hostname)
+        ds = ds.exclude(mac: exclude_mac) if exclude_mac
+        ds.first
       end
       
       def find_by_device_id(device_id)
@@ -35,21 +44,28 @@ module OfficePresence
         if device_id && !device_id.empty?
           existing_by_device_id = find_by_device_id(device_id)
           if existing_by_device_id && existing_by_device_id[:mac] != mac
-            updates = { last_seen_utc: last_seen_utc }
-            updates[:ip] = ip if ip && !ip.empty?
-            updates[:hostname] = hostname if hostname && !hostname.empty?
-            updates[:device_id] = device_id
-
-            # If another record already uses this MAC (e.g., from ARP),
-            # merge the data into that record and delete the duplicate
-            if (existing_by_mac = find_by_mac(mac))
-              db[:devices].where(mac: mac).update(updates)
-              db[:devices].where(device_id: device_id).exclude(mac: mac).delete
-            else
-              # Safe to update the existing record to the new MAC
-              updates[:mac] = mac
-              db[:devices].where(device_id: device_id).update(updates)
-            end
+            @identity_service.migrate_identity(
+              existing_record: existing_by_device_id,
+              new_mac: mac,
+              ip: ip,
+              hostname: hostname,
+              last_seen_utc: last_seen_utc
+            )
+            return
+          end
+        end
+        
+        # Handle devices that lost their device_id but still report the same hostname.
+        if (device_id.nil? || device_id.empty?) && hostname && !hostname.empty?
+          existing_by_hostname = find_by_hostname(hostname, exclude_mac: mac)
+          if existing_by_hostname && existing_by_hostname[:mac] != mac
+            @identity_service.migrate_identity(
+              existing_record: existing_by_hostname,
+              new_mac: mac,
+              ip: ip,
+              hostname: hostname,
+              last_seen_utc: last_seen_utc
+            )
             return
           end
         end

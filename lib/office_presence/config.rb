@@ -1,13 +1,21 @@
 # frozen_string_literal: true
 
+require "logger"
 require_relative "utils"
 
 module OfficePresence
   class Config
     DEFAULT_SUBNET = "192.168.1.0/24"
 
+    attr_reader :logger
+
     def initialize(env = ENV)
       @env = env
+      @logger = Logger.new($stdout)
+      @logger.level = debug? ? Logger::DEBUG : Logger::INFO
+      @logger.formatter = proc do |severity, datetime, _progname, msg|
+        "#{datetime.strftime('%Y-%m-%d %H:%M:%S')} [#{severity}] #{msg}\n"
+      end
     end
 
     def scan_interval
