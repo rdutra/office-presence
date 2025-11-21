@@ -177,13 +177,11 @@ module OfficePresence
       entries.each do |entry|
         mac = Utils.normalize_mac(entry[:mac])
         device_id = entry[:device_id]
-        
-        # Skip if we have neither MAC nor device_id
-        next unless mac || (device_id && !device_id.empty?)
-        
-        # If we have device_id but no MAC, use device_id as the MAC (primary key)
-        mac ||= device_id
-        
+
+        # Only store entries that provide a valid MAC. Device IDs are tracked
+        # separately and should never be used as a surrogate MAC/value.
+        next unless mac
+
         # Keep only one entry per MAC (last one wins)
         by_mac[mac] = entry.merge(mac: mac)
       end

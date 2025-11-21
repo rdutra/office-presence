@@ -57,7 +57,7 @@ module OfficePresence
         
         # Handle devices that lost their device_id but still report the same hostname.
         if (device_id.nil? || device_id.empty?) && hostname && !hostname.empty?
-          existing_by_hostname = find_by_hostname(hostname, exclude_mac: mac)
+          existing_by_hostname = unique_hostname_match(hostname, exclude_mac: mac)
           if existing_by_hostname && existing_by_hostname[:mac] != mac
             @identity_service.migrate_identity(
               existing_record: existing_by_hostname,
@@ -97,6 +97,25 @@ module OfficePresence
       def absent(window_minutes)
         cutoff = (Time.now.utc - (window_minutes * 60)).iso8601.gsub(/\+00:00\z/, "Z")
         db[:devices].where(Sequel.lit("last_seen_utc < ?", cutoff)).all
+      end
+
+      private
+
+      def unique_hostname_match(hostname, exclude_mac:)
+        return nil if hostname.nil? || hostname.strip.empty?
+
+        ds = db[:devices].where(hostname: hostname)
+        ds = ds.exclude(mac: exclude_mac) if exclude_mac
+        count = ds.count
+
+        if count == 1
+          ds.first
+        elsif count > 1
+          warn "[Device] Multiple devices share hostname '#{hostname}'. Skipping hostname-based merge."
+          nil
+        else
+          nil
+        end
       end
     end
   end
