@@ -26,6 +26,7 @@ The application follows an MVC (Model-View-Controller) pattern:
 * Ruby 3.3+
 * Bundler (`gem install bundler`)
 * `nmap` and the system `arp` utility available on the host
+* For DNS-SD device discovery: `sudo` access to run nmap (one-time setup)
 
 ## Setup
 
@@ -33,9 +34,18 @@ The application follows an MVC (Model-View-Controller) pattern:
 cd office-presence
 cp .env.example .env   # optional – adjust values as needed
 bundle install
+
+# Setup passwordless sudo for nmap (required for DNS-SD scanning)
+./bin/setup_sudo_nmap.sh
 ```
 
 Configuration and the SQLite database live inside this directory (`/.env`, `data/presence.sqlite`), leaving the Ruby app untouched.
+
+### DNS-SD Device Discovery
+
+The scanner uses **DNS Service Discovery** to identify devices with persistent identifiers (AirPlay Device ID, Bluetooth Address) instead of changing MAC addresses. This provides reliable device tracking even when devices roam between access points.
+
+See [DNS_SD_DISCOVERY.md](DNS_SD_DISCOVERY.md) for details.
 
 ### Migrating an existing `people.csv`
 

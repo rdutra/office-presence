@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "open3"
 require "rufus-scheduler"
 require "time"
 
@@ -10,6 +9,7 @@ require_relative "database"
 require_relative "models/device"
 require_relative "models/attendance"
 require_relative "models/person"
+require_relative "services/network_discovery"
 
 module OfficePresence
   class Scanner
@@ -22,6 +22,7 @@ module OfficePresence
       @mutex = Mutex.new
       @scheduler = Rufus::Scheduler.new
       @started = false
+      @discovery_service = Services::NetworkDiscovery.new(logger: @config.logger)
     end
 
     def start
@@ -75,7 +76,7 @@ module OfficePresence
           store_entries_safely(entries)
         rescue => e
           backtrace = Array(e.backtrace).first(5).join("\n")
-          log "Scanner error: #{e.class}: #{e.message}\n#{backtrace}"
+          log_error "Scanner error: #{e.class}: #{e.message}\n#{backtrace}"
         end
       end
     end
@@ -83,127 +84,131 @@ module OfficePresence
     def collect_entries
       entries = []
       @config.subnets.each do |subnet|
-        entries.concat(run_nmap(subnet))
+        subnet_entries = @discovery_service.run_nmap(subnet)
+        log_info "[SCANNER] Subnet #{subnet} returned #{subnet_entries.size} entries"
+        entries.concat(subnet_entries)
       end
 
+      log_debug "[SCANNER] Total entries before merge: #{entries.size}"
       entries = merge_entries(entries)
-      arp_map = read_arp_cache
+      log_debug "[SCANNER] Total entries after first merge: #{entries.size}"
+      
+      arp_map = @discovery_service.read_arp_cache
 
-      if entries.empty? && !arp_map.empty?
-        arp_map.each do |ip, mac|
-          mac_norm = Utils.normalize_mac(mac)
-          next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
-          entries << { ip: ip, mac: mac_norm }
-        end
-      else
-        entries.each do |entry|
-          mac_norm = Utils.normalize_mac(entry[:mac])
-          if mac_norm.nil?
-            arp_mac = arp_map[entry[:ip]]
-            entry[:mac] = Utils.normalize_mac(arp_mac)
-          else
-            entry[:mac] = mac_norm
-          end
-        end
-
-        arp_map.each do |ip, mac|
-          next if entries.any? { |entry| entry[:ip] == ip }
-          mac_norm = Utils.normalize_mac(mac)
-          next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
-          entries << { ip: ip, mac: mac_norm }
+      # First pass: fill in missing MACs from ARP cache
+      entries.each do |entry|
+        if entry[:mac].nil? || entry[:mac].empty?
+          arp_mac = arp_map[entry[:ip]]
+          entry[:mac] = Utils.normalize_mac(arp_mac) if arp_mac
+        else
+          entry[:mac] = Utils.normalize_mac(entry[:mac])
         end
       end
 
-      entries
-    end
-
-    def run_nmap(subnet)
-      cmd = ["nmap", "-sn", "-n", "-T4", "--min-rate", "100", subnet, "-oG", "-"]
-      log "Running nmap scan on #{subnet} (this may take 30-60 seconds)..."
-      start_time = Time.now
-      stdout, stderr, _status = Open3.capture3(*cmd)
-      elapsed = (Time.now - start_time).round(1)
-      log "nmap scan completed in #{elapsed}s"
-      log "nmap stderr: #{stderr.strip}" unless stderr.to_s.strip.empty?
-      parse_nmap(stdout)
-    rescue Errno::ENOENT
-      log "nmap not found"
-      []
-    rescue => e
-      log "nmap error: #{e.message}"
-      []
-    end
-
-    def parse_nmap(output)
-      entries = {}
-      output.to_s.each_line do |line|
-        next unless line.start_with?("Host: ")
-        parts = line.split
-        ip = parts[1]
-        mac = if line.include?("MAC Address:")
-                line.split("MAC Address:")[1].split.first rescue nil
-              end
-        current = entries[ip] || { ip: ip, mac: nil }
-        current[:mac] = mac unless mac.to_s.empty?
-        entries[ip] = current
+      # Second pass: add ARP-only entries (devices not found by nmap)
+      arp_only = 0
+      arp_map.each do |ip, mac|
+        next if entries.any? { |entry| entry[:ip] == ip }
+        mac_norm = Utils.normalize_mac(mac)
+        next if mac_norm.nil? || mac_norm == "ff:ff:ff:ff:ff:ff"
+        entries << { ip: ip, mac: mac_norm, hostname: nil, device_id: nil }
+        arp_only += 1
       end
-      entries.values
+      log_debug "[SCANNER] Added #{arp_only} ARP-only entries"
+
+      # Final merge to eliminate any duplicates created
+      merged = merge_entries(entries)
+      log_debug "[SCANNER] Total entries after final merge: #{merged.size}"
+      
+      merged
     end
 
     def merge_entries(entries)
-      merged = {}
+      # First pass: merge by IP
+      by_ip = {}
       entries.each do |entry|
         ip = entry[:ip]
         next if ip.nil?
-        current = merged[ip] ||= { ip: ip, mac: nil }
-        current[:mac] = entry[:mac] if entry[:mac]
+        
+        current = by_ip[ip] ||= { ip: ip, mac: nil, hostname: nil, device_id: nil }
+        current[:mac] ||= entry[:mac]
+        current[:hostname] ||= entry[:hostname]
+        current[:device_id] ||= entry[:device_id]
       end
-      merged.values
-    end
-
-    def read_arp_cache
-      mapping = {}
-      stdout, stderr, status = Open3.capture3("/usr/sbin/arp", "-an")
-      unless status.success?
-        log "arp error: #{stderr.strip}"
-        return mapping
+      
+      # Second pass: deduplicate by MAC or device_id
+      by_key = {}
+      by_ip.values.each do |entry|
+        mac = entry[:mac]
+        device_id = entry[:device_id]
+        
+        # Create unique key for deduplication
+        # Priority: device_id > mac
+        key = nil
+        if device_id && !device_id.empty?
+          key = "devid:#{device_id}"
+        elsif mac && !mac.empty?
+          key = "mac:#{mac}"
+        end
+        
+        next unless key
+        
+        if by_key[key]
+          # Merge with existing - keep most complete data
+          existing = by_key[key]
+          existing[:hostname] ||= entry[:hostname]
+          existing[:device_id] ||= entry[:device_id]
+          existing[:mac] ||= entry[:mac]
+          existing[:ip] ||= entry[:ip]
+        else
+          by_key[key] = entry
+        end
       end
-
-      stdout.each_line do |line|
-        next unless (match = line.match(/\(([^)]+)\)\s+at\s+([0-9a-f:\-]{11,17}|<incomplete>)/i))
-        ip = match[1]
-        mac = match[2]
-        next if mac.casecmp("<incomplete>").zero?
-        mac_norm = Utils.normalize_mac(mac)
-        mapping[ip] = mac_norm if mac_norm
-      end
-      mapping
-    rescue => e
-      log "read_arp_cache error: #{e.message}"
-      {}
+      
+      by_key.values
     end
 
     def store_entries(entries)
       timestamp = Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
       date = Time.now.utc.strftime("%Y-%m-%d")
 
+      # Final deduplication by MAC before storing
+      by_mac = {}
+      entries.each do |entry|
+        mac = Utils.normalize_mac(entry[:mac])
+        device_id = entry[:device_id]
+
+        # Only store entries that provide a valid MAC. Device IDs are tracked
+        # separately and should never be used as a surrogate MAC/value.
+        next unless mac
+
+        # Keep only one entry per MAC (last one wins)
+        by_mac[mac] = entry.merge(mac: mac)
+      end
+
       @db.transaction do
-        entries.each do |entry|
-          mac = Utils.normalize_mac(entry[:mac])
-          next unless mac  # Skip entries without a valid MAC address
+        by_mac.each do |mac, entry|
+          device_id = entry[:device_id]
 
-          # Update device using model
-          @device_model.create_or_update(
-            mac: mac,
-            ip: entry[:ip],
-            last_seen_utc: timestamp
-          )
+          begin
+            # Store all fields including device_id and hostname
+            @device_model.create_or_update(
+              mac: mac,
+              ip: entry[:ip],
+              last_seen_utc: timestamp,
+              hostname: entry[:hostname],
+              device_id: device_id
+            )
 
-          # Record daily attendance using model
-          @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
+            # Record daily attendance
+            @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
+          rescue Sequel::UniqueConstraintViolation => e
+            log_error "[SCANNER] Duplicate key error for entry: IP=#{entry[:ip]} MAC=#{mac} DeviceID=#{device_id} Hostname=#{entry[:hostname]}"
+            raise e
+          end
         end
       end
-      log "Updated #{entries.size} hosts at #{timestamp}"
+      log_info "Updated #{by_mac.size} hosts at #{timestamp}"
     end
 
     # Helper to safely store entries with mutex protection
@@ -232,16 +237,16 @@ module OfficePresence
         begin
           yield
         rescue => e
-          log "#{operation_name} error: #{e.class}: #{e.message}"
+          log_error "#{operation_name} error: #{e.class}: #{e.message}"
         end
       end
     end
 
     def quick_arp_check
       run_in_thread("Quick ARP check") do
-        log "Quick ARP check starting..."
+        log_debug "Quick ARP check starting..."
 
-        arp_map = read_arp_cache
+        arp_map = @discovery_service.read_arp_cache
         cutoff = present_window_cutoff
         known_macs = registered_macs
 
@@ -258,11 +263,11 @@ module OfficePresence
 
             if device.nil?
               entries << { ip: ip, mac: mac_norm, hostname: nil }
-              log "  → Registered device #{mac_norm} detected in ARP (first time)"
+              log_info "  → Registered device #{mac_norm} detected in ARP (first time)"
               new_count += 1
             elsif device[:last_seen_utc].nil? || device[:last_seen_utc] < cutoff
               entries << { ip: ip, mac: mac_norm, hostname: nil }
-              log "  → Registered device #{mac_norm} reconnected via ARP"
+              log_info "  → Registered device #{mac_norm} reconnected via ARP"
               reconnected_count += 1
             end
           else
@@ -276,23 +281,23 @@ module OfficePresence
         store_entries_safely(entries)
 
         if entries.empty?
-          log "Quick ARP check: no new devices in cache"
+          log_debug "Quick ARP check: no new devices in cache"
         elsif new_count > 0 || reconnected_count > 0
-          log "Quick ARP check: #{new_count} NEW devices, #{reconnected_count} reconnected, #{entries.size} total updated"
+          log_info "Quick ARP check: #{new_count} NEW devices, #{reconnected_count} reconnected, #{entries.size} total updated"
         else
-          log "Quick ARP check: updated #{entries.size} devices"
+          log_debug "Quick ARP check: updated #{entries.size} devices"
         end
       end
     end
 
     def ping_registered_devices
       run_in_thread("Ping validation") do
-        log "Ping validation starting..."
+        log_debug "Ping validation starting..."
 
         known_macs = registered_macs
 
         if known_macs.empty?
-          log "Ping validation: no registered devices"
+          log_debug "Ping validation: no registered devices"
           return
         end
 
@@ -305,61 +310,41 @@ module OfficePresence
           .select(:mac, :ip)
           .all
 
-        log "Ping validation: checking #{devices_to_check.size} present devices (out of #{known_macs.size} registered)"
+        log_debug "Ping validation: checking #{devices_to_check.size} present devices (out of #{known_macs.size} registered)"
 
-        entries = ping_hosts_batch(devices_to_check)
-
-        store_entries_safely(entries)
-        log "Ping validation complete: #{entries.size}/#{devices_to_check.size} devices responded"
-      end
-    end
-
-    def ping_hosts_batch(devices)
-      ips = devices.map { |d| d[:ip] }.compact
-      return [] if ips.empty?
-
-      # Create a mapping of IP to device info for quick lookup
-      ip_to_device = devices.each_with_object({}) do |device, hash|
-        hash[device[:ip]] = device if device[:ip]
-      end
-
-      # fping options:
-      # -c1: send 1 ping packet
-      # -t 750: timeout of 750ms (slightly less than 1 second to match original behavior)
-      # -q: quiet mode (only show summary)
-      # -A: show targets by address (not hostname)
-      result = `fping -c1 -t 750 -q -A #{ips.join(' ')} 2>&1`
-
-      entries = []
-
-      # Parse fping output - alive hosts will have lines like "192.168.1.1 : xmt/rcv/%loss = 1/1/0%"
-      result.each_line do |line|
-        if line =~ /^(\S+)\s+:\s+xmt\/rcv\/%loss\s+=\s+\d+\/(\d+)/
-          ip = $1
-          received = $2.to_i
-
-          if received > 0 && ip_to_device[ip]
-            device = ip_to_device[ip]
+        ips = devices_to_check.map { |d| d[:ip] }.compact
+        responding_ips = @discovery_service.ping_hosts_batch(ips)
+        
+        # Create entries for responding devices
+        entries = []
+        devices_to_check.each do |device|
+          if responding_ips.include?(device[:ip])
             entries << { ip: device[:ip], mac: device[:mac], hostname: nil }
-            log "  ✓ #{device[:mac]} (#{device[:ip]}) is responding"
+            log_debug "  ✓ #{device[:mac]} (#{device[:ip]}) is responding"
+          else
+            log_debug "  ✗ #{device[:mac]} (#{device[:ip]}) not responding"
           end
         end
-      end
 
-      # Log devices that didn't respond
-      ips.each do |ip|
-        unless entries.any? { |e| e[:ip] == ip }
-          device = ip_to_device[ip]
-          log "  ✗ #{device[:mac]} (#{ip}) not responding" if device
-        end
+        store_entries_safely(entries)
+        log_debug "Ping validation complete: #{entries.size}/#{devices_to_check.size} devices responded"
       end
-
-      entries
     end
 
-    def log(message)
-      return unless debug?
-      warn "[DEBUG] #{message}"
+    def ip_address?(value)
+      value.to_s.match?(/\A(?:\d{1,3}\.){3}\d{1,3}\z/)
+    end
+
+    def log_info(message)
+      @config.logger.info(message)
+    end
+
+    def log_error(message)
+      @config.logger.error(message)
+    end
+
+    def log_debug(message)
+      @config.logger.debug(message)
     end
 
   end

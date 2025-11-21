@@ -23,17 +23,15 @@ module OfficePresence
         timestamp ||= Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
         date ||= Time.now.utc.strftime("%Y-%m-%d")
         
-        existing = find_by_mac_and_date(mac: mac, date: date)
-        if existing
-          db[:attendance].where(mac: mac, date: date).update(last_seen_utc: timestamp)
-        else
-          db[:attendance].insert(
-            mac: mac,
-            date: date,
-            first_seen_utc: timestamp,
-            last_seen_utc: timestamp
-          )
-        end
+        db[:attendance].insert_conflict(
+          target: [:mac, :date],
+          update: { last_seen_utc: timestamp }
+        ).insert(
+          mac: mac,
+          date: date,
+          first_seen_utc: timestamp,
+          last_seen_utc: timestamp
+        )
       end
 
       def top_attendees(limit: 10)

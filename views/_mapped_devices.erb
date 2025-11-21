@@ -2,11 +2,11 @@
   <h2>Mapped — Present <span class="badge ok"><%= mapped_present.length %></span></h2>
   <table id="mapped-table">
     <thead>
-      <tr><th>Status</th><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
+      <tr><th>Status</th><th>Person</th><th>Device</th><th>Last Seen</th><th>Hostname</th><th>IP</th><th>MAC</th><th>Device ID</th></tr>
     </thead>
     <tbody>
       <% if mapped_present.empty? %>
-        <tr><td colspan="6" class="muted">No mapped people seen recently.</td></tr>
+        <tr><td colspan="8" class="muted">No mapped people seen recently.</td></tr>
       <% else %>
         <% mapped_present.each do |r| %>
           <tr data-mac="<%= r[:mac] %>" data-last-seen="<%= r[:last_seen_utc] %>">
@@ -14,8 +14,10 @@
             <td><strong><%= r[:person] || '—' %></strong></td>
             <td><%= r[:device] || '—' %></td>
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
+            <td><%= r[:hostname] || '—' %></td>
             <td><%= r[:ip] || '—' %></td>
             <td class="mac"><%= r[:mac] || '—' %></td>
+            <td class="mac"><%= r[:device_id] || '—' %></td>
           </tr>
         <% end %>
       <% end %>
@@ -27,19 +29,21 @@
   <h2>Mapped — Not recently seen</h2>
   <table>
     <thead>
-      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
+      <tr><th>Person</th><th>Device</th><th>Last Seen</th><th>Hostname</th><th>IP</th><th>MAC</th><th>Device ID</th></tr>
     </thead>
     <tbody>
       <% if mapped_absent.empty? %>
-        <tr><td colspan="5" class="muted">—</td></tr>
+        <tr><td colspan="7" class="muted">—</td></tr>
       <% else %>
         <% mapped_absent.each do |r| %>
           <tr class="muted">
             <td><strong><%= r[:person] || '—' %></strong></td>
             <td><%= r[:device] || '—' %></td>
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
+            <td><%= r[:hostname] || '—' %></td>
             <td><%= r[:ip] || '—' %></td>
             <td class="mac"><%= r[:mac] || '—' %></td>
+            <td class="mac"><%= r[:device_id] || '—' %></td>
           </tr>
         <% end %>
       <% end %>

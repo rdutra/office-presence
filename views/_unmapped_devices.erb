@@ -3,17 +3,19 @@
   <div class="small">Detected on the network but not registered yet. Use the form below to map MAC → person.</div>
   <table>
     <thead>
-      <tr><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
+      <tr><th>Last Seen</th><th>Hostname</th><th>IP</th><th>MAC</th><th>Device ID</th></tr>
     </thead>
     <tbody>
       <% if unmapped_present.empty? %>
-        <tr><td colspan="3" class="muted">No unmapped devices seen recently.</td></tr>
+        <tr><td colspan="5" class="muted">No unmapped devices seen recently.</td></tr>
       <% else %>
         <% unmapped_present.each do |r| %>
           <tr>
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
+            <td><%= r[:hostname] || '—' %></td>
             <td><%= r[:ip] || '—' %></td>
             <td class="mac"><%= r[:mac] || '—' %></td>
+            <td class="mac"><%= r[:device_id] || '—' %></td>
           </tr>
         <% end %>
       <% end %>
@@ -25,17 +27,19 @@
   <h2>Unmapped devices — Not recently seen</h2>
   <table>
     <thead>
-      <tr><th>Last Seen</th><th>IP</th><th>MAC</th></tr>
+      <tr><th>Last Seen</th><th>Hostname</th><th>IP</th><th>MAC</th><th>Device ID</th></tr>
     </thead>
     <tbody>
       <% if unmapped_past.empty? %>
-        <tr><td colspan="3" class="muted">—</td></tr>
+        <tr><td colspan="5" class="muted">—</td></tr>
       <% else %>
         <% unmapped_past.each do |r| %>
           <tr class="muted">
             <td><span class="timestamp" data-utc="<%= r[:last_seen_utc] %>"><%= r[:last_seen_utc] || '—' %></span></td>
+            <td><%= r[:hostname] || '—' %></td>
             <td><%= r[:ip] || '—' %></td>
             <td class="mac"><%= r[:mac] || '—' %></td>
+            <td class="mac"><%= r[:device_id] || '—' %></td>
           </tr>
         <% end %>
       <% end %>

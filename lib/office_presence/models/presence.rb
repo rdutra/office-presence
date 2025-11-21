@@ -60,6 +60,7 @@ module OfficePresence
               mac: row[:mac],
               ip: row[:ip],
               hostname: row[:hostname],
+              device_id: row[:device_id],
               last_seen_utc: row[:last_seen_utc]
             }
           end
@@ -79,6 +80,7 @@ module OfficePresence
               mac: row[:mac],
               ip: row[:ip],
               hostname: row[:hostname],
+              device_id: row[:device_id],
               last_seen_utc: row[:last_seen_utc]
             }
           end
