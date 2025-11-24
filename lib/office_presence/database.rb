@@ -44,6 +44,7 @@ module OfficePresence
         String :person
         String :device
         TrueClass :visible, default: true
+        String :device_id
       end
       
       # Add visible column if it doesn't exist (for existing databases)
@@ -53,6 +54,24 @@ module OfficePresence
         end
         # Set existing records to visible by default
         db[:people].update(visible: true)
+      end
+      
+      unless db[:people].columns.include?(:device_id)
+        db.alter_table(:people) do
+          add_column :device_id, String
+        end
+      end
+      
+      # Backfill device_id for people when possible (no-op if already set)
+      if db[:people].columns.include?(:device_id)
+        unmapped = db[:people].where(device_id: nil).count
+        if unmapped.positive?
+          db[:people].where(device_id: nil).each do |person|
+            device = db[:devices].where(mac: person[:mac]).first
+            next unless device && device[:device_id]
+            db[:people].where(mac: person[:mac]).update(device_id: device[:device_id])
+          end
+        end
       end
 
       db.create_table?(:attendance) do
@@ -77,6 +96,14 @@ module OfficePresence
       unless db.indexes(:attendance).values.any? { |idx| idx[:columns] == [:mac] }
         db.alter_table(:attendance) do
           add_index :mac
+        end
+      end
+      
+      if db[:people].columns.include?(:device_id)
+        unless db.indexes(:people).values.any? { |idx| idx[:columns] == [:device_id] }
+          db.alter_table(:people) do
+            add_index :device_id
+          end
         end
       end
     end

@@ -23,7 +23,9 @@ module OfficePresence
           @db[:people].where(mac: new_mac).delete
 
           @db[:devices].where(mac: old_mac).update(updates)
-          @db[:people].where(mac: old_mac).update(mac: new_mac)
+          people_updates = { mac: new_mac }
+          people_updates[:device_id] = existing_record[:device_id] if existing_record[:device_id]
+          @db[:people].where(mac: old_mac).update(people_updates)
           @db[:attendance].where(mac: old_mac).update(mac: new_mac)
         end
       end

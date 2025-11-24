@@ -21,16 +21,27 @@ module OfficePresence
         db[:people].where(mac: mac).first
       end
 
-      def create_or_update(mac:, person:, device:, visible: true)
-        db[:people].insert_conflict(
-          target: :mac,
-          update: { person: person, device: device, visible: visible }
-        ).insert(
+      def find_by_device_id(device_id)
+        return nil if device_id.nil? || device_id.empty?
+        db[:people].where(device_id: device_id).first
+      end
+
+      def create_or_update(mac:, person:, device:, visible: true, device_id: nil)
+        updates = { person: person, device: device, visible: visible }
+        updates[:device_id] = device_id if device_id && !device_id.empty?
+
+        attributes = {
           mac: mac,
           person: person,
           device: device,
           visible: visible
-        )
+        }
+        attributes[:device_id] = device_id if device_id && !device_id.empty?
+
+        db[:people].insert_conflict(
+          target: :mac,
+          update: updates
+        ).insert(attributes)
       end
       
       def toggle_visibility(mac:)
