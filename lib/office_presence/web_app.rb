@@ -4,6 +4,7 @@ require "sinatra/base"
 require "sinatra/json"
 require "json"
 require "time"
+require "rack/auth/basic"
 
 require_relative "../office_presence"
 require_relative "scanner"
@@ -50,10 +51,37 @@ module OfficePresence
         request.body.rewind
         JSON.parse(request.body.read)
       end
+
+      def admin_protected!
+        return if admin_authorized?
+
+        headers["WWW-Authenticate"] = 'Basic realm="Admin"'
+        halt 401, "Not authorized"
+      end
+
+      def admin_authorized?
+        @auth ||= Rack::Auth::Basic::Request.new(request.env)
+        @auth.provided? && @auth.basic? && @auth.credentials == ["admin", "admin"]
+      end
     end
 
     # Routes - Web Pages
     get "/" do
+      data = presence_model.dashboard_data
+
+      erb :dashboard, locals: {
+        now: Time.now,
+        mapped_present: data[:mapped_present],
+        mapped_absent: data[:mapped_absent],
+        present_count: data[:present_count],
+        total_people: data[:total_people],
+        top_attendees: data[:top_attendees]
+      }
+    end
+
+    get "/admin" do
+      admin_protected!
+
       mapped = presence_model.mapped_devices
       unmapped = presence_model.unmapped_devices
 
@@ -71,16 +99,7 @@ module OfficePresence
     end
 
     get "/dashboard" do
-      data = presence_model.dashboard_data
-
-      erb :dashboard, locals: {
-        now: Time.now,
-        mapped_present: data[:mapped_present],
-        mapped_absent: data[:mapped_absent],
-        present_count: data[:present_count],
-        total_people: data[:total_people],
-        top_attendees: data[:top_attendees]
-      }
+      redirect "/", 302
     end
 
     # Routes - API
