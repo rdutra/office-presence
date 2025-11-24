@@ -35,14 +35,27 @@ module OfficePresence
       end
 
       def top_attendees(limit: 10)
+        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
+        people_by_device = db[:people].as(:people_by_device)
+        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
+
         db[:attendance]
-          .join(:people, mac: :mac)
-          .where(Sequel[:people][:visible] => [true, nil])
+          .left_join(:people, mac: :mac)
+          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
+          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
+          .where(
+            Sequel.|(
+              Sequel.~(Sequel[:people][:person] => nil),
+              Sequel.~(Sequel[:people_by_device][:person] => nil)
+            )
+          )
+          .where(visible_expr => true)
           .select(
-            Sequel[:people][:person],
+            person_expr.as(:person),
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
           )
-          .group(Sequel[:people][:person])
+          .group(person_expr)
           .order(Sequel.desc(:days))
           .limit(limit)
           .all

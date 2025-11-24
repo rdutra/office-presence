@@ -175,7 +175,8 @@ module OfficePresence
         mac: device[:mac],
         person: person_name,
         device: device_name || "",
-        visible: visible
+        visible: visible,
+        device_id: device[:device_id]
       )
 
       json(

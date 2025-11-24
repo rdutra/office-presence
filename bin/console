@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# IRB Console for Office Presence
+# Loads the application environment and gives you access to all models and services
+
+require "bundler/setup"
+require "irb"
+
+# Load the application
+require_relative "../lib/office_presence"
+
+# Load models explicitly
+require_relative "../lib/office_presence/models/device"
+require_relative "../lib/office_presence/models/person"
+require_relative "../lib/office_presence/models/attendance"
+require_relative "../lib/office_presence/models/presence"
+require_relative "../lib/office_presence/services/network_discovery"
+
+# Setup convenience references
+include OfficePresence
+
+# Initialize components
+config = Config.new
+db = Database.connection
+
+# Make models available
+device = Models::Device.new(db)
+person = Models::Person.new(db)
+attendance = Models::Attendance.new(db)
+presence = Models::Presence.new(db)
+
+# Make services available
+scanner = Scanner.new(config: config, db: db)
+discovery = Services::NetworkDiscovery.new(logger: config.logger)
+
+puts "="*60
+puts "Office Presence Console"
+puts "="*60
+puts ""
+puts "Available objects:"
+puts "  config     - Application configuration"
+puts "  db         - SQLite database connection"
+puts "  device     - Device model"
+puts "  person     - Person model"
+puts "  attendance - Attendance model"
+puts "  presence   - Presence service"
+puts "  scanner    - Network scanner"
+puts "  discovery  - Network discovery service"
+puts ""
+puts "Example usage:"
+puts "  person.all                           # List all people"
+puts "  device.all                           # List all devices"
+puts "  presence.who_is_present              # Check who's present"
+puts "  discovery.run_nmap('192.168.1.0/24') # Run network scan"
+puts ""
+puts "="*60
+puts ""
+
+# Start IRB with the current binding so variables are accessible
+binding.irb
