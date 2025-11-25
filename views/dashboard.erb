@@ -10,8 +10,13 @@
     <div class="container">
       <header>
         <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
-        <h1>🏢 Look who bothered to come</h1>
-        <div class="date"><%= now.strftime("%A, %B %d") %></div>
+        <div class="header-title">
+          <h1>🏢 Look who bothered to come</h1>
+        </div>
+        <div class="header-actions">
+          <div class="date"><%= now.strftime("%A, %B %d") %></div>
+          <button class="register-button" id="openRegistrationBtn" type="button">Register Your Device</button>
+        </div>
       </header>
 
       <div class="stats">
@@ -91,7 +96,16 @@
       </div>
     </div>
 
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
     <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
     <script src="/js/dashboard.js"></script>
   </body>
 </html>

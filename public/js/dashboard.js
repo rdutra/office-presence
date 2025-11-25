@@ -121,10 +121,49 @@ async function fetchDashboardData() {
 
 function initializeDashboard() {
   initializeTimezone();
+  fetchDashboardData();
   
   // Poll every 30 seconds
   setInterval(fetchDashboardData, 30000);
+
+  setupRegistrationModal();
+}
+
+function setupRegistrationModal() {
+  const modal = document.getElementById('registrationModal');
+  const openBtn = document.getElementById('openRegistrationBtn');
+  const closeBtn = document.getElementById('closeRegistrationBtn');
+  const overlay = modal?.querySelector('.modal-overlay');
+
+  if (!modal || !openBtn) {
+    return;
+  }
+
+  const openModal = () => {
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+
+    if (typeof initializeRegistration === 'function') {
+      initializeRegistration();
+    }
+  };
+
+  const closeModal = () => {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  };
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  overlay?.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', initializeDashboard);
-

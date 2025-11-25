@@ -12,19 +12,15 @@
       <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span> — Present if seen in last <%= present_window_minutes %> min
     </div>
 
-    <%= erb :_registration %>
-
     <%= erb :_mapped_devices, locals: { mapped_present: mapped_present, mapped_absent: mapped_absent } %>
 
     <%= erb :_unmapped_devices, locals: { unmapped_present: unmapped_present, unmapped_past: unmapped_past } %>
 
     <script src="/js/timezone.js"></script>
-    <script src="/js/registration.js"></script>
     <script src="/js/presence.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         initializeTimezone();
-        initializeRegistration();
         initializePresence();
       });
     </script>
