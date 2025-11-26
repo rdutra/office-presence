@@ -506,7 +506,7 @@ header h1 {
     text-align: center;
   }
 
-  .people-list {
+  .people-list:not(.has-overflow) {
     grid-template-columns: 1fr;
   }
 

@@ -62,19 +62,14 @@ module OfficePresence
 
         return 0 if attendance_records.empty?
 
-        # Convert time strings to Time objects and create intervals
-        intervals = attendance_records.map do |record|
-          {
-            start: Time.parse(record[:first_seen_utc]),
-            finish: Time.parse(record[:last_seen_utc])
-          }
-        end
-
-        # Find all unique time points (starts and ends)
+        # Parse timestamps once and build time points directly
+        # This avoids repeated Time.parse calls and intermediate interval objects
         time_points = []
-        intervals.each do |interval|
-          time_points << { time: interval[:start], type: :start }
-          time_points << { time: interval[:finish], type: :finish }
+        attendance_records.each do |record|
+          start_time = Time.parse(record[:first_seen_utc])
+          finish_time = Time.parse(record[:last_seen_utc])
+          time_points << { time: start_time, type: :start }
+          time_points << { time: finish_time, type: :finish }
         end
 
         # Sort time points chronologically

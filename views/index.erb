@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Look who bothered to come</title>
+    <title>Who's here today - Admin</title>
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
       <div>
-        <h1 style="margin: 0 0 0.25rem 0;">Look who bothered to come - Admin</h1>
+        <h1 style="margin: 0 0 0.25rem 0;">Who's here today - Admin</h1>
         <div class="ts">
           <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span> — Present if seen in last <%= present_window_minutes %> min
         </div>

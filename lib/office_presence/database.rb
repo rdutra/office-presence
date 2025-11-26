@@ -89,12 +89,15 @@ module OfficePresence
         String :value
       end
 
-      # Initialize default settings if not exists
+      # Initialize default settings if not exists using batch insert
       if db.table_exists?(:settings)
-        db[:settings].insert_conflict(:replace).insert(key: 'show_in_office_tile', value: 'true') unless db[:settings].where(key: 'show_in_office_tile').any?
-        db[:settings].insert_conflict(:replace).insert(key: 'show_registered_users_tile', value: 'true') unless db[:settings].where(key: 'show_registered_users_tile').any?
-        db[:settings].insert_conflict(:replace).insert(key: 'show_today_record_tile', value: 'true') unless db[:settings].where(key: 'show_today_record_tile').any?
-        db[:settings].insert_conflict(:replace).insert(key: 'show_all_time_record_tile', value: 'true') unless db[:settings].where(key: 'show_all_time_record_tile').any?
+        default_settings = [
+          { key: 'show_in_office_tile', value: 'true' },
+          { key: 'show_registered_users_tile', value: 'true' },
+          { key: 'show_today_record_tile', value: 'true' },
+          { key: 'show_all_time_record_tile', value: 'true' }
+        ]
+        db[:settings].insert_conflict(:ignore).multi_insert(default_settings)
       end
 
       # Add indexes for performance (idempotent)

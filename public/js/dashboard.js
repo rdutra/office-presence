@@ -4,13 +4,6 @@ function checkPeopleListOverflow(list) {
   // Check if content height exceeds container height (i.e., would need scrolling)
   const needsScroll = list.scrollHeight > list.clientHeight;
 
-  console.log('People list overflow check:', {
-    scrollHeight: list.scrollHeight,
-    clientHeight: list.clientHeight,
-    needsScroll: needsScroll,
-    currentColumns: needsScroll ? '2 columns' : '1 column'
-  });
-
   if (needsScroll) {
     list.classList.add('has-overflow');
   } else {
@@ -27,16 +20,21 @@ function updateDashboard(data) {
     timeElement.textContent = fullTime.split(' ')[1]; // Extract just the HH:MM part
   }
 
-  // Update stats
-  document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = data.present_count;
-  document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = data.total_people;
-  const dailyRecordElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
-  if (dailyRecordElement && data.daily_record !== undefined) {
-    dailyRecordElement.textContent = data.daily_record;
+  // Update stats using data attributes
+  const presentStat = document.querySelector('[data-stat="present"] .stat-number');
+  if (presentStat) presentStat.textContent = data.present_count;
+
+  const totalStat = document.querySelector('[data-stat="total"] .stat-number');
+  if (totalStat) totalStat.textContent = data.total_people;
+
+  const dailyRecordStat = document.querySelector('[data-stat="daily-record"] .stat-number');
+  if (dailyRecordStat && data.daily_record !== undefined) {
+    dailyRecordStat.textContent = data.daily_record;
   }
-  const allTimeRecordElement = document.querySelector('.stat-card:nth-child(4) .stat-number');
-  if (allTimeRecordElement && data.all_time_record !== undefined) {
-    allTimeRecordElement.textContent = data.all_time_record;
+
+  const allTimeRecordStat = document.querySelector('[data-stat="all-time-record"] .stat-number');
+  if (allTimeRecordStat && data.all_time_record !== undefined) {
+    allTimeRecordStat.textContent = data.all_time_record;
   }
 
   // Update currently in office

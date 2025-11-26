@@ -21,25 +21,25 @@
 
       <div class="stats">
         <% if show_in_office_tile %>
-          <div class="stat-card">
+          <div class="stat-card" data-stat="present">
             <div class="stat-number"><%= present_count %></div>
             <div class="stat-label">In the Office 🎉</div>
           </div>
         <% end %>
         <% if show_registered_users_tile %>
-          <div class="stat-card">
+          <div class="stat-card" data-stat="total">
             <div class="stat-number"><%= total_people %></div>
             <div class="stat-label">Registered Users 👥</div>
           </div>
         <% end %>
         <% if show_today_record_tile %>
-          <div class="stat-card">
+          <div class="stat-card" data-stat="daily-record">
             <div class="stat-number"><%= daily_record %></div>
             <div class="stat-label">Today's Record 🏆</div>
           </div>
         <% end %>
         <% if show_all_time_record_tile %>
-          <div class="stat-card">
+          <div class="stat-card" data-stat="all-time-record">
             <div class="stat-number"><%= all_time_record %></div>
             <div class="stat-label">All-Time Record 🌟</div>
           </div>
