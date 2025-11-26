@@ -68,12 +68,6 @@ Sequel.migration do
       end
     end
 
-    if table_exists?(:attendance)
-      cols = indexes(:attendance).values.map { |idx| idx[:columns] }
-      unless cols.include?([:mac])
-        alter_table(:attendance) { add_index :mac }
-      end
-    end
 
     if table_exists?(:people)
       cols = indexes(:people).values.map { |idx| idx[:columns] }
