@@ -55,7 +55,6 @@ Sequel.migration do
         String :first_seen_utc
         String :last_seen_utc
         index [:mac, :date], unique: true
-        index :mac
       end
     end
 
