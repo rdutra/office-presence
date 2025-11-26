@@ -15,7 +15,7 @@ module DatabaseTasks
     return [] unless Dir.exist?(OfficePresence::MIGRATIONS_DIR)
 
     Dir.children(OfficePresence::MIGRATIONS_DIR)
-      .select { |file| file =~ /^\d+/ }
+      .select { |file| file.match?(/^\d+/) }
       .map { |file| file.split("_").first.to_i }
       .sort
   end

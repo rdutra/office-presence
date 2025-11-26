@@ -65,7 +65,7 @@ bundle exec rake db:status
 
 #### Creating a new migration
 
-1. Decide on a descriptive name and version. We use zero-padded numbers (e.g. `002_add_presets.rb`) but timestamps work just as well.
+1. Decide on a descriptive name and version. We use zero-padded numbers (e.g., `002_add_presets.rb`) but timestamps work just as well.
 2. Create the file inside `db/migrations`:
    ```bash
    VERSION=002
