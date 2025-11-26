@@ -1,3 +1,23 @@
+function checkPeopleListOverflow(list) {
+  if (!list) return;
+
+  // Check if content height exceeds container height (i.e., would need scrolling)
+  const needsScroll = list.scrollHeight > list.clientHeight;
+
+  console.log('People list overflow check:', {
+    scrollHeight: list.scrollHeight,
+    clientHeight: list.clientHeight,
+    needsScroll: needsScroll,
+    currentColumns: needsScroll ? '2 columns' : '1 column'
+  });
+
+  if (needsScroll) {
+    list.classList.add('has-overflow');
+  } else {
+    list.classList.remove('has-overflow');
+  }
+}
+
 function updateDashboard(data) {
   // Update time
   const timeElement = document.querySelector('.current-time');
@@ -10,6 +30,14 @@ function updateDashboard(data) {
   // Update stats
   document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = data.present_count;
   document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = data.total_people;
+  const dailyRecordElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
+  if (dailyRecordElement && data.daily_record !== undefined) {
+    dailyRecordElement.textContent = data.daily_record;
+  }
+  const allTimeRecordElement = document.querySelector('.stat-card:nth-child(4) .stat-number');
+  if (allTimeRecordElement && data.all_time_record !== undefined) {
+    allTimeRecordElement.textContent = data.all_time_record;
+  }
 
   // Update currently in office
   const peopleList = document.querySelector('.people-list');
@@ -51,6 +79,14 @@ function updateDashboard(data) {
           </div>
         </div>
       `).join('');
+
+      // Check if the list has overflow and needs two columns
+      // Use requestAnimationFrame to ensure the DOM has been updated
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          checkPeopleListOverflow(list);
+        });
+      });
     }
   }
 
@@ -122,11 +158,23 @@ async function fetchDashboardData() {
 function initializeDashboard() {
   initializeTimezone();
   fetchDashboardData();
-  
+
   // Poll every 30 seconds
   setInterval(fetchDashboardData, 30000);
 
   setupRegistrationModal();
+
+  // Monitor window resize to re-check overflow
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      const list = document.querySelector('.people-list');
+      if (list) {
+        checkPeopleListOverflow(list);
+      }
+    }, 250);
+  });
 }
 
 function setupRegistrationModal() {
