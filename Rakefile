@@ -12,12 +12,7 @@ module DatabaseTasks
   module_function
 
   def migration_versions
-    return [] unless Dir.exist?(OfficePresence::MIGRATIONS_DIR)
-
-    Dir.children(OfficePresence::MIGRATIONS_DIR)
-      .select { |file| file.match?(/^\d+/) }
-      .map { |file| file.split("_").first.to_i }
-      .sort
+    migrations.map(&:first)
   end
 
   def current_version(db)
@@ -27,6 +22,15 @@ module DatabaseTasks
   rescue Sequel::DatabaseError
     nil
   end
+
+  def migrations
+    return [] unless Dir.exist?(OfficePresence::MIGRATIONS_DIR)
+
+    Dir.children(OfficePresence::MIGRATIONS_DIR)
+      .select { |file| file.match?(/^\d+/) }
+      .map { |file| [file.split("_").first.to_i, file] }
+      .sort_by(&:first)
+  end
 end
 
 namespace :db do
@@ -35,6 +39,37 @@ namespace :db do
   task :migrate do
     target = ENV["VERSION"]&.to_i
     db = OfficePresence::Database.connection
+    migrations = DatabaseTasks.migrations
+    versions = migrations.map(&:first)
+
+    if versions.empty?
+      puts "No migrations found in #{OfficePresence::MIGRATIONS_DIR}"
+      next
+    end
+
+    current_version = DatabaseTasks.current_version(db) || 0
+    target_version = target || versions.last
+
+    if current_version == target_version
+      puts "Database already at version #{current_version}"
+    elsif target_version > current_version
+      pending = migrations.select { |version, _| version > current_version && version <= target_version }
+      if pending.empty?
+        puts "No new migrations to apply"
+      else
+        puts "Applying migrations:"
+        pending.each { |version, file| puts format("  -> %s (up to %d)", file, version) }
+      end
+    else
+      reverting = migrations.select { |version, _| version <= current_version && version > target_version }.reverse
+      if reverting.empty?
+        puts "No migrations to rollback"
+      else
+        puts "Reverting migrations:"
+        reverting.each { |version, file| puts format("  -> %s (down to %d)", file, version - 1) }
+      end
+    end
+
     OfficePresence::Database.run_migrations(db, target: target)
     puts "Database migrated to #{target || 'latest'}"
   end
