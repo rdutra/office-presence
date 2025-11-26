@@ -2,6 +2,7 @@
 
 require "bundler/setup"
 require "rake"
+require "sequel"
 require "sequel/extensions/migration"
 
 require_relative "lib/office_presence"
