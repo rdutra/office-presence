@@ -3,13 +3,70 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Look who bothered to come</title>
+    <title>Who's here today - Admin</title>
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
-    <h1>Look who bothered to come</h1>
-    <div class="ts">
-      <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span> — Present if seen in last <%= present_window_minutes %> min
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div>
+        <h1 style="margin: 0 0 0.25rem 0;">Who's here today - Admin</h1>
+        <div class="ts">
+          <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span> — Present if seen in last <%= present_window_minutes %> min
+        </div>
+      </div>
+      <button id="openSettingsBtn" class="settings-button">⚙️ Dashboard Settings</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-modal" aria-hidden="true">
+      <div class="modal-overlay-settings" data-close-modal></div>
+      <div class="modal-content-settings" role="dialog" aria-modal="true" aria-label="Dashboard Settings">
+        <button type="button" class="modal-close-settings" id="closeSettingsBtn" aria-label="Close settings">&times;</button>
+        <div class="settings-section">
+          <h2>Dashboard Settings</h2>
+          <p>Control which stat tiles are visible on the main dashboard:</p>
+          <form id="settingsForm">
+            <div class="setting-item">
+              <label>
+                <input type="checkbox" name="show_in_office_tile" id="show_in_office_tile" checked>
+                <span class="toggle-switch">
+                  <span class="toggle-slider"></span>
+                </span>
+                <span class="toggle-label-text">Show "In the Office" tile</span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <label>
+                <input type="checkbox" name="show_registered_users_tile" id="show_registered_users_tile" checked>
+                <span class="toggle-switch">
+                  <span class="toggle-slider"></span>
+                </span>
+                <span class="toggle-label-text">Show "Registered Users" tile</span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <label>
+                <input type="checkbox" name="show_today_record_tile" id="show_today_record_tile" checked>
+                <span class="toggle-switch">
+                  <span class="toggle-slider"></span>
+                </span>
+                <span class="toggle-label-text">Show "Today's Record" tile</span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <label>
+                <input type="checkbox" name="show_all_time_record_tile" id="show_all_time_record_tile" checked>
+                <span class="toggle-switch">
+                  <span class="toggle-slider"></span>
+                </span>
+                <span class="toggle-label-text">Show "All-Time Record" tile</span>
+              </label>
+            </div>
+            <button type="submit" class="save-settings-btn">Save Settings</button>
+            <span id="settingsMessage" class="settings-message"></span>
+          </form>
+        </div>
+      </div>
     </div>
 
     <%= erb :_mapped_devices, locals: { mapped_present: mapped_present, mapped_absent: mapped_absent } %>
@@ -22,7 +79,104 @@
       document.addEventListener('DOMContentLoaded', function() {
         initializeTimezone();
         initializePresence();
+        initializeSettings();
       });
+
+      async function initializeSettings() {
+        const modal = document.getElementById('settingsModal');
+        const openBtn = document.getElementById('openSettingsBtn');
+        const closeBtn = document.getElementById('closeSettingsBtn');
+        const overlay = modal?.querySelector('.modal-overlay-settings');
+        const form = document.getElementById('settingsForm');
+        const message = document.getElementById('settingsMessage');
+
+        if (!modal || !openBtn) return;
+
+        // Modal open/close functions
+        const openModal = () => {
+          modal.classList.add('is-open');
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('modal-open-settings');
+        };
+
+        const closeModal = () => {
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('modal-open-settings');
+        };
+
+        openBtn.addEventListener('click', openModal);
+        closeBtn?.addEventListener('click', closeModal);
+        overlay?.addEventListener('click', closeModal);
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+          }
+        });
+
+        // Load current settings
+        try {
+          const response = await fetch('/api/settings', {
+            headers: {
+              'Authorization': 'Basic ' + btoa('admin:admin')
+            }
+          });
+          if (response.ok) {
+            const settings = await response.json();
+            Object.keys(settings).forEach(key => {
+              const checkbox = document.getElementById(key);
+              if (checkbox) {
+                checkbox.checked = settings[key] === 'true';
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error loading settings:', error);
+        }
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(form);
+          const settings = {};
+
+          // Get all checkboxes and set their values
+          ['show_in_office_tile', 'show_registered_users_tile', 'show_today_record_tile', 'show_all_time_record_tile'].forEach(key => {
+            settings[key] = formData.get(key) ? 'true' : 'false';
+          });
+
+          try {
+            const response = await fetch('/api/settings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa('admin:admin')
+              },
+              body: JSON.stringify(settings)
+            });
+
+            if (response.ok) {
+              message.textContent = '✓ Settings saved successfully!';
+              message.style.color = '#22c55e';
+
+              // Close modal after a brief delay
+              setTimeout(() => {
+                closeModal();
+                message.textContent = '';
+              }, 1500);
+            } else {
+              message.textContent = '✗ Failed to save settings';
+              message.style.color = '#ef4444';
+            }
+          } catch (error) {
+            console.error('Error saving settings:', error);
+            message.textContent = '✗ Error saving settings';
+            message.style.color = '#ef4444';
+          }
+        });
+      }
     </script>
   </body>
 </html>

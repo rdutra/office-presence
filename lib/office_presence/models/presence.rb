@@ -3,11 +3,12 @@
 require_relative "device"
 require_relative "person"
 require_relative "attendance"
+require_relative "daily_stats"
 
 module OfficePresence
   module Models
     class Presence
-      attr_reader :device_model, :person_model, :attendance_model, :present_window_minutes
+      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :present_window_minutes
 
       # Status thresholds (in seconds)
       ACTIVE_THRESHOLD = 20      # Device responded to recent ping
@@ -16,6 +17,7 @@ module OfficePresence
         @device_model = Device.new(db)
         @person_model = Person.new(db)
         @attendance_model = Attendance.new(db)
+        @daily_stats_model = DailyStats.new(db)
         @present_window_minutes = present_window_minutes
       end
 
@@ -101,13 +103,19 @@ module OfficePresence
         mapped = mapped_devices
         mapped_present, mapped_absent = split_by_presence(mapped)
 
+        # Filter "Earlier today" to only show people who were present today
+        today_start = Time.now.utc.to_date.to_time.utc.iso8601.gsub(/\+00:00\z/, "Z")
+        earlier_today = mapped_absent.select { |d| d[:last_seen_utc] >= today_start }
+
         {
           now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
           mapped_present: mapped_present,
-          mapped_absent: mapped_absent.take(8),
+          mapped_absent: earlier_today.take(8),
           present_count: mapped_present.length,
           total_people: person_model.count,
-          top_attendees: attendance_model.top_attendees(limit: 10)
+          top_attendees: attendance_model.top_attendees(limit: 10),
+          daily_record: daily_stats_model.today_max_concurrent,
+          all_time_record: daily_stats_model.all_time_max_concurrent
         }
       end
     end

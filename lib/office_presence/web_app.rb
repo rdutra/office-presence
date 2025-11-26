@@ -10,6 +10,7 @@ require_relative "../office_presence"
 require_relative "scanner"
 require_relative "models/presence"
 require_relative "models/person"
+require_relative "models/settings"
 
 module OfficePresence
   class WebApp < Sinatra::Base
@@ -37,6 +38,10 @@ module OfficePresence
 
       def person_model
         @person_model ||= Models::Person.new(db)
+      end
+
+      def settings_model
+        @settings_model ||= Models::Settings.new(db)
       end
 
       def present_window_minutes
@@ -75,7 +80,13 @@ module OfficePresence
         mapped_absent: data[:mapped_absent],
         present_count: data[:present_count],
         total_people: data[:total_people],
-        top_attendees: data[:top_attendees]
+        top_attendees: data[:top_attendees],
+        daily_record: data[:daily_record],
+        all_time_record: data[:all_time_record],
+        show_in_office_tile: settings_model.get_boolean('show_in_office_tile', true),
+        show_registered_users_tile: settings_model.get_boolean('show_registered_users_tile', true),
+        show_today_record_tile: settings_model.get_boolean('show_today_record_tile', true),
+        show_all_time_record_tile: settings_model.get_boolean('show_all_time_record_tile', true)
       }
     end
 
@@ -193,14 +204,14 @@ module OfficePresence
     post "/api/toggle-visibility" do
       ip = client_ip
       device = db[:devices].where(ip: ip).first
-      
+
       halt 404, json(error: "No device found with your IP address") unless device
-      
+
       person = person_model.find_by_mac(device[:mac])
       halt 404, json(error: "Device is not registered") unless person
-      
+
       new_visibility = person_model.toggle_visibility(mac: device[:mac])
-      
+
       json(
         success: true,
         visible: new_visibility,
@@ -208,6 +219,24 @@ module OfficePresence
       )
     rescue StandardError => e
       halt 500, json(error: "Failed to toggle visibility: #{e.message}")
+    end
+
+    get "/api/settings" do
+      admin_protected!
+      json(settings_model.all)
+    end
+
+    post "/api/settings" do
+      admin_protected!
+      data = parse_json_body
+
+      data.each do |key, value|
+        settings_model.set(key, value)
+      end
+
+      json(success: true, message: "Settings updated successfully")
+    rescue StandardError => e
+      halt 500, json(error: "Failed to update settings: #{e.message}")
     end
 
     # Error Handlers
