@@ -7,6 +7,7 @@ async function loadDeviceInfo() {
   const submitBtn = document.getElementById('submitBtn');
   const visibilityToggle = document.getElementById('visibilityToggle');
   const visibilityInfo = document.getElementById('visibilityInfo');
+  const titleElement = document.getElementById('registrationTitle');
 
   try {
     const response = await fetch('/api/my-device');
@@ -22,19 +23,21 @@ async function loadDeviceInfo() {
     deviceInfoDiv.textContent = `Your IP: ${data.ip} | MAC: ${data.mac}`;
 
     if (data.registered) {
+      titleElement.textContent = 'Update Your Device Registration';
       infoDiv.className = 'register-info success';
-      infoDiv.textContent = `✓ You're already registered as "${data.person}"${data.device ? ' with device "' + data.device + '"' : ''}`;
+      infoDiv.textContent = `✓ You're currently registered as "${data.person}"${data.device ? ' with device "' + data.device + '"' : ''}. You can update your information below.`;
       personInput.value = data.person;
       deviceInput.value = data.device || '';
       visibleCheckbox.checked = data.visible;
       submitBtn.textContent = 'Update Registration';
-      
+
       // Show visibility toggle section
       visibilityToggle.style.display = 'block';
-      visibilityInfo.textContent = data.visible ? 
-        '✓ You are currently visible on the presence list' : 
+      visibilityInfo.textContent = data.visible ?
+        '✓ You are currently visible on the presence list' :
         '✗ You are currently hidden from the presence list';
     } else {
+      titleElement.textContent = 'Register Your Device';
       infoDiv.className = 'register-info info';
       infoDiv.textContent = 'Your device is detected! Enter your name to register.';
     }

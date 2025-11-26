@@ -161,6 +161,7 @@ function initializeDashboard() {
   setInterval(fetchDashboardData, 30000);
 
   setupRegistrationModal();
+  updateRegistrationButtonText();
 
   // Monitor window resize to re-check overflow
   let resizeTimeout;
@@ -173,6 +174,24 @@ function initializeDashboard() {
       }
     }, 250);
   });
+}
+
+async function updateRegistrationButtonText() {
+  const openBtn = document.getElementById('openRegistrationBtn');
+  if (!openBtn) return;
+
+  try {
+    const response = await fetch('/api/my-device');
+    const data = await response.json();
+
+    if (data.registered) {
+      openBtn.textContent = 'Update Your Device';
+    } else {
+      openBtn.textContent = 'Register Your Device';
+    }
+  } catch (error) {
+    console.error('Error checking registration status:', error);
+  }
 }
 
 function setupRegistrationModal() {
