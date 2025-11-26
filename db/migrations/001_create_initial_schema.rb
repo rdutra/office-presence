@@ -11,9 +11,10 @@ Sequel.migration do
         String :device_id
       end
     else
+      existing_columns = self[:devices].columns
       alter_table(:devices) do
-        add_column(:hostname, String) unless columns.include?(:hostname)
-        add_column(:device_id, String) unless columns.include?(:device_id)
+        add_column(:hostname, String) unless existing_columns.include?(:hostname)
+        add_column(:device_id, String) unless existing_columns.include?(:device_id)
       end
     end
 
@@ -24,12 +25,12 @@ Sequel.migration do
         String :device
         TrueClass :visible, default: true
         String :device_id
-        index :device_id
       end
     else
+      existing_columns = self[:people].columns
       alter_table(:people) do
-        add_column(:visible, TrueClass, default: true) unless columns.include?(:visible)
-        add_column(:device_id, String) unless columns.include?(:device_id)
+        add_column(:visible, TrueClass, default: true) unless existing_columns.include?(:visible)
+        add_column(:device_id, String) unless existing_columns.include?(:device_id)
       end
       self[:people].where(visible: nil).update(visible: true)
     end
