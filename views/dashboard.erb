@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Look who bothered to come Dashboard</title>
+    <title>Who's here today Dashboard</title>
     <link rel="stylesheet" href="/css/dashboard.css">
   </head>
   <body>
@@ -11,7 +11,7 @@
       <header>
         <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
         <div class="header-title">
-          <h1>🏢 Look who bothered to come</h1>
+          <h1>🏢 Who's here today</h1>
         </div>
         <div class="header-actions">
           <div class="date"><%= now.strftime("%A, %B %d") %></div>
@@ -20,14 +20,30 @@
       </header>
 
       <div class="stats">
-        <div class="stat-card">
-          <div class="stat-number"><%= present_count %></div>
-          <div class="stat-label">In the Office 🎉</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number"><%= total_people %></div>
-          <div class="stat-label">Team Members</div>
-        </div>
+        <% if show_in_office_tile %>
+          <div class="stat-card" data-stat="present">
+            <div class="stat-number"><%= present_count %></div>
+            <div class="stat-label">In the Office 🎉</div>
+          </div>
+        <% end %>
+        <% if show_registered_users_tile %>
+          <div class="stat-card" data-stat="total">
+            <div class="stat-number"><%= total_people %></div>
+            <div class="stat-label">Registered Users 👥</div>
+          </div>
+        <% end %>
+        <% if show_today_record_tile %>
+          <div class="stat-card" data-stat="daily-record">
+            <div class="stat-number"><%= daily_record %></div>
+            <div class="stat-label">Today's Record 🏆</div>
+          </div>
+        <% end %>
+        <% if show_all_time_record_tile %>
+          <div class="stat-card" data-stat="all-time-record">
+            <div class="stat-number"><%= all_time_record %></div>
+            <div class="stat-label">All-Time Record 🌟</div>
+          </div>
+        <% end %>
       </div>
 
       <div class="columns">

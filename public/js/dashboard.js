@@ -1,3 +1,16 @@
+function checkPeopleListOverflow(list) {
+  if (!list) return;
+
+  // Check if content height exceeds container height (i.e., would need scrolling)
+  const needsScroll = list.scrollHeight > list.clientHeight;
+
+  if (needsScroll) {
+    list.classList.add('has-overflow');
+  } else {
+    list.classList.remove('has-overflow');
+  }
+}
+
 function updateDashboard(data) {
   // Update time
   const timeElement = document.querySelector('.current-time');
@@ -7,9 +20,22 @@ function updateDashboard(data) {
     timeElement.textContent = fullTime.split(' ')[1]; // Extract just the HH:MM part
   }
 
-  // Update stats
-  document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = data.present_count;
-  document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = data.total_people;
+  // Update stats using data attributes
+  const presentStat = document.querySelector('[data-stat="present"] .stat-number');
+  if (presentStat) presentStat.textContent = data.present_count;
+
+  const totalStat = document.querySelector('[data-stat="total"] .stat-number');
+  if (totalStat) totalStat.textContent = data.total_people;
+
+  const dailyRecordStat = document.querySelector('[data-stat="daily-record"] .stat-number');
+  if (dailyRecordStat && data.daily_record !== undefined) {
+    dailyRecordStat.textContent = data.daily_record;
+  }
+
+  const allTimeRecordStat = document.querySelector('[data-stat="all-time-record"] .stat-number');
+  if (allTimeRecordStat && data.all_time_record !== undefined) {
+    allTimeRecordStat.textContent = data.all_time_record;
+  }
 
   // Update currently in office
   const peopleList = document.querySelector('.people-list');
@@ -51,6 +77,14 @@ function updateDashboard(data) {
           </div>
         </div>
       `).join('');
+
+      // Check if the list has overflow and needs two columns
+      // Use requestAnimationFrame to ensure the DOM has been updated
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          checkPeopleListOverflow(list);
+        });
+      });
     }
   }
 
@@ -122,11 +156,23 @@ async function fetchDashboardData() {
 function initializeDashboard() {
   initializeTimezone();
   fetchDashboardData();
-  
+
   // Poll every 30 seconds
   setInterval(fetchDashboardData, 30000);
 
   setupRegistrationModal();
+
+  // Monitor window resize to re-check overflow
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      const list = document.querySelector('.people-list');
+      if (list) {
+        checkPeopleListOverflow(list);
+      }
+    }, 250);
+  });
 }
 
 function setupRegistrationModal() {

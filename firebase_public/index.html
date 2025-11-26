@@ -36,13 +36,21 @@
       </header>
 
       <div class="stats">
-        <div class="stat-card">
+        <div class="stat-card" data-stat="present">
           <div class="stat-number" id="present-count">0</div>
           <div class="stat-label">In the Office 🎉</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="total">
           <div class="stat-number" id="total-people">0</div>
-          <div class="stat-label">Team Members</div>
+          <div class="stat-label">Registered Users 👥</div>
+        </div>
+        <div class="stat-card" data-stat="daily-record">
+          <div class="stat-number" id="daily-record">0</div>
+          <div class="stat-label">Today's Record 🏆</div>
+        </div>
+        <div class="stat-card" data-stat="all-time-record">
+          <div class="stat-number" id="all-time-record">0</div>
+          <div class="stat-label">All-Time Record 🌟</div>
         </div>
       </div>
 
@@ -107,6 +115,8 @@
       const earlierSection = document.getElementById('earlier-section-body');
       const presentCountEl = document.getElementById('present-count');
       const totalPeopleEl = document.getElementById('total-people');
+      const dailyRecordEl = document.getElementById('daily-record');
+      const allTimeRecordEl = document.getElementById('all-time-record');
 
       const medals = ['🥇', '🥈', '🥉'];
 
@@ -229,6 +239,8 @@
 
         presentCountEl.textContent = data.present_count ?? 0;
         totalPeopleEl.textContent = data.total_people ?? 0;
+        dailyRecordEl.textContent = data.daily_record ?? 0;
+        allTimeRecordEl.textContent = data.all_time_record ?? 0;
 
         presentSection.innerHTML = renderPresent(data.mapped_present);
         championsSection.innerHTML = renderChampions(data.top_attendees);

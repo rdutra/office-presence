@@ -19,6 +19,14 @@ module DatabaseTasks
       .map { |file| file.split("_").first.to_i }
       .sort
   end
+
+  def current_version(db)
+    return nil unless db.table_exists?(:schema_info)
+
+    db[:schema_info].get(:version) || 0
+  rescue Sequel::DatabaseError
+    nil
+  end
 end
 
 namespace :db do
@@ -37,7 +45,7 @@ namespace :db do
     raise "STEPS must be >= 1" if steps < 1
 
     db = OfficePresence::Database.connection
-    current_version = Sequel::Migrator.current(db, OfficePresence::MIGRATIONS_DIR)
+    current_version = DatabaseTasks.current_version(db)
     versions = DatabaseTasks.migration_versions
 
     if versions.empty? || current_version.nil? || current_version.zero?
@@ -56,7 +64,7 @@ namespace :db do
   desc "Show migration status"
   task :status do
     db = OfficePresence::Database.connection
-    current_version = Sequel::Migrator.current(db, OfficePresence::MIGRATIONS_DIR)
+    current_version = DatabaseTasks.current_version(db)
     versions = DatabaseTasks.migration_versions
 
     if versions.empty?
