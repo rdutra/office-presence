@@ -2,11 +2,9 @@
 
 Sequel.migration do
   up do
-    unless table_exists?(:settings)
-      create_table(:settings) do
-        String :key, primary_key: true
-        String :value
-      end
+    create_table?(:settings) do
+      String :key, primary_key: true
+      String :value
     end
   end
 
