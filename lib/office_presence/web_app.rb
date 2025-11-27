@@ -33,7 +33,11 @@ module OfficePresence
       end
 
       def presence_model
-        @presence_model ||= Models::Presence.new(db, present_window_minutes: present_window_minutes)
+        @presence_model ||= Models::Presence.new(
+          db,
+          present_window_minutes: present_window_minutes,
+          ping_interval: ping_interval
+        )
       end
 
       def person_model
@@ -46,6 +50,10 @@ module OfficePresence
 
       def present_window_minutes
         settings.scanner.present_window_minutes
+      end
+
+      def ping_interval
+        settings.scanner.ping_interval
       end
 
       def client_ip

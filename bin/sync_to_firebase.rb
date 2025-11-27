@@ -29,9 +29,14 @@ if FIREBASE_DATABASE_URL.nil? || FIREBASE_DATABASE_URL.empty?
   exit 1
 end
 
-# Initialize database connection
+# Initialize configuration and database connection
+config = OfficePresence::Config.new
 db = OfficePresence::Database.connection
-presence_model = OfficePresence::Models::Presence.new(db, present_window_minutes: 5)
+presence_model = OfficePresence::Models::Presence.new(
+  db,
+  present_window_minutes: config.present_window_minutes,
+  ping_interval: config.ping_interval
+)
 
 # Get dashboard data
 dashboard_data = presence_model.dashboard_data

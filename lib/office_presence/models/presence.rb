@@ -8,17 +8,18 @@ require_relative "daily_stats"
 module OfficePresence
   module Models
     class Presence
-      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :present_window_minutes
+      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :present_window_minutes, :ping_interval
 
       # Status thresholds (in seconds)
-      ACTIVE_THRESHOLD = 20      # Device responded to recent ping
+      ACTIVE_THRESHOLD = 20      # Fallback threshold if config missing
 
-      def initialize(db, present_window_minutes: 5)
+      def initialize(db, present_window_minutes: 5, ping_interval: 30)
         @device_model = Device.new(db)
         @person_model = Person.new(db)
         @attendance_model = Attendance.new(db)
         @daily_stats_model = DailyStats.new(db)
         @present_window_minutes = present_window_minutes
+        @ping_interval = ping_interval
       end
 
       # Calculate device status based on last_seen timestamp
@@ -32,8 +33,9 @@ module OfficePresence
         end
 
         diff_seconds = Time.now.utc - last_seen
+        threshold_seconds = active_window_seconds
 
-        if diff_seconds < ACTIVE_THRESHOLD
+        if diff_seconds < threshold_seconds
           'active'
         else
           'inactive'
@@ -117,6 +119,18 @@ module OfficePresence
           daily_record: daily_stats_model.today_max_concurrent,
           all_time_record: daily_stats_model.all_time_max_concurrent
         }
+      end
+
+      private
+
+      def active_window_seconds
+        # Keep the "active" visual state at least as long as our ping cadence,
+        # so rows don't gray out before the backend has a chance to validate.
+        candidate = ping_interval.to_i * 2
+        candidate = ACTIVE_THRESHOLD if candidate <= 0
+        [candidate, present_window_minutes * 60].min
+      rescue
+        ACTIVE_THRESHOLD
       end
     end
   end

@@ -28,7 +28,11 @@ db = Database.connection
 device = Models::Device.new(db)
 person = Models::Person.new(db)
 attendance = Models::Attendance.new(db)
-presence = Models::Presence.new(db)
+presence = Models::Presence.new(
+  db,
+  present_window_minutes: config.present_window_minutes,
+  ping_interval: config.ping_interval
+)
 
 # Make services available
 scanner = Scanner.new(config: config, db: db)
