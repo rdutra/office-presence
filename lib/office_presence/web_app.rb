@@ -33,7 +33,11 @@ module OfficePresence
       end
 
       def presence_model
-        @presence_model ||= Models::Presence.new(db, present_window_minutes: present_window_minutes)
+        @presence_model ||= Models::Presence.new(
+          db,
+          present_window_minutes: present_window_minutes,
+          ping_failure_limit: ping_failure_limit
+        )
       end
 
       def person_model
@@ -46,6 +50,10 @@ module OfficePresence
 
       def present_window_minutes
         settings.scanner.present_window_minutes
+      end
+
+      def ping_failure_limit
+        settings.scanner.ping_failure_limit
       end
 
       def client_ip
@@ -134,7 +142,8 @@ module OfficePresence
     get "/api/config" do
       json(
         present_window_minutes: present_window_minutes,
-        ping_interval: settings.scanner.ping_interval
+        ping_interval: settings.scanner.ping_interval,
+        ping_failure_limit: ping_failure_limit
       )
     end
 

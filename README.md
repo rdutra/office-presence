@@ -34,6 +34,7 @@ The application follows an MVC (Model-View-Controller) pattern:
 cd office-presence
 cp .env.example .env   # optional – adjust values as needed
 bundle install
+bundle exec rake db:migrate
 
 # Setup passwordless sudo for nmap (required for DNS-SD scanning)
 ./bin/setup_sudo_nmap.sh
@@ -47,15 +48,46 @@ The scanner uses **DNS Service Discovery** to identify devices with persistent i
 
 See [DNS_SD_DISCOVERY.md](DNS_SD_DISCOVERY.md) for details.
 
-### Migrating an existing `people.csv`
+### Database Migrations
 
-Registrations now live exclusively inside the SQLite database. If you previously managed mappings via `people.csv`, import them once and then delete the CSV:
+Migrations live in `db/migrations` and run via [Sequel](https://sequel.jeremyevans.net/). Common workflows:
 
 ```bash
-bundle exec ruby bin/migrate_people_csv.rb
+# Apply all pending migrations (or specify VERSION=001)
+bundle exec rake db:migrate
+
+# Roll back one step (override STEPS=N)
+bundle exec rake db:rollback
+
+# Inspect the applied versions
+bundle exec rake db:status
 ```
 
-The script is idempotent and will upsert rows into the `people` table.
+#### Creating a new migration
+
+1. Decide on a descriptive name and version. We use zero-padded numbers (e.g., `002_add_presets.rb`) but timestamps work just as well.
+2. Create the file inside `db/migrations`:
+   ```bash
+   VERSION=002
+   touch "db/migrations/${VERSION}_add_presets.rb"
+   ```
+3. Implement the migration using Sequel's DSL:
+   ```ruby
+   # frozen_string_literal: true
+
+   Sequel.migration do
+     up do
+       add_column :people, :timezone, String
+     end
+
+     down do
+       drop_column :people, :timezone
+     end
+   end
+   ```
+4. Run `bundle exec rake db:migrate` to apply it locally and commit the migration file with the related code changes.
+
+The application automatically runs pending migrations during boot, so manual invocations are mainly for local development or schema planning.
 
 ## Running
 
@@ -191,4 +223,3 @@ The sync scheduler pushes the following data to Firebase every 5 minutes:
 - Node.js and npm
 
 The local server does **not** need Firebase CLI or Node.js - it uses simple HTTP REST API calls to sync data.
-

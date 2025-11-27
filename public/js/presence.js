@@ -3,6 +3,7 @@
 // Config values - will be fetched from API
 let INACTIVE_THRESHOLD_MS;
 let POLL_INTERVAL_MS;
+let PING_FAILURE_LIMIT;
 
 async function initializePresence() {
   const table = document.getElementById('mapped-table');
@@ -27,6 +28,7 @@ async function loadConfig() {
     const config = await response.json();
     INACTIVE_THRESHOLD_MS = config.present_window_minutes * 60 * 1000;
     POLL_INTERVAL_MS = config.ping_interval * 1000;
+    PING_FAILURE_LIMIT = config.ping_failure_limit || 3;
   } catch (error) {
     console.error('Error fetching config:', error);
     setDefaultConfig();
@@ -37,6 +39,7 @@ function setDefaultConfig() {
   // Fallback defaults if API fails
   INACTIVE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
   POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
+  PING_FAILURE_LIMIT = 3;
 }
 
 async function startPolling() {
@@ -71,6 +74,9 @@ function updateTable(devices) {
   const now = new Date();
 
   const presentDevices = devices.filter(device => {
+    const failureCount = device.ping_failure_count || 0;
+    if (failureCount >= PING_FAILURE_LIMIT) return false;
+
     if (!device.last_seen_utc) return false;
     const lastSeen = new Date(device.last_seen_utc);
     const timeDiff = now - lastSeen;
@@ -85,7 +91,7 @@ function updateTable(devices) {
 
   // If no devices, show empty message
   if (presentDevices.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted">No mapped people seen recently.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="muted">No mapped people seen recently.</td></tr>';
     return;
   }
 
@@ -135,8 +141,11 @@ function updateRow(row, device) {
 
   // Update other fields (IP might change)
   const cells = row.querySelectorAll('td');
-  if (cells.length >= 6) {
-    cells[4].textContent = device.ip || '—'; // IP
+  if (cells.length >= 8) {
+    cells[4].textContent = device.hostname || '—';
+    cells[5].textContent = device.ip || '—';
+    cells[6].textContent = device.mac || '—';
+    cells[7].textContent = device.device_id || '—';
   }
 }
 
@@ -153,8 +162,10 @@ function createRow(device) {
     <td><strong>${device.person || '—'}</strong></td>
     <td>${device.device || '—'}</td>
     <td><span class="timestamp" data-utc="${device.last_seen_utc || ''}">${formattedTime}</span></td>
+    <td>${device.hostname || '—'}</td>
     <td>${device.ip || '—'}</td>
     <td class="mac">${device.mac || '—'}</td>
+    <td class="mac">${device.device_id || '—'}</td>
   `;
 
   return row;
