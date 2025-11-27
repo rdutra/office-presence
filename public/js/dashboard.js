@@ -11,6 +11,50 @@ function checkPeopleListOverflow(list) {
   }
 }
 
+function getSectionElement(name) {
+  return document.querySelector(`[data-section="${name}"]`);
+}
+
+function insertAfterHeader(section, element) {
+  if (!section || !element) return;
+  const header = section.querySelector('.section-header');
+  if (header) {
+    header.insertAdjacentElement('afterend', element);
+  } else {
+    section.insertBefore(element, section.firstChild);
+  }
+}
+
+function ensureListElement(section, selector, className) {
+  if (!section) return null;
+  let list = section.querySelector(selector);
+  if (!list) {
+    list = document.createElement('div');
+    list.className = className;
+    insertAfterHeader(section, list);
+  }
+  return list;
+}
+
+function showEmptyState(section, message) {
+  if (!section) return;
+  let empty = section.querySelector('.empty-state');
+  if (!empty) {
+    empty = document.createElement('div');
+    empty.className = 'empty-state';
+    insertAfterHeader(section, empty);
+  }
+  empty.textContent = message;
+  empty.style.display = '';
+}
+
+function hideEmptyState(section) {
+  const empty = section?.querySelector('.empty-state');
+  if (empty) {
+    empty.remove();
+  }
+}
+
 function updateDashboard(data) {
   // Update time
   const timeElement = document.querySelector('.current-time');
@@ -38,35 +82,20 @@ function updateDashboard(data) {
   }
 
   // Update currently in office
-  const peopleList = document.querySelector('.people-list');
-  const currentlyInOfficeColumn = peopleList?.parentElement;
+  const presentSection = getSectionElement('present');
+  const peopleList = ensureListElement(presentSection, '.people-list', 'people-list');
   
   if (data.mapped_present.length === 0) {
-    if (currentlyInOfficeColumn) {
-      const emptyState = currentlyInOfficeColumn.querySelector('.empty-state');
-      if (!emptyState) {
-        if (peopleList) peopleList.remove();
-        const div = document.createElement('div');
-        div.className = 'empty-state';
-        div.textContent = 'No one here yet — be the first! ☕';
-        currentlyInOfficeColumn.appendChild(div);
-      }
+    if (peopleList) {
+      peopleList.innerHTML = '';
+      peopleList.style.display = 'none';
     }
+    showEmptyState(presentSection, 'No one here yet — be the first! ☕');
   } else {
-    if (currentlyInOfficeColumn) {
-      const emptyState = currentlyInOfficeColumn.querySelector('.empty-state');
-      if (emptyState) emptyState.remove();
-
-      if (!peopleList) {
-        const div = document.createElement('div');
-        div.className = 'people-list';
-        currentlyInOfficeColumn.appendChild(div);
-      }
-    }
-
-    const list = document.querySelector('.people-list');
-    if (list) {
-      list.innerHTML = data.mapped_present.map(person => `
+    hideEmptyState(presentSection);
+    if (peopleList) {
+      peopleList.style.display = '';
+      peopleList.innerHTML = data.mapped_present.map(person => `
         <div class="person-card status-${person.status || 'inactive'}">
           <div class="person-avatar">
             ${person.person && person.person.length > 0 ? person.person[0].toUpperCase() : '?'}
@@ -82,7 +111,7 @@ function updateDashboard(data) {
       // Use requestAnimationFrame to ensure the DOM has been updated
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          checkPeopleListOverflow(list);
+          checkPeopleListOverflow(peopleList);
         });
       });
     }
@@ -104,35 +133,20 @@ function updateDashboard(data) {
   }
 
   // Update earlier today
-  const recentList = document.querySelector('.recent-list');
-  const recentlyLeftColumn = recentList?.parentElement;
+  const recentSection = getSectionElement('recent');
+  const recentList = ensureListElement(recentSection, '.recent-list', 'recent-list');
 
   if (data.mapped_absent.length === 0) {
-    if (recentlyLeftColumn) {
-      const emptyState = recentlyLeftColumn.querySelector('.empty-state');
-      if (!emptyState) {
-        if (recentList) recentList.remove();
-        const div = document.createElement('div');
-        div.className = 'empty-state';
-        div.textContent = 'No one has left yet';
-        recentlyLeftColumn.appendChild(div);
-      }
+    if (recentList) {
+      recentList.innerHTML = '';
+      recentList.style.display = 'none';
     }
+    showEmptyState(recentSection, 'No one has left yet');
   } else {
-    if (recentlyLeftColumn) {
-      const emptyState = recentlyLeftColumn.querySelector('.empty-state');
-      if (emptyState) emptyState.remove();
-
-      if (!recentList) {
-        const div = document.createElement('div');
-        div.className = 'recent-list';
-        recentlyLeftColumn.appendChild(div);
-      }
-    }
-
-    const list = document.querySelector('.recent-list');
-    if (list) {
-      list.innerHTML = data.mapped_absent.slice(0, 8).map(person => `
+    hideEmptyState(recentSection);
+    if (recentList) {
+      recentList.style.display = '';
+      recentList.innerHTML = data.mapped_absent.slice(0, 8).map(person => `
         <div class="recent-item">
           <div class="recent-name">${person.person}</div>
         </div>

@@ -40,6 +40,10 @@ module OfficePresence
       @config.ping_interval
     end
 
+    def ping_failure_limit
+      @config.ping_failure_limit
+    end
+
     def debug?
       @config.debug?
     end
@@ -317,12 +321,18 @@ module OfficePresence
         
         # Create entries for responding devices
         entries = []
+        failure_limit = ping_failure_limit
+
         devices_to_check.each do |device|
           if responding_ips.include?(device[:ip])
             entries << { ip: device[:ip], mac: device[:mac], hostname: nil }
             log_debug "  ✓ #{device[:mac]} (#{device[:ip]}) is responding"
           else
-            log_debug "  ✗ #{device[:mac]} (#{device[:ip]}) not responding"
+            failure_count = @device_model.increment_ping_failure(device[:mac], limit: failure_limit)
+            log_debug "  ✗ #{device[:mac]} (#{device[:ip]}) not responding (#{failure_count}/#{failure_limit})"
+            if failure_count >= failure_limit
+              log_info "Ping validation: #{device[:mac]} marked offline after #{failure_count} failed attempts"
+            end
           end
         end
 

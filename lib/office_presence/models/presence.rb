@@ -8,18 +8,19 @@ require_relative "daily_stats"
 module OfficePresence
   module Models
     class Presence
-      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :present_window_minutes, :ping_interval
+      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :present_window_minutes, :ping_interval, :ping_failure_limit
 
       # Status thresholds (in seconds)
       ACTIVE_THRESHOLD = 20      # Fallback threshold if config missing
 
-      def initialize(db, present_window_minutes: 5, ping_interval: 30)
+      def initialize(db, present_window_minutes: 5, ping_interval: 30, ping_failure_limit: 3)
         @device_model = Device.new(db)
         @person_model = Person.new(db)
         @attendance_model = Attendance.new(db)
         @daily_stats_model = DailyStats.new(db)
         @present_window_minutes = present_window_minutes
         @ping_interval = ping_interval
+        @ping_failure_limit = ping_failure_limit
       end
 
       # Calculate device status based on last_seen timestamp
@@ -45,7 +46,14 @@ module OfficePresence
       # Enrich device records with calculated status
       def enrich_with_status(devices)
         devices.map do |device|
-          device.merge(status: calculate_status(device[:last_seen_utc]))
+          failure_count = device[:ping_failure_count].to_i
+          status = calculate_status(device[:last_seen_utc])
+          status = 'inactive' if failure_count >= ping_failure_limit
+
+          device.merge(
+            status: status,
+            ping_failure_count: failure_count
+          )
         end
       end
 
@@ -65,7 +73,8 @@ module OfficePresence
               ip: row[:ip],
               hostname: row[:hostname],
               device_id: row[:device_id],
-              last_seen_utc: row[:last_seen_utc]
+              last_seen_utc: row[:last_seen_utc],
+              ping_failure_count: row[:ping_failure_count]
             }
           end
 
@@ -85,7 +94,8 @@ module OfficePresence
               ip: row[:ip],
               hostname: row[:hostname],
               device_id: row[:device_id],
-              last_seen_utc: row[:last_seen_utc]
+              last_seen_utc: row[:last_seen_utc],
+              ping_failure_count: row[:ping_failure_count]
             }
           end
 
@@ -95,8 +105,14 @@ module OfficePresence
       def split_by_presence(devices)
         cutoff = (Time.now.utc - (present_window_minutes * 60)).iso8601.gsub(/\+00:00\z/, "Z")
 
-        present = devices.select { |d| d[:last_seen_utc] >= cutoff }
-        absent = devices.select { |d| d[:last_seen_utc] < cutoff }
+        present = devices.select do |device|
+          last_seen = device[:last_seen_utc]
+          next false unless last_seen
+
+          last_seen >= cutoff && device[:ping_failure_count].to_i < ping_failure_limit
+        end
+
+        absent = devices - present
 
         [present, absent]
       end
