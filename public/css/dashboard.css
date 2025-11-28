@@ -168,21 +168,26 @@ header h1 {
 }
 
 .people-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.5rem;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
   padding-right: 0.5rem;
-}
-
-.people-list.has-overflow {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
   align-content: start;
   grid-auto-rows: min-content;
+}
+
+.people-list.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.people-list.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.people-list.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .people-list::-webkit-scrollbar {
