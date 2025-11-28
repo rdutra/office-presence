@@ -176,7 +176,9 @@ module OfficePresence
       halt 404, json(error: "No device found with your IP address (#{ip}). Make sure you're connected to the network and have been scanned.") unless device
 
       existing = person_model.find_by_mac(device[:mac])
-      is_update = existing && existing[:person] == person_name
+      if existing && existing[:person] != person_name
+        halt 409, json(error: "This device is already registered to #{existing[:person]}")
+      end
 
       visible = data["visible"] != false
 

@@ -176,6 +176,8 @@ function initializeDashboard() {
   });
 }
 
+// Updates the registration button text based on current registration status
+// Called on page load and ensures the button text stays in sync with the backend state
 async function updateRegistrationButtonText() {
   const openBtn = document.getElementById('openRegistrationBtn');
   if (!openBtn) return;
@@ -191,6 +193,8 @@ async function updateRegistrationButtonText() {
     }
   } catch (error) {
     console.error('Error checking registration status:', error);
+    // Fallback to default text on error
+    openBtn.textContent = 'Register Your Device';
   }
 }
 
@@ -204,7 +208,7 @@ function setupRegistrationModal() {
     return;
   }
 
-  const openModal = () => {
+  const openModal = async () => {
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
