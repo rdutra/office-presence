@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
+require "date"
+
 require_relative "device"
 require_relative "person"
 require_relative "attendance"
 require_relative "daily_stats"
+require_relative "weekly_winner"
 
 module OfficePresence
   module Models
     class Presence
-      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :present_window_minutes, :ping_interval, :ping_failure_limit
+      attr_reader :device_model, :person_model, :attendance_model, :daily_stats_model, :weekly_winner_model, :present_window_minutes, :ping_interval, :ping_failure_limit
 
       # Status thresholds (in seconds)
       ACTIVE_THRESHOLD = 20      # Fallback threshold if config missing
@@ -18,6 +21,7 @@ module OfficePresence
         @person_model = Person.new(db)
         @attendance_model = Attendance.new(db)
         @daily_stats_model = DailyStats.new(db)
+        @weekly_winner_model = WeeklyWinner.new(db)
         @present_window_minutes = present_window_minutes
         @ping_interval = ping_interval
         @ping_failure_limit = ping_failure_limit
@@ -131,13 +135,55 @@ module OfficePresence
           mapped_absent: earlier_today.take(8),
           present_count: mapped_present.length,
           total_people: person_model.count,
-          top_attendees: attendance_model.top_attendees(limit: 10),
+          top_attendees: attendance_model.top_attendees_for_week(reference_time: Time.now, limit: 10),
           daily_record: daily_stats_model.today_max_concurrent,
-          all_time_record: daily_stats_model.all_time_max_concurrent
+          all_time_record: daily_stats_model.all_time_max_concurrent,
+          current_week_start: current_week_bounds.first.to_s,
+          current_week_end: current_week_bounds.last.to_s,
+          last_week_winner: last_week_winner_data
         }
       end
 
       private
+
+      def current_week_bounds
+        attendance_model.week_bounds(Date.today)
+      end
+
+      def last_week_bounds
+        start_date, _ = current_week_bounds
+        last_week_start = start_date - 7
+        [last_week_start, last_week_start + 6]
+      end
+
+      def last_week_winner_data
+        start_date, end_date = last_week_bounds
+        existing = weekly_winner_model.find_by_week_start(start_date.to_s)
+        winner = existing || store_last_week_winner(start_date, end_date)
+
+        return nil unless winner
+
+        {
+          person: winner[:person],
+          days: winner[:days],
+          week_start: winner[:week_start],
+          week_end: winner[:week_end]
+        }
+      end
+
+      def store_last_week_winner(start_date, end_date)
+        winner = attendance_model.top_attendees_in_range(start_date: start_date, end_date: end_date, limit: 1).first
+        return nil unless winner
+
+        weekly_winner_model.upsert(
+          week_start: start_date,
+          week_end: end_date,
+          person: winner[:person],
+          days: winner[:days]
+        )
+
+        weekly_winner_model.find_by_week_start(start_date.to_s)
+      end
 
       def active_window_seconds
         # Keep the "active" visual state at least as long as our ping cadence,

@@ -22,6 +22,23 @@
         margin: 0 0 1rem 0;
         text-align: center;
       }
+
+      /* Firebase embed overrides */
+      body {
+        overflow-y: auto;
+      }
+
+      .container {
+        height: auto;
+        min-height: calc(100vh - 2rem);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          min-height: auto;
+          padding-bottom: 2rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -66,13 +83,21 @@
 
         <div class="right-column-sections">
           <div class="right-section">
-            <div class="section-header">
-              <span class="icon">🏆</span> Top 3 Champions
+          <div class="section-header">
+            <div class="section-title">
+              <span class="icon">🏆</span> This Week's Champions
             </div>
-            <div id="champions-section-body">
-              <div class="empty-state">Loading...</div>
+            <div class="section-meta">
+              <span class="week-range" data-week-range>-- to --</span>
             </div>
           </div>
+          <div class="last-week-winner" data-last-week-winner>
+            <div class="badge-empty">Loading...</div>
+          </div>
+          <div id="champions-section-body">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
 
           <div class="right-section">
             <div class="section-header">
@@ -117,6 +142,8 @@
       const totalPeopleEl = document.getElementById('total-people');
       const dailyRecordEl = document.getElementById('daily-record');
       const allTimeRecordEl = document.getElementById('all-time-record');
+      const weekRangeEl = document.querySelector('[data-week-range]');
+      const lastWeekWinnerEl = document.querySelector('[data-last-week-winner]');
 
       const medals = ['🥇', '🥈', '🥉'];
 
@@ -207,6 +234,23 @@
         return `<div class="podium-container">${podium}</div>`;
       }
 
+      function renderLastWeekWinner(winner) {
+        if (!winner) {
+          return '<div class="badge-empty">No winner recorded last week</div>';
+        }
+
+        const name = winner.person || 'Unknown';
+        const days = winner.days ?? 0;
+        const start = winner.week_start || '--';
+        const end = winner.week_end || '--';
+
+        return `
+          <div class="badge-label">Last Week</div>
+          <div class="badge-name">${name}</div>
+          <div class="badge-meta">${days} days (${start} to ${end})</div>
+        `;
+      }
+
       function renderEarlierToday(absent) {
         if (!Array.isArray(absent) || absent.length === 0) {
           return '<div class="empty-state">No one has left yet</div>';
@@ -241,6 +285,14 @@
         totalPeopleEl.textContent = data.total_people ?? 0;
         dailyRecordEl.textContent = data.daily_record ?? 0;
         allTimeRecordEl.textContent = data.all_time_record ?? 0;
+
+        if (weekRangeEl && data.current_week_start && data.current_week_end) {
+          weekRangeEl.textContent = `${data.current_week_start} to ${data.current_week_end}`;
+        }
+
+        if (lastWeekWinnerEl) {
+          lastWeekWinnerEl.innerHTML = renderLastWeekWinner(data.last_week_winner);
+        }
 
         presentSection.innerHTML = renderPresent(data.mapped_present);
         championsSection.innerHTML = renderChampions(data.top_attendees);

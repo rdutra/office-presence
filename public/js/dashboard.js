@@ -93,6 +93,28 @@ function updateDashboard(data) {
     allTimeRecordStat.textContent = data.all_time_record;
   }
 
+  const weekRange = document.querySelector("[data-week-range]");
+  if (
+    weekRange &&
+    data.current_week_start &&
+    data.current_week_end
+  ) {
+    weekRange.textContent = `${data.current_week_start} to ${data.current_week_end}`;
+  }
+
+  const lastWeekBadge = document.querySelector("[data-last-week-winner]");
+  if (lastWeekBadge) {
+    if (data.last_week_winner) {
+      lastWeekBadge.innerHTML = `
+        <div class="badge-label">Last Week</div>
+        <div class="badge-name">${data.last_week_winner.person}</div>
+        <div class="badge-meta">${data.last_week_winner.days} days (${data.last_week_winner.week_start} to ${data.last_week_winner.week_end})</div>
+      `;
+    } else {
+      lastWeekBadge.innerHTML = `<div class="badge-empty">No winner recorded last week</div>`;
+    }
+  }
+
   // Update currently in office
   const presentSection = getSectionElement("present");
   const peopleList = ensureListElement(
