@@ -211,8 +211,58 @@ function updateDashboard(data) {
       `
         )
         .join("");
+      
+      // Initialize auto-scroll for the recent list
+      initializeAutoScroll(recentList);
     }
   }
+}
+
+// Auto-scroll functionality for "Earlier Today" section
+let autoScrollInterval = null;
+
+function initializeAutoScroll(element) {
+  if (!element) return;
+  
+  // Clear any existing interval
+  if (autoScrollInterval) {
+    clearInterval(autoScrollInterval);
+    autoScrollInterval = null;
+  }
+  
+  // Only auto-scroll if content overflows
+  const hasOverflow = element.scrollHeight > element.clientHeight;
+  if (!hasOverflow) return;
+  
+  let scrollingDown = true;
+  const scrollStep = 1; // pixels per step
+  const scrollDelay = 50; // milliseconds between steps
+  const pauseAtEnd = 2000; // pause at top/bottom in milliseconds
+  
+  autoScrollInterval = setInterval(() => {
+    const atBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 1;
+    const atTop = element.scrollTop <= 1;
+    
+    if (scrollingDown) {
+      if (atBottom) {
+        // Pause at bottom, then reverse direction
+        setTimeout(() => {
+          scrollingDown = false;
+        }, pauseAtEnd);
+      } else {
+        element.scrollTop += scrollStep;
+      }
+    } else {
+      if (atTop) {
+        // Pause at top, then reverse direction
+        setTimeout(() => {
+          scrollingDown = true;
+        }, pauseAtEnd);
+      } else {
+        element.scrollTop -= scrollStep;
+      }
+    }
+  }, scrollDelay);
 }
 
 async function fetchDashboardData() {
