@@ -34,6 +34,10 @@ module OfficePresence
       integer_env("PING_INTERVAL", 30, 1..300)
     end
 
+    def ping_failure_limit
+      integer_env("PING_FAILURE_LIMIT", 3, 1..20)
+    end
+
     def subnets
       list = Utils.split_env_list(@env["SUBNETS"] || @env["SUBNET"])
       list.empty? ? [DEFAULT_SUBNET] : list

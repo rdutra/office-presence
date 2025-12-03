@@ -73,7 +73,7 @@ module OfficePresence
         # Normal path: find by MAC
         existing = find_by_mac(mac)
         if existing
-          updates = { last_seen_utc: last_seen_utc }
+          updates = { last_seen_utc: last_seen_utc, ping_failure_count: 0 }
           updates[:ip] = ip if ip && !ip.empty?
           updates[:hostname] = hostname if hostname && !hostname.empty?
           updates[:device_id] = device_id if device_id && !device_id.empty?
@@ -84,7 +84,8 @@ module OfficePresence
             ip: ip,
             last_seen_utc: last_seen_utc,
             hostname: hostname,
-            device_id: device_id
+            device_id: device_id,
+            ping_failure_count: 0
           )
         end
       end
@@ -97,6 +98,22 @@ module OfficePresence
       def absent(window_minutes)
         cutoff = (Time.now.utc - (window_minutes * 60)).iso8601.gsub(/\+00:00\z/, "Z")
         db[:devices].where(Sequel.lit("last_seen_utc < ?", cutoff)).all
+      end
+
+      def increment_ping_failure(mac, limit: nil)
+        device = find_by_mac(mac)
+        return 0 unless device
+
+        current = device[:ping_failure_count] || 0
+        new_count = current + 1
+        new_count = limit if limit && new_count > limit
+
+        db[:devices].where(mac: mac).update(ping_failure_count: new_count)
+        new_count
+      end
+
+      def reset_ping_failures(mac)
+        db[:devices].where(mac: mac).update(ping_failure_count: 0)
       end
 
       private

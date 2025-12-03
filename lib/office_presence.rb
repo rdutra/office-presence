@@ -6,6 +6,7 @@ module OfficePresence
   ROOT = File.expand_path("..", __dir__)
   DATA_DIR = File.join(ROOT, "data")
   DB_PATH = File.join(DATA_DIR, "presence.sqlite")
+  MIGRATIONS_DIR = File.join(ROOT, "db/migrations")
 
   Dotenv.load(File.join(ROOT, ".env")) if File.exist?(File.join(ROOT, ".env"))
 end
