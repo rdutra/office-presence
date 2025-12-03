@@ -44,6 +44,13 @@
             <div class="stat-label">All-Time Record 🌟</div>
           </div>
         <% end %>
+        <% if last_week_winner %>
+          <div class="stat-card" data-stat="all-time-record">
+            <div class="badge-label">🏆 Last Week Winner 🏆</div>
+            <div class="badge-name"><%= last_week_winner[:person] %></div>
+            <div class="badge-meta"><%= last_week_winner[:days] %> days (<%= last_week_winner[:week_start] %> to <%= last_week_winner[:week_end] %>)</div>
+            </div>
+        <% end %>
       </div>
 
       <div class="columns">
@@ -73,7 +80,12 @@
         <div class="right-column-sections">
           <div class="right-section" data-section="top-attendees">
             <div class="section-header">
-              <span class="icon">🏆</span> Top 3 Champions
+              <div class="section-title">
+                <span class="icon">🏆</span> This Week's Champions
+              </div>
+              <div class="section-meta">
+                <span class="week-range" data-week-range><%= "#{current_week_start} to #{current_week_end}" %></span>
+              </div>
             </div>
             <% if top_attendees.empty? %>
               <div class="empty-state">No data yet</div>

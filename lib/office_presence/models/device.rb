@@ -37,9 +37,9 @@ module OfficePresence
         db[:devices].where(ip: ip).first
       end
 
-      def create_or_update(mac:, ip: nil, last_seen_utc: nil, hostname: nil, device_id: nil)
+      def create_or_update(mac:, ip: nil, last_seen_utc: nil, hostname: nil, device_id: nil, reset_ping_failures: false)
         last_seen_utc ||= Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
-        
+
         # First check if this device_id exists with a different MAC
         if device_id && !device_id.empty?
           existing_by_device_id = find_by_device_id(device_id)
@@ -54,7 +54,7 @@ module OfficePresence
             return
           end
         end
-        
+
         # Handle devices that lost their device_id but still report the same hostname.
         if (device_id.nil? || device_id.empty?) && hostname && !hostname.empty?
           existing_by_hostname = unique_hostname_match(hostname, exclude_mac: mac)
@@ -69,11 +69,12 @@ module OfficePresence
             return
           end
         end
-        
+
         # Normal path: find by MAC
         existing = find_by_mac(mac)
         if existing
-          updates = { last_seen_utc: last_seen_utc, ping_failure_count: 0 }
+          updates = { last_seen_utc: last_seen_utc }
+          updates[:ping_failure_count] = 0 if reset_ping_failures
           updates[:ip] = ip if ip && !ip.empty?
           updates[:hostname] = hostname if hostname && !hostname.empty?
           updates[:device_id] = device_id if device_id && !device_id.empty?

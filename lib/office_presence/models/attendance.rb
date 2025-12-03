@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "time"
+require "date"
 
 module OfficePresence
   module Models
@@ -35,12 +36,29 @@ module OfficePresence
       end
 
       def top_attendees(limit: 10)
+        top_attendees_in_range(limit: limit)
+      end
+
+      def days_for_mac(mac)
+        db[:attendance]
+          .where(mac: mac)
+          .select { count(distinct(:date)).as(:days) }
+          .first[:days]
+      end
+
+      def week_bounds(reference_date = Date.today)
+        date = to_date(reference_date)
+        start_of_week = date - (date.cwday - 1)
+        [start_of_week, start_of_week + 6]
+      end
+
+      def top_attendees_in_range(start_date: nil, end_date: nil, limit: 10)
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
         visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
 
-        db[:attendance]
+        dataset = db[:attendance]
           .left_join(:people, mac: :mac)
           .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
           .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
@@ -51,6 +69,15 @@ module OfficePresence
             )
           )
           .where(visible_expr => true)
+
+        if start_date
+          dataset = dataset.where { Sequel[:attendance][:date] >= start_date.to_s }
+        end
+        if end_date
+          dataset = dataset.where { Sequel[:attendance][:date] <= end_date.to_s }
+        end
+
+        dataset
           .select(
             person_expr.as(:person),
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
@@ -62,11 +89,21 @@ module OfficePresence
           .map { |row| { person: row[:person], days: row[:days] } }
       end
 
-      def days_for_mac(mac)
-        db[:attendance]
-          .where(mac: mac)
-          .select { count(distinct(:date)).as(:days) }
-          .first[:days]
+      def top_attendees_for_week(reference_time: Time.now, limit: 10)
+        start_date, end_date = week_bounds(to_date(reference_time))
+        top_attendees_in_range(start_date: start_date, end_date: end_date, limit: limit)
+      end
+
+      def winner_for_week(reference_time: Time.now)
+        top_attendees_for_week(reference_time: reference_time, limit: 1).first
+      end
+
+      private
+
+      def to_date(value)
+        return value if value.is_a?(Date)
+        return value.to_date if value.respond_to?(:to_date)
+        Date.parse(value.to_s)
       end
     end
   end
