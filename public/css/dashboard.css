@@ -584,7 +584,7 @@ header h1 {
   margin-bottom: 0.25rem;
   display: block;
   font-weight: 700;
-  color: rgba(168, 85, 247, 1);
+  color: rgb(196, 247, 85);
 }
 
 .badge-name {

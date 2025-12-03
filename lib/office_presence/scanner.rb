@@ -172,7 +172,7 @@ module OfficePresence
       by_key.values
     end
 
-    def store_entries(entries)
+    def store_entries(entries, reset_ping_failures: false)
       timestamp = Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
       date = Time.now.utc.strftime("%Y-%m-%d")
 
@@ -201,7 +201,8 @@ module OfficePresence
               ip: entry[:ip],
               last_seen_utc: timestamp,
               hostname: entry[:hostname],
-              device_id: device_id
+              device_id: device_id,
+              reset_ping_failures: reset_ping_failures
             )
 
             # Record daily attendance
@@ -216,11 +217,11 @@ module OfficePresence
     end
 
     # Helper to safely store entries with mutex protection
-    def store_entries_safely(entries)
+    def store_entries_safely(entries, reset_ping_failures: false)
       return if entries.empty?
 
       @mutex.synchronize do
-        store_entries(entries)
+        store_entries(entries, reset_ping_failures: reset_ping_failures)
       end
     end
 
@@ -336,7 +337,7 @@ module OfficePresence
           end
         end
 
-        store_entries_safely(entries)
+        store_entries_safely(entries, reset_ping_failures: true)
         log_debug "Ping validation complete: #{entries.size}/#{devices_to_check.size} devices responded"
       end
     end
