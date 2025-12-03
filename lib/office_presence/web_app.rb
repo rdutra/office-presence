@@ -204,9 +204,11 @@ module OfficePresence
         device_id: device[:device_id]
       )
 
+      message = is_update ? "Successfully updated!" : "Successfully registered!"
+
       json(
         success: true,
-        message: "Successfully registered!",
+        message: message,
         mac: device[:mac],
         person: person_name,
         device: device_name
