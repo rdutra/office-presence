@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Who's Here Today - Retro Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/geocities.css">
+  </head>
+  <body class="theme-geocities">
+    <div id="dashboard-geocities" class="geo-page">
+      <div class="geo-wrapper">
+        <div class="geo-header">
+          <marquee behavior="alternate" scrollamount="6">
+            <div class="geo-banner">
+              <img src="/img/geocities/animated-swirl-image-0002.gif" alt="spin" class="geo-banner-gif">
+              <span class="geo-banner-text">Who's Here Today at the Office!</span>
+              <img src="/img/geocities/animated-swirl-image-0002.gif" alt="spin" class="geo-banner-gif">
+            </div>
+          </marquee>
+          <div class="geo-subhead">
+            <span class="geo-clock-label">Server Time:</span>
+            <span id="geo-current-time"><%= now.strftime("%H:%M") %></span>
+            <span class="geo-divider">✦</span>
+            <span id="geo-current-date"><%= now.strftime("%A, %B %d") %></span>
+            <span class="geo-divider">✦</span>
+            <a href="#guestbook" class="geo-guestbook" data-guestbook-link>Sign my guestbook!</a>
+          </div>
+        </div>
+
+        <div class="geo-grid">
+          <div class="geo-box geo-box-wide" data-geo-section="stats">
+            <div class="geo-box-title">
+              <img src="/img/geocities/animated-bullet-0134.gif" alt="" class="geo-icon">
+              System Stats
+            </div>
+            <ul class="geo-stats-list">
+              <li><img src="/img/geocities/animated-arrow-image-0073.gif" alt="" class="geo-bullet"> People in the Office: <span id="geo-present-count"><%= present_count %></span></li>
+              <li><img src="/img/geocities/animated-arrow-image-0073.gif" alt="" class="geo-bullet"> Registered Users: <span id="geo-total-people"><%= total_people %></span></li>
+              <li><img src="/img/geocities/animated-arrow-image-0073.gif" alt="" class="geo-bullet"> Today's Record: <span id="geo-daily-record"><%= daily_record %></span></li>
+              <li><img src="/img/geocities/animated-arrow-image-0073.gif" alt="" class="geo-bullet"> All-Time Record: <span id="geo-all-time-record"><%= all_time_record %></span></li>
+            </ul>
+          </div>
+
+          <div class="geo-box" data-geo-section="present">
+            <div class="geo-box-title">
+              <img src="/img/geocities/animated-computer-image-0120.gif" alt="computer" class="geo-icon">
+              In the Office Now
+            </div>
+            <div id="geo-present-section-body" class="geo-section-body">
+              <% if mapped_present.empty? %>
+                <div class="geo-empty">No one has plugged in yet. Tell your friends!</div>
+              <% else %>
+                <% icons = [
+                  '/img/geocities/animated-computer-image-0120.gif',
+                  '/img/geocities/animated-sun-image-0251.gif',
+                  '/img/geocities/animated-smiley-image-0228.gif',
+                  '/img/geocities/animated-coffee-image-0007.gif',
+                  '/img/geocities/animated-star-image-0095.gif',
+                  '/img/geocities/animated-light-bulb-image-0001.gif'
+                ] %>
+                <% mapped_present.each_with_index do |person, index| %>
+                  <div class="geo-person">
+                    <img src="<%= icons[index % icons.length] %>" alt="" class="geo-person-icon">
+                    <div class="geo-person-info">
+                      <div class="geo-person-name"><%= person[:person] %></div>
+                      <div class="geo-person-device"><%= person[:device] || 'Device' %></div>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="geo-box" data-geo-section="champions">
+            <div class="geo-box-title">
+              <img src="/img/geocities/animated-trophy-image-0008.gif" alt="trophy" class="geo-icon">
+              This Week's Champions
+            </div>
+            <div id="geo-champions-section-body" class="geo-section-body">
+              <% if top_attendees.empty? %>
+                <div class="geo-empty">Glory awaits brave visitors!</div>
+              <% else %>
+                <% medals = ['🥇', '🥈', '🥉'] %>
+                <% top_attendees.take(3).each_with_index do |attendee, index| %>
+                  <div class="geo-champion">
+                    <div class="geo-champion-medal"><%= medals[index] || '⭐' %></div>
+                    <div class="geo-champion-name"><%= attendee[:person] %></div>
+                    <div class="geo-champion-days"><%= attendee[:days] %> days</div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="geo-box" data-geo-section="earlier">
+            <div class="geo-box-title">
+              <img src="/img/geocities/animated-clock-image-0156.gif" alt="clock" class="geo-icon">
+              Earlier Today
+            </div>
+            <div id="geo-earlier-section-body" class="geo-section-body">
+              <% if mapped_absent.empty? %>
+                <div class="geo-empty">No one has logged off yet.</div>
+              <% else %>
+                <% mapped_absent.take(8).each do |person| %>
+                  <div class="geo-earlier-item">
+                    <img src="/img/geocities/animated-clock-image-0156.gif" alt="" class="geo-person-icon">
+                    <span><%= person[:person] %></span>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div class="geo-footer">
+          <div class="geo-footer-gifs">
+            <img src="/img/geocities/animated-under-construction-image-0018.gif" alt="Under construction">
+            <img src="/img/geocities/animated-mailbox-image-0028.gif" alt="Mail me">
+            <img src="/img/geocities/animated-smiley-image-0208.gif" alt="Smiley">
+            <img src="/img/geocities/animated-star-image-0103.gif" alt="Star">
+          </div>
+          <div class="geo-hit-counter">
+            Visitors since the dawn of the intranet:
+            <span id="geo-hit-counter" data-hit-counter data-value="<%= all_time_record || total_people || 0 %>"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script>
+      (function() {
+        const modal = document.getElementById('registrationModal');
+        const openLink = document.querySelector('[data-guestbook-link]');
+        const closeBtn = document.getElementById('closeRegistrationBtn');
+        const overlay = modal?.querySelector('.modal-overlay');
+
+        const openModal = (event) => {
+          event?.preventDefault();
+          modal?.classList.add('is-open');
+          modal?.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('modal-open');
+          if (typeof initializeRegistration === 'function') {
+            initializeRegistration();
+          }
+        };
+
+        const closeModal = () => {
+          modal?.classList.remove('is-open');
+          modal?.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('modal-open');
+        };
+
+        openLink?.addEventListener('click', openModal);
+        closeBtn?.addEventListener('click', closeModal);
+        overlay?.addEventListener('click', closeModal);
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && modal?.classList.contains('is-open')) {
+            closeModal();
+          }
+        });
+
+        function buildOdometer(el, value) {
+          if (!el) return;
+          const digits = String(Math.max(0, value)).padStart(6, '0').split('');
+          el.innerHTML = digits.map((d, idx) => {
+            return `
+              <span class="geo-digit" data-digit-index="${idx}">
+                <span class="geo-digit-wheel">
+                  <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+                </span>
+              </span>
+            `;
+          }).join('');
+
+          requestAnimationFrame(() => {
+            el.querySelectorAll('.geo-digit-wheel').forEach((wheel, i) => {
+              const target = parseInt(digits[i], 10);
+              const delay = i * 80;
+              setTimeout(() => {
+                wheel.style.transform = `translateY(-${target * 10}%)`;
+              }, delay);
+            });
+          });
+        }
+
+        const counterEl = document.querySelector('[data-hit-counter]');
+        const counterValue = parseInt(counterEl?.dataset.value || '0', 10);
+        buildOdometer(counterEl, counterValue);
+      })();
+    </script>
+  </body>
+</html>
