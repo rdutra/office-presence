@@ -138,66 +138,6 @@
 
     <script src="/js/timezone.js"></script>
     <script src="/js/registration.js"></script>
-    <script>
-      (function() {
-        const modal = document.getElementById('registrationModal');
-        const openLink = document.querySelector('[data-guestbook-link]');
-        const closeBtn = document.getElementById('closeRegistrationBtn');
-        const overlay = modal?.querySelector('.modal-overlay');
-
-        const openModal = (event) => {
-          event?.preventDefault();
-          modal?.classList.add('is-open');
-          modal?.setAttribute('aria-hidden', 'false');
-          document.body.classList.add('modal-open');
-          if (typeof initializeRegistration === 'function') {
-            initializeRegistration();
-          }
-        };
-
-        const closeModal = () => {
-          modal?.classList.remove('is-open');
-          modal?.setAttribute('aria-hidden', 'true');
-          document.body.classList.remove('modal-open');
-        };
-
-        openLink?.addEventListener('click', openModal);
-        closeBtn?.addEventListener('click', closeModal);
-        overlay?.addEventListener('click', closeModal);
-        document.addEventListener('keydown', (event) => {
-          if (event.key === 'Escape' && modal?.classList.contains('is-open')) {
-            closeModal();
-          }
-        });
-
-        function buildOdometer(el, value) {
-          if (!el) return;
-          const digits = String(Math.max(0, value)).padStart(6, '0').split('');
-          el.innerHTML = digits.map((d, idx) => {
-            return `
-              <span class="geo-digit" data-digit-index="${idx}">
-                <span class="geo-digit-wheel">
-                  <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
-                </span>
-              </span>
-            `;
-          }).join('');
-
-          requestAnimationFrame(() => {
-            el.querySelectorAll('.geo-digit-wheel').forEach((wheel, i) => {
-              const target = parseInt(digits[i], 10);
-              const delay = i * 80;
-              setTimeout(() => {
-                wheel.style.transform = `translateY(-${target * 10}%)`;
-              }, delay);
-            });
-          });
-        }
-
-        const counterEl = document.querySelector('[data-hit-counter]');
-        const counterValue = parseInt(counterEl?.dataset.value || '0', 10);
-        buildOdometer(counterEl, counterValue);
-      })();
-    </script>
+    <script src="/js/geocities.js"></script>
   </body>
 </html>
