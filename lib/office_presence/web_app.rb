@@ -14,6 +14,11 @@ require_relative "models/settings"
 
 module OfficePresence
   class WebApp < Sinatra::Base
+    DASHBOARD_TEMPLATES = {
+      modern: :dashboard_modern,
+      geocities: :dashboard_geocities
+    }.freeze
+
     # Configuration
     set :root, File.expand_path("../..", __dir__)
     set :views, proc { File.join(root, "views") }
@@ -81,13 +86,22 @@ module OfficePresence
         @auth ||= Rack::Auth::Basic::Request.new(request.env)
         @auth.provided? && @auth.basic? && @auth.credentials == ["admin", "admin"]
       end
+
+      def selected_dashboard_template
+        requested = params["template"]&.strip&.downcase&.to_sym
+        return requested if requested && DASHBOARD_TEMPLATES.key?(requested)
+
+        DASHBOARD_TEMPLATES.keys.sample
+      end
     end
 
     # Routes - Web Pages
     get "/" do
       data = presence_model.dashboard_data
+      template_key = selected_dashboard_template
+      view = DASHBOARD_TEMPLATES[template_key] || DASHBOARD_TEMPLATES[:modern]
 
-      erb :dashboard, locals: {
+      erb view, locals: {
         now: Time.now,
         mapped_present: data[:mapped_present],
         mapped_absent: data[:mapped_absent],
@@ -102,7 +116,8 @@ module OfficePresence
         show_in_office_tile: settings_model.get_boolean('show_in_office_tile', true),
         show_registered_users_tile: settings_model.get_boolean('show_registered_users_tile', true),
         show_today_record_tile: settings_model.get_boolean('show_today_record_tile', true),
-        show_all_time_record_tile: settings_model.get_boolean('show_all_time_record_tile', true)
+        show_all_time_record_tile: settings_model.get_boolean('show_all_time_record_tile', true),
+        template_key: template_key
       }
     end
 

@@ -77,4 +77,4 @@ puma.state
 *.backup
 *.orig
 people.csv
-
+.venv/
