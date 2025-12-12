@@ -16,7 +16,8 @@ module OfficePresence
   class WebApp < Sinatra::Base
     DASHBOARD_TEMPLATES = {
       modern: :dashboard_modern,
-      geocities: :dashboard_geocities
+      geocities: :dashboard_geocities,
+      christmas: :dashboard_christmas
     }.freeze
 
     # Configuration
