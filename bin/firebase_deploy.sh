@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Firebase Deploy Script
-# This script injects credentials from .env.firebase and deploys to Firebase
+# This script generates index.html from the dashboard_modern.erb template,
+# injects credentials from .env.firebase, and deploys to Firebase
 
 set -e
 
@@ -18,10 +19,11 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "  ./bin/firebase_deploy.sh --only database    # Deploy security rules only"
     echo ""
     echo "The script will:"
-    echo "  1. Load Firebase credentials from .env.firebase"
-    echo "  2. Inject them into firebase_public/index.html"
-    echo "  3. Deploy to Firebase with your options"
-    echo "  4. Restore placeholder values in index.html"
+    echo "  1. Generate index.html from dashboard_modern.erb template"
+    echo "  2. Load Firebase credentials from .env.firebase"
+    echo "  3. Inject them into the generated HTML"
+    echo "  4. Deploy to Firebase with your options"
+    echo "  5. Restore placeholder values in index.html"
     echo ""
     exit 0
 fi
@@ -63,10 +65,19 @@ if [ -z "$FIREBASE_API_KEY" ] || [ -z "$FIREBASE_PROJECT_ID" ]; then
     exit 1
 fi
 
+# Generate HTML from ERB template
+echo "✓ Generating HTML from dashboard_modern.erb template..."
+bundle exec ruby "$SCRIPT_DIR/generate_firebase_html.rb"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Failed to generate HTML from template"
+    exit 1
+fi
+
 # Backup current index.html
 if [ -f "$PUBLIC_DIR/index.html" ]; then
     cp "$PUBLIC_DIR/index.html" "$PUBLIC_DIR/index.html.bak"
-    echo "✓ Backed up index.html"
+    echo "✓ Backed up generated index.html"
 fi
 
 # Inject environment variables into index.html

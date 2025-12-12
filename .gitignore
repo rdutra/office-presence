@@ -31,6 +31,7 @@ firebase-service-account.json
 .firebaserc
 firebase-debug.log
 logs/
+firebase_public/index.html         # Generated from dashboard_modern.erb
 firebase_public/index.html.bak
 firebase_public/index.html.tmp
 
