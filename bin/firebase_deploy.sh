@@ -6,27 +6,57 @@
 
 set -e
 
-# Show help
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-    echo "Firebase Deploy Script"
-    echo ""
-    echo "Usage:"
-    echo "  ./bin/firebase_deploy.sh [firebase-options]"
-    echo ""
-    echo "Examples:"
-    echo "  ./bin/firebase_deploy.sh                    # Deploy everything"
-    echo "  ./bin/firebase_deploy.sh --only hosting     # Deploy dashboard HTML only"
-    echo "  ./bin/firebase_deploy.sh --only database    # Deploy security rules only"
-    echo ""
-    echo "The script will:"
-    echo "  1. Generate index.html from dashboard_modern.erb template"
-    echo "  2. Load Firebase credentials from .env.firebase"
-    echo "  3. Inject them into the generated HTML"
-    echo "  4. Deploy to Firebase with your options"
-    echo "  5. Restore placeholder values in index.html"
-    echo ""
-    exit 0
-fi
+# Parse template parameter
+TEMPLATE="modern"
+FIREBASE_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --template)
+            TEMPLATE="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Firebase Deploy Script"
+            echo ""
+            echo "Usage:"
+            echo "  ./bin/firebase_deploy.sh [--template TEMPLATE] [firebase-options]"
+            echo ""
+            echo "Options:"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas)"
+            echo "                         Default: modern"
+            echo ""
+            echo "Examples:"
+            echo "  ./bin/firebase_deploy.sh                          # Deploy modern template"
+            echo "  ./bin/firebase_deploy.sh --template christmas     # Deploy christmas template"
+            echo "  ./bin/firebase_deploy.sh --template geocities --only hosting"
+            echo ""
+            echo "The script will:"
+            echo "  1. Generate index.html from the selected template"
+            echo "  2. Load Firebase credentials from .env.firebase"
+            echo "  3. Inject them into the generated HTML"
+            echo "  4. Deploy to Firebase with your options"
+            echo "  5. Restore placeholder values in index.html"
+            echo ""
+            exit 0
+            ;;
+        *)
+            FIREBASE_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Validate template
+case $TEMPLATE in
+    modern|geocities|christmas)
+        ;;
+    *)
+        echo "❌ Error: Invalid template '$TEMPLATE'"
+        echo "Valid templates: modern, geocities, christmas"
+        exit 1
+        ;;
+esac
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -37,6 +67,18 @@ cd "$PROJECT_DIR"
 echo "================================================"
 echo "Firebase Deploy with Config Injection"
 echo "================================================"
+echo "Template: $TEMPLATE"
+echo ""
+
+# Sync assets (CSS/JS) to firebase_public
+echo "✓ Syncing assets to firebase_public..."
+"$SCRIPT_DIR/sync_assets_to_firebase.sh"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Failed to sync assets"
+    exit 1
+fi
+
 echo ""
 
 # Check if .env.firebase exists
@@ -66,8 +108,8 @@ if [ -z "$FIREBASE_API_KEY" ] || [ -z "$FIREBASE_PROJECT_ID" ]; then
 fi
 
 # Generate HTML from ERB template
-echo "✓ Generating HTML from dashboard_modern.erb template..."
-bundle exec ruby "$SCRIPT_DIR/generate_firebase_html.rb"
+echo "✓ Generating HTML from dashboard_${TEMPLATE}.erb template..."
+bundle exec ruby "$SCRIPT_DIR/generate_firebase_html.rb" "$TEMPLATE"
 
 if [ $? -ne 0 ]; then
     echo "❌ Error: Failed to generate HTML from template"
@@ -101,7 +143,7 @@ echo ""
 #   ./firebase_deploy.sh                    # Deploy everything
 #   ./firebase_deploy.sh --only hosting     # Deploy only hosting
 #   ./firebase_deploy.sh --only database    # Deploy only database rules
-firebase deploy "$@"
+firebase deploy "${FIREBASE_ARGS[@]}"
 
 DEPLOY_STATUS=$?
 

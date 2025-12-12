@@ -81,59 +81,72 @@ function updateDashboard(data) {
     dateEl.textContent = formatDisplayDate(nowUtc);
   }
 
-  // Update stats
-  const statsContainer = document.querySelector('.stats');
-  if (statsContainer) {
-    const stats = [];
+  // Update stats - only update numbers, preserve labels from template
+  const statCards = document.querySelectorAll('.stat-card');
+  statCards.forEach(card => {
+    const stat = card.dataset.stat;
+    const numberEl = card.querySelector('.stat-number');
 
-    if (data.show_in_office_tile !== false) {
-      stats.push(`
-        <div class="stat-card" data-stat="present">
-          <div class="stat-number">${data.present_count ?? 0}</div>
-          <div class="stat-label">In the Office 🎉</div>
-        </div>
-      `);
+    if (numberEl) {
+      switch(stat) {
+        case 'present':
+          if (data.show_in_office_tile !== false) {
+            numberEl.textContent = data.present_count ?? 0;
+          } else {
+            card.style.display = 'none';
+          }
+          break;
+        case 'total':
+          if (data.show_registered_users_tile !== false) {
+            numberEl.textContent = data.total_people ?? 0;
+          } else {
+            card.style.display = 'none';
+          }
+          break;
+        case 'daily-record':
+          if (data.show_today_record_tile !== false) {
+            numberEl.textContent = data.daily_record ?? 0;
+          } else {
+            card.style.display = 'none';
+          }
+          break;
+        case 'all-time-record':
+          if (data.show_all_time_record_tile !== false) {
+            numberEl.textContent = data.all_time_record ?? 0;
+          } else {
+            card.style.display = 'none';
+          }
+          break;
+        case 'last-week-winner':
+          if (data.last_week_winner) {
+            const winner = data.last_week_winner;
+            const nameEl = card.querySelector('.badge-name');
+            const metaEl = card.querySelector('.badge-meta');
+            if (nameEl) nameEl.textContent = winner.person || 'Unknown';
+            if (metaEl) metaEl.textContent = `${winner.days ?? 0} days (${winner.week_start || '--'} to ${winner.week_end || '--'})`;
+          } else {
+            card.style.display = 'none';
+          }
+          break;
+      }
     }
+  });
 
-    if (data.show_registered_users_tile !== false) {
-      stats.push(`
-        <div class="stat-card" data-stat="total">
-          <div class="stat-number">${data.total_people ?? 0}</div>
-          <div class="stat-label">Registered Users 👥</div>
-        </div>
-      `);
-    }
-
-    if (data.show_today_record_tile !== false) {
-      stats.push(`
-        <div class="stat-card" data-stat="daily-record">
-          <div class="stat-number">${data.daily_record ?? 0}</div>
-          <div class="stat-label">Today's Record 🏆</div>
-        </div>
-      `);
-    }
-
-    if (data.show_all_time_record_tile !== false) {
-      stats.push(`
-        <div class="stat-card" data-stat="all-time-record">
-          <div class="stat-number">${data.all_time_record ?? 0}</div>
-          <div class="stat-label">All-Time Record 🌟</div>
-        </div>
-      `);
-    }
-
-    if (data.last_week_winner) {
+  // Add last week winner if it doesn't exist and data has it
+  if (data.last_week_winner && !document.querySelector('[data-stat="last-week-winner"]')) {
+    const statsContainer = document.querySelector('.stats');
+    if (statsContainer) {
       const winner = data.last_week_winner;
-      stats.push(`
-        <div class="stat-card" data-stat="last-week-winner">
-          <div class="badge-label">🏆 Last Week Winner 🏆</div>
-          <div class="badge-name">${winner.person || 'Unknown'}</div>
-          <div class="badge-meta">${winner.days ?? 0} days (${winner.week_start || '--'} to ${winner.week_end || '--'})</div>
-        </div>
-      `);
+      const winnerCard = document.createElement('div');
+      winnerCard.className = 'stat-card';
+      winnerCard.dataset.stat = 'last-week-winner';
+      winnerCard.innerHTML = `
+        <div class="badge-label">🏆 Last Week Winner 🏆</div>
+        <div class="badge-name">${winner.person || 'Unknown'}</div>
+        <div class="badge-meta">${winner.days ?? 0} days (${winner.week_start || '--'} to ${winner.week_end || '--'})</div>
+      `;
+      statsContainer.appendChild(winnerCard);
     }
-
-    statsContainer.innerHTML = stats.join('');
   }
 
   // Update week range

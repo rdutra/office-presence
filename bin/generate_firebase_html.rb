@@ -10,10 +10,21 @@ require "sinatra/base"
 require "erb"
 require "stringio"
 
+# Get template parameter (defaults to "modern")
+TEMPLATE_NAME = ARGV[0] || "modern"
+
+# Validate template name
+valid_templates = %w[modern geocities christmas]
+unless valid_templates.include?(TEMPLATE_NAME)
+  puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
+  puts "Valid templates: #{valid_templates.join(', ')}"
+  exit 1
+end
+
 # Define paths
 SCRIPT_DIR = File.expand_path(__dir__)
 PROJECT_DIR = File.expand_path("..", SCRIPT_DIR)
-TEMPLATE_PATH = File.join(PROJECT_DIR, "views", "dashboard_modern.erb")
+TEMPLATE_PATH = File.join(PROJECT_DIR, "views", "dashboard_#{TEMPLATE_NAME}.erb")
 OUTPUT_PATH = File.join(PROJECT_DIR, "firebase_public", "index.html")
 
 # Check if template exists
@@ -25,6 +36,7 @@ end
 puts "=" * 60
 puts "Generating Firebase HTML from ERB template"
 puts "=" * 60
+puts "Template: dashboard_#{TEMPLATE_NAME}.erb"
 puts ""
 
 # Create a minimal Sinatra app just for rendering
@@ -167,7 +179,8 @@ LOADING_HTML
 rendered_html = rendered_html.sub("<body>\n", loading_html)
 
 # Wrap the container div to be hidden initially
-rendered_html = rendered_html.sub('<div class="container">', '<div class="container" id="dashboard" style="display: none;">')
+# Handle both <div class="container"> and <div class="container active">
+rendered_html = rendered_html.sub(/<div class="container[^"]*">/, '<div class="container" id="dashboard" style="display: none;">')
 
 # Remove timezone.js and dashboard.js, replace with Firebase script
 rendered_html = rendered_html.gsub(%r{<script src="/js/timezone\.js"></script>\s*}, '')
