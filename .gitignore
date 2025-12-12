@@ -31,9 +31,13 @@ firebase-service-account.json
 .firebaserc
 firebase-debug.log
 logs/
-firebase_public/index.html         # Generated from dashboard_modern.erb
+
+# Firebase public directory - all generated/synced files
+firebase_public/index.html         # Generated from ERB templates
 firebase_public/index.html.bak
 firebase_public/index.html.tmp
+firebase_public/css/*              # Synced from public/css/
+firebase_public/js/*               # Synced from public/js/
 
 # Database files
 *.sqlite
