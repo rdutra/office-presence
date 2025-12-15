@@ -207,6 +207,9 @@ module OfficePresence
 
             # Record daily attendance
             @attendance_model.record(mac: mac, timestamp: timestamp, date: date)
+
+            # Auto-map devices with a persistent device_id to anonymous people
+            ensure_anonymous_person(mac: mac, device_id: device_id, hostname: entry[:hostname])
           rescue Sequel::UniqueConstraintViolation => e
             log_error "[SCANNER] Duplicate key error for entry: IP=#{entry[:ip]} MAC=#{mac} DeviceID=#{device_id} Hostname=#{entry[:hostname]}"
             raise e
@@ -344,6 +347,32 @@ module OfficePresence
 
     def ip_address?(value)
       value.to_s.match?(/\A(?:\d{1,3}\.){3}\d{1,3}\z/)
+    end
+
+    def ensure_anonymous_person(mac:, device_id:, hostname:)
+      return if device_id.nil? || device_id.empty?
+
+      # Skip if already registered (by mac or device_id)
+      return if @person_model.find_by_mac(mac)
+      return if @person_model.find_by_device_id(device_id)
+
+      @person_model.create_or_update(
+        mac: mac,
+        person: anonymous_label(device_id),
+        device: anonymous_device_name(hostname),
+        visible: true,
+        device_id: device_id
+      )
+    end
+
+    def anonymous_label(device_id)
+      suffix = device_id.gsub(/[^0-9A-Fa-f]/, "")[-4, 4]
+      suffix ? "Anonymous #{suffix.upcase}" : "Anonymous"
+    end
+
+    def anonymous_device_name(hostname)
+      return "Auto-detected device" if hostname.nil? || hostname.empty?
+      hostname
     end
 
     def log_info(message)
