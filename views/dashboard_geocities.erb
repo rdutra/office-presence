@@ -63,7 +63,7 @@
                   <div class="geo-person">
                     <img src="<%= icons[index % icons.length] %>" alt="" class="geo-person-icon">
                     <div class="geo-person-info">
-                      <div class="geo-person-name"><%= person[:person] %></div>
+                      <div class="geo-person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
                       <div class="geo-person-device"><%= person[:device] || 'Device' %></div>
                     </div>
                   </div>
@@ -85,7 +85,7 @@
                 <% top_attendees.take(3).each_with_index do |attendee, index| %>
                   <div class="geo-champion">
                     <div class="geo-champion-medal"><%= medals[index] || '⭐' %></div>
-                    <div class="geo-champion-name"><%= attendee[:person] %></div>
+                    <div class="geo-champion-name"><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></div>
                     <div class="geo-champion-days"><%= attendee[:days] %> days</div>
                   </div>
                 <% end %>
@@ -101,14 +101,14 @@
             <div id="geo-earlier-section-body" class="geo-section-body">
               <% if mapped_absent.empty? %>
                 <div class="geo-empty">No one has logged off yet.</div>
-              <% else %>
-                <% mapped_absent.take(8).each do |person| %>
-                  <div class="geo-earlier-item">
-                    <img src="/img/geocities/animated-clock-image-0156.gif" alt="" class="geo-person-icon">
-                    <span><%= person[:person] %></span>
-                  </div>
-                <% end %>
+            <% else %>
+              <% mapped_absent.take(8).each do |person| %>
+                <div class="geo-earlier-item">
+                  <img src="/img/geocities/animated-clock-image-0156.gif" alt="" class="geo-person-icon">
+                  <span><%= [person[:person], person[:medal]].compact.join(" ") %></span>
+                </div>
               <% end %>
+            <% end %>
             </div>
           </div>
         </div>

@@ -124,23 +124,32 @@ module OfficePresence
       def dashboard_data
         mapped = mapped_devices
         mapped_present, mapped_absent = split_by_presence(mapped)
+        medal_counts = weekly_winner_model.counts_by_person
 
         # Filter "Earlier today" to only show people who were present today
         today_start = Time.now.utc.to_date.to_time.utc.iso8601.gsub(/\+00:00\z/, "Z")
         earlier_today = mapped_absent.select { |d| d[:last_seen_utc] >= today_start }
 
+        decorated_present = decorate_with_medals(mapped_present, medal_counts)
+        decorated_absent = decorate_with_medals(earlier_today, medal_counts)
+        decorated_attendees = decorate_with_medals(
+          attendance_model.top_attendees_for_week(reference_time: Time.now, limit: 10),
+          medal_counts
+        )
+
         {
           now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
-          mapped_present: mapped_present,
-          mapped_absent: earlier_today.take(8),
-          present_count: mapped_present.length,
+          mapped_present: decorated_present,
+          mapped_absent: decorated_absent.take(8),
+          present_count: decorated_present.length,
           total_people: person_model.count,
-          top_attendees: attendance_model.top_attendees_for_week(reference_time: Time.now, limit: 10),
+          top_attendees: decorated_attendees,
           daily_record: daily_stats_model.today_max_concurrent,
           all_time_record: daily_stats_model.all_time_max_concurrent,
           current_week_start: current_week_bounds.first.to_s,
           current_week_end: current_week_bounds.last.to_s,
-          last_week_winner: last_week_winner_data
+          last_week_winner: last_week_winner_data,
+          weekly_winner_counts: medal_counts
         }
       end
 
@@ -183,6 +192,23 @@ module OfficePresence
         )
 
         weekly_winner_model.find_by_week_start(start_date.to_s)
+      end
+
+      def decorate_with_medals(entries, medal_counts)
+        entries.map do |entry|
+          wins = medal_counts[entry[:person]] || 0
+          entry.merge(
+            weekly_wins: wins,
+            medal: medal_string_for(wins)
+          )
+        end
+      end
+
+      def medal_string_for(wins)
+        return nil unless wins.to_i.positive?
+
+        medal_emoji = "🏅"
+        wins <= 5 ? medal_emoji * wins : "#{wins}x#{medal_emoji}"
       end
 
       def active_window_seconds

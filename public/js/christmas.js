@@ -61,6 +61,12 @@ function hideEmptyState(section) {
     }
 }
 
+function formatDisplayName(person) {
+    if (!person) return "";
+    const name = person.person || "Unknown";
+    return person.medal ? `${name} ${person.medal}` : name;
+}
+
 function updateDashboard(data) {
     // Update time
     const timeElement = document.querySelector(".current-time");
@@ -144,7 +150,7 @@ function updateDashboard(data) {
                         }
           </div>
           <div class="person-info">
-            <div class="person-name">${person.person}</div>
+            <div class="person-name">${formatDisplayName(person)}</div>
             <div class="person-device">${person.device || "Device"}</div>
           </div>
         </div>
@@ -173,7 +179,7 @@ function updateDashboard(data) {
       <div class="podium-item rank-${index + 1}">
         <div class="podium-rank">${medals[index]}</div>
         <div class="podium-info">
-          <div class="podium-name">${attendee.person}</div>
+          <div class="podium-name">${formatDisplayName(attendee)}</div>
           <div class="podium-days">${attendee.days} days</div>
         </div>
       </div>
@@ -202,10 +208,10 @@ function updateDashboard(data) {
             recentList.style.display = "";
             recentList.innerHTML = data.mapped_absent
                 .slice(0, 8)
-                .map(
+            .map(
                     (person) => `
         <div class="recent-item">
-          <div class="recent-name">${person.person}</div>
+          <div class="recent-name">${formatDisplayName(person)}</div>
         </div>
       `
                 )

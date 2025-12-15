@@ -28,6 +28,15 @@ module OfficePresence
       def last_winner
         db[:weekly_winners].order(Sequel.desc(:week_start)).first
       end
+
+      def counts_by_person
+        db[:weekly_winners]
+          .group_and_count(:person)
+          .all
+          .each_with_object({}) do |row, counts|
+            counts[row[:person]] = row[:count]
+          end
+      end
     end
   end
 end
