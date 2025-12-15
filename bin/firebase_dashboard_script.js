@@ -39,6 +39,12 @@ function normalizeUtc(value) {
   return value.includes('Z') || value.includes('+') ? value : `${value}Z`;
 }
 
+function formatDisplayName(person) {
+  if (!person) return 'Unknown';
+  const name = person.person || 'Unknown';
+  return person.medal ? `${name} ${person.medal}` : name;
+}
+
 function formatClock(utcString) {
   const normalized = normalizeUtc(utcString);
   if (!normalized) return '--:--';
@@ -122,7 +128,7 @@ function updateDashboard(data) {
             const winner = data.last_week_winner;
             const nameEl = card.querySelector('.badge-name');
             const metaEl = card.querySelector('.badge-meta');
-            if (nameEl) nameEl.textContent = winner.person || 'Unknown';
+            if (nameEl) nameEl.textContent = formatDisplayName(winner);
             if (metaEl) metaEl.textContent = `${winner.days ?? 0} days (${winner.week_start || '--'} to ${winner.week_end || '--'})`;
           } else {
             card.style.display = 'none';
@@ -142,7 +148,7 @@ function updateDashboard(data) {
       winnerCard.dataset.stat = 'last-week-winner';
       winnerCard.innerHTML = `
         <div class="badge-label">🏆 Last Week Winner 🏆</div>
-        <div class="badge-name">${winner.person || 'Unknown'}</div>
+        <div class="badge-name">${formatDisplayName(winner)}</div>
         <div class="badge-meta">${winner.days ?? 0} days (${winner.week_start || '--'} to ${winner.week_end || '--'})</div>
       `;
       statsContainer.appendChild(winnerCard);
@@ -164,10 +170,11 @@ function updateDashboard(data) {
         contentArea.innerHTML = '<div class="empty-state">No one here yet — be the first! ☕</div>';
       } else {
         const cards = data.mapped_present.map(person => {
-          const name = person?.person || 'Unknown';
+          const baseName = person?.person || 'Unknown';
+          const name = formatDisplayName(person);
           const device = person?.device || 'Device';
           const status = person?.status || 'inactive';
-          const initial = name.trim().charAt(0).toUpperCase() || '?';
+          const initial = baseName.trim().charAt(0).toUpperCase() || '?';
           return `
             <div class="person-card status-${status}">
               <div class="person-avatar">${initial}</div>
@@ -199,7 +206,7 @@ function updateDashboard(data) {
           <div class="podium-item rank-${index + 1}">
             <div class="podium-rank">${medals[index] || ''}</div>
             <div class="podium-info">
-              <div class="podium-name">${attendee?.person || 'Unknown'}</div>
+              <div class="podium-name">${formatDisplayName(attendee)}</div>
               <div class="podium-days">${attendee?.days || 0} days</div>
             </div>
           </div>
@@ -219,7 +226,7 @@ function updateDashboard(data) {
       } else {
         const recent = data.mapped_absent.slice(0, 8).map(person => `
           <div class="recent-item">
-            <div class="recent-name">${person?.person || 'Unknown'}</div>
+            <div class="recent-name">${formatDisplayName(person)}</div>
           </div>
         `).join('');
         contentArea.innerHTML = `<div class="recent-list">${recent}</div>`;
