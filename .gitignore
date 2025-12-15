@@ -31,8 +31,15 @@ firebase-service-account.json
 .firebaserc
 firebase-debug.log
 logs/
+
+# Firebase public directory - all generated/synced files
+# Generated from ERB templates:
+firebase_public/index.html
 firebase_public/index.html.bak
 firebase_public/index.html.tmp
+# Synced from public/:
+firebase_public/css/*
+firebase_public/js/*
 
 # Database files
 *.sqlite
