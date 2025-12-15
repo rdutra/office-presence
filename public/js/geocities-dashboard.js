@@ -28,6 +28,12 @@
     return value.includes('Z') || value.includes('+') ? value : `${value}Z`;
   }
 
+  function formatDisplayName(person) {
+    if (!person) return '';
+    const name = person.person || 'Unknown';
+    return person.medal ? `${name} ${person.medal}` : name;
+  }
+
   function formatClock(utcString) {
     const normalized = normalizeUtc(utcString);
     if (!normalized) return '--:--';
@@ -54,7 +60,7 @@
       return '<div class="geo-empty">No one has plugged in yet. Tell your friends!</div>';
     }
     return people.map((person, index) => {
-      const name = person?.person || 'Unknown';
+      const name = formatDisplayName(person);
       const device = person?.device || 'Device';
       const icon = icons[index % icons.length];
       return `
@@ -74,7 +80,7 @@
       return '<div class="geo-empty">Glory awaits brave visitors!</div>';
     }
     return attendees.slice(0, 3).map((attendee, index) => {
-      const name = attendee?.person || 'Unknown';
+      const name = formatDisplayName(attendee);
       const days = attendee?.days || 0;
       const icon = medals[index] || '⭐';
       return `
@@ -92,7 +98,7 @@
       return '<div class="geo-empty">No one has logged off yet.</div>';
     }
     return absent.slice(0, 8).map((person) => {
-      const name = person?.person || 'Unknown';
+      const name = formatDisplayName(person);
       return `
         <div class="geo-earlier-item">
           <img src="/img/geocities/animated-clock-image-0156.gif" alt="" class="geo-person-icon">

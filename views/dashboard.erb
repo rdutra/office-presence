@@ -68,7 +68,7 @@
                     <%= person[:person][0].upcase %>
                   </div>
                   <div class="person-info">
-                    <div class="person-name"><%= person[:person] %></div>
+                    <div class="person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
                     <div class="person-device"><%= person[:device] || 'Device' %></div>
                   </div>
                 </div>
@@ -95,7 +95,7 @@
                   <div class="podium-item rank-<%= index + 1 %>">
                     <div class="podium-rank"><%= ['🥇', '🥈', '🥉'][index] %></div>
                     <div class="podium-info">
-                      <div class="podium-name"><%= attendee[:person] %></div>
+                      <div class="podium-name"><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></div>
                       <div class="podium-days"><%= attendee[:days] %> days</div>
                     </div>
                   </div>
@@ -114,7 +114,7 @@
               <div class="recent-list">
                 <% mapped_absent.take(8).each do |person| %>
                   <div class="recent-item">
-                    <div class="recent-name"><%= person[:person] %></div>
+                    <div class="recent-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
                   </div>
                 <% end %>
               </div>
