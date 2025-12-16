@@ -98,6 +98,14 @@ module OfficePresence
         top_attendees_for_week(reference_time: reference_time, limit: 1).first
       end
 
+      def top_attendees_with_max_days(start_date: nil, end_date: nil)
+        all_attendees = top_attendees_in_range(start_date: start_date, end_date: end_date, limit: 1000)
+        return [] if all_attendees.empty?
+        
+        max_days = all_attendees.first[:days]
+        all_attendees.select { |attendee| attendee[:days] == max_days }
+      end
+
       private
 
       def to_date(value)

@@ -181,8 +181,15 @@ module OfficePresence
       end
 
       def store_last_week_winner(start_date, end_date)
-        winner = attendance_model.top_attendees_in_range(start_date: start_date, end_date: end_date, limit: 1).first
-        return nil unless winner
+        top_performers = attendance_model.top_attendees_with_max_days(start_date: start_date, end_date: end_date)
+        return nil if top_performers.empty?
+
+        # If there's a tie, pick the person with the fewest total wins
+        winner = if top_performers.length > 1
+          select_winner_with_fewest_wins(top_performers)
+        else
+          top_performers.first
+        end
 
         weekly_winner_model.upsert(
           week_start: start_date,
@@ -192,6 +199,16 @@ module OfficePresence
         )
 
         weekly_winner_model.find_by_week_start(start_date.to_s)
+      end
+
+      def select_winner_with_fewest_wins(candidates)
+        win_counts = weekly_winner_model.counts_by_person
+        
+        # Sort candidates by their total wins (ascending), then by name for stability
+        candidates.min_by do |candidate|
+          wins = win_counts[candidate[:person]] || 0
+          [wins, candidate[:person]]
+        end
       end
 
       def decorate_with_medals(entries, medal_counts)
