@@ -371,8 +371,8 @@ module OfficePresence
     end
 
     def anonymous_device_name(hostname)
-      return "Auto-detected device" if hostname.nil? || hostname.empty?
-      hostname
+      # Keep the public device label generic to preserve anonymity
+      "Auto-detected device"
     end
 
     def log_info(message)
