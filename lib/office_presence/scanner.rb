@@ -366,7 +366,8 @@ module OfficePresence
     end
 
     def anonymous_label(device_id)
-      suffix = device_id.gsub(/[^0-9A-Fa-f]/, "")[-4, 4]
+      hex = device_id.gsub(/[^0-9A-Fa-f]/, "")
+      suffix = hex[-4, 4]&.rjust(4, '0')
       suffix ? "Anonymous #{suffix.upcase}" : "Anonymous"
     end
 
