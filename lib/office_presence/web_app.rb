@@ -173,7 +173,7 @@ module OfficePresence
 
     get "/api/my-device" do
       ip = client_ip
-      device = db[:devices].where(ip: ip).first
+      device = db[:devices].where(ip: ip).order(Sequel.desc(:last_seen_utc)).first
 
       unless device
         return json(
@@ -204,7 +204,7 @@ module OfficePresence
       halt 400, json(error: "Person name is required") if person_name.nil? || person_name.empty?
 
       ip = client_ip
-      device = db[:devices].where(ip: ip).first
+      device = db[:devices].where(ip: ip).order(Sequel.desc(:last_seen_utc)).first
 
       halt 404, json(error: "No device found with your IP address (#{ip}). Make sure you're connected to the network and have been scanned.") unless device
 
@@ -241,7 +241,7 @@ module OfficePresence
     
     post "/api/toggle-visibility" do
       ip = client_ip
-      device = db[:devices].where(ip: ip).first
+      device = db[:devices].where(ip: ip).order(Sequel.desc(:last_seen_utc)).first
 
       halt 404, json(error: "No device found with your IP address") unless device
 
