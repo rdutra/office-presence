@@ -14,7 +14,7 @@ require "stringio"
 TEMPLATE_NAME = ARGV[0] || "modern"
 
 # Validate template name
-valid_templates = %w[modern geocities christmas]
+valid_templates = %w[modern geocities christmas summer]
 unless valid_templates.include?(TEMPLATE_NAME)
   puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
   puts "Valid templates: #{valid_templates.join(', ')}"
@@ -169,14 +169,13 @@ FIREBASE_CSS
 rendered_html = rendered_html.sub("</head>", firebase_styles)
 
 # Add loading and error states at the beginning of body
-loading_html = <<~LOADING_HTML
-<body>
+loading_divs = <<~LOADING_HTML
   <div id="loading" class="loading">Loading dashboard data...</div>
   <div id="error" class="error"></div>
 
 LOADING_HTML
 
-rendered_html = rendered_html.sub("<body>\n", loading_html)
+rendered_html = rendered_html.sub(/(<body[^>]*>)/, "\\1\n#{loading_divs}")
 
 # Wrap the container div to be hidden initially
 # Handle both <div class="container"> and <div class="container active">
