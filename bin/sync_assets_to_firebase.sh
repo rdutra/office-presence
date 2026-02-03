@@ -18,6 +18,7 @@ echo ""
 # Create directories if they don't exist
 mkdir -p "$DEST_DIR/css"
 mkdir -p "$DEST_DIR/js"
+mkdir -p "$DEST_DIR/img"
 
 # Copy CSS files
 echo "Copying CSS files..."
@@ -33,6 +34,11 @@ for js_file in "$SOURCE_DIR/js/"*.js; do
         cp -v "$js_file" "$DEST_DIR/js/"
     fi
 done
+
+# Copy images
+echo ""
+echo "Copying images..."
+cp -R "$SOURCE_DIR/img/"* "$DEST_DIR/img/"
 
 echo ""
 echo "================================================"

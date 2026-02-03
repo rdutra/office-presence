@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
             echo "  ./bin/firebase_deploy.sh [--template TEMPLATE] [firebase-options]"
             echo ""
             echo "Options:"
-            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas)"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer)"
             echo "                         Default: modern"
             echo ""
             echo "Examples:"
@@ -49,11 +49,11 @@ done
 
 # Validate template
 case $TEMPLATE in
-    modern|geocities|christmas)
+    modern|geocities|christmas|summer)
         ;;
     *)
         echo "❌ Error: Invalid template '$TEMPLATE'"
-        echo "Valid templates: modern, geocities, christmas"
+        echo "Valid templates: modern, geocities, christmas, summer"
         exit 1
         ;;
 esac
@@ -61,6 +61,18 @@ esac
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PUBLIC_DIR="$PROJECT_DIR/firebase_public"
+
+# Determine Firebase command
+if command -v firebase &> /dev/null; then
+    FIREBASE_CMD="firebase"
+elif command -v npx &> /dev/null; then
+    echo "⚠️ 'firebase' command not found, using 'npx firebase'..."
+    FIREBASE_CMD="npx -p firebase-tools firebase"
+else
+    echo "❌ Error: Neither 'firebase' nor 'npx' found. Please install firebase-tools."
+    exit 1
+fi
+
 
 cd "$PROJECT_DIR"
 
@@ -143,7 +155,7 @@ echo ""
 #   ./firebase_deploy.sh                    # Deploy everything
 #   ./firebase_deploy.sh --only hosting     # Deploy only hosting
 #   ./firebase_deploy.sh --only database    # Deploy only database rules
-firebase deploy "${FIREBASE_ARGS[@]}"
+$FIREBASE_CMD deploy "${FIREBASE_ARGS[@]}"
 
 DEPLOY_STATUS=$?
 

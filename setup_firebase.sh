@@ -24,8 +24,14 @@ echo "================================================"
 echo ""
 
 # Check if Firebase CLI is installed
-if ! command -v firebase &> /dev/null; then
-    echo "❌ Firebase CLI not found!"
+if command -v firebase &> /dev/null; then
+    FIREBASE_CMD="firebase"
+    echo "✓ Firebase CLI found"
+elif command -v npx &> /dev/null; then
+    FIREBASE_CMD="npx -p firebase-tools firebase"
+    echo "✓ Using 'npx firebase' as fallback"
+else
+    echo "❌ Firebase CLI not found and npx not available!"
     echo ""
     echo "Please install it first:"
     echo "  npm install -g firebase-tools"
@@ -33,15 +39,14 @@ if ! command -v firebase &> /dev/null; then
     exit 1
 fi
 
-echo "✓ Firebase CLI found"
 echo ""
 
 # Check if user is logged in
 echo "Checking Firebase login status..."
-if ! firebase projects:list &> /dev/null; then
+if ! $FIREBASE_CMD projects:list &> /dev/null; then
     echo ""
     echo "Please login to Firebase:"
-    firebase login
+    $FIREBASE_CMD login
 fi
 
 echo ""
@@ -51,7 +56,7 @@ echo ""
 # Show available projects
 echo "Your Firebase projects:"
 echo "----------------------"
-firebase projects:list
+$FIREBASE_CMD projects:list
 echo ""
 
 # Get project ID
@@ -112,11 +117,11 @@ echo ""
 
 # Deploy database rules first
 echo "Deploying database rules..."
-firebase deploy --only database
+$FIREBASE_CMD deploy --only database
 
 echo ""
 echo "Deploying hosting..."
-firebase deploy --only hosting
+$FIREBASE_CMD deploy --only hosting
 
 echo ""
 echo "================================================"
