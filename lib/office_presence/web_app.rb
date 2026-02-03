@@ -17,7 +17,8 @@ module OfficePresence
     DASHBOARD_TEMPLATES = {
       modern: :dashboard_modern,
       geocities: :dashboard_geocities,
-      christmas: :dashboard_christmas
+      christmas: :dashboard_christmas,
+      summer: :dashboard_summer
     }.freeze
 
     # Configuration
