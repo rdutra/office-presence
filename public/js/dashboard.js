@@ -144,10 +144,9 @@ function updateDashboard(data) {
           (person) => `
         <div class="person-card status-${person.status || "inactive"}">
           <div class="person-avatar">
-            ${
-              person.person && person.person.length > 0
-                ? person.person[0].toUpperCase()
-                : "?"
+            ${person.person && person.person.length > 0
+              ? person.person[0].toUpperCase()
+              : "?"
             }
           </div>
           <div class="person-info">
@@ -181,7 +180,12 @@ function updateDashboard(data) {
         <div class="podium-rank">${medals[index]}</div>
         <div class="podium-info">
           <div class="podium-name">${formatDisplayName(attendee)}</div>
-          <div class="podium-days">${attendee.days} days</div>
+          <div class="podium-days" title="${attendee.days} days">
+            ${document.body.classList.contains('easter-theme') ?
+            Array(attendee.days).fill('<span class="egg"></span>').join('') :
+            `${attendee.days} days`
+          }
+          </div>
         </div>
       </div>
     `
@@ -209,15 +213,15 @@ function updateDashboard(data) {
       recentList.style.display = "";
       recentList.innerHTML = data.mapped_absent
         .slice(0, 8)
-      .map(
-        (person) => `
+        .map(
+          (person) => `
         <div class="recent-item">
           <div class="recent-name">${formatDisplayName(person)}</div>
         </div>
       `
         )
         .join("");
-      
+
       // Initialize auto-scroll for the recent list
       initializeAutoScroll(recentList);
     }
@@ -229,26 +233,26 @@ let autoScrollInterval = null;
 
 function initializeAutoScroll(element) {
   if (!element) return;
-  
+
   // Clear any existing interval
   if (autoScrollInterval) {
     clearInterval(autoScrollInterval);
     autoScrollInterval = null;
   }
-  
+
   // Only auto-scroll if content overflows
   const hasOverflow = element.scrollHeight > element.clientHeight;
   if (!hasOverflow) return;
-  
+
   let scrollingDown = true;
   const scrollStep = 1; // pixels per step
   const scrollDelay = 50; // milliseconds between steps
   const pauseAtEnd = 2000; // pause at top/bottom in milliseconds
-  
+
   autoScrollInterval = setInterval(() => {
     const atBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 1;
     const atTop = element.scrollTop <= 1;
-    
+
     if (scrollingDown) {
       if (atBottom) {
         // Pause at bottom, then reverse direction

@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Who's here today - Easter Edition</title>
+    <link rel="stylesheet" href="/css/easter.css">
+    <!-- Preload background for faster rendering -->
+    <link rel="preload" as="image" href="/img/easter/background.png">
+  </head>
+  <body class="easter-theme">
+    <div class="container">
+      <header>
+        <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
+        <div class="header-title">
+          <h1>🐰 Who's here today</h1>
+        </div>
+        <div class="header-actions">
+          <div class="date"><%= now.strftime("%A, %B %d") %></div>
+          <button class="register-button" id="openRegistrationBtn" type="button">Register Your Device</button>
+        </div>
+      </header>
+
+      <div class="stats">
+        <% if show_in_office_tile %>
+          <div class="stat-card" data-stat="present">
+            <div class="stat-number"><%= present_count %></div>
+            <div class="stat-label">In the Office 🐰</div>
+          </div>
+        <% end %>
+        <% if show_registered_users_tile %>
+          <div class="stat-card" data-stat="total">
+            <div class="stat-number"><%= total_people %></div>
+            <div class="stat-label">Registered Users 🐣</div>
+          </div>
+        <% end %>
+        <% if show_today_record_tile %>
+          <div class="stat-card" data-stat="daily-record">
+            <div class="stat-number"><%= daily_record %></div>
+            <div class="stat-label">Today's Record 🌸</div>
+          </div>
+        <% end %>
+        <% if show_all_time_record_tile %>
+          <div class="stat-card" data-stat="all-time-record">
+            <div class="stat-number"><%= all_time_record %></div>
+            <div class="stat-label">All-Time Record 🥚</div>
+          </div>
+        <% end %>
+        <% if last_week_winner %>
+          <div class="stat-card" data-stat="all-time-record">
+            <div class="badge-label">🏆 Last Week Winner 🏆</div>
+            <div class="badge-name"><%= last_week_winner[:person] %></div>
+            <div class="badge-meta"><%= last_week_winner[:days] %> days (<%= last_week_winner[:week_start] %> to <%= last_week_winner[:week_end] %>)</div>
+            </div>
+        <% end %>
+      </div>
+
+      <div class="columns">
+        <div class="column" data-section="present">
+          <div class="section-header">
+            <span class="icon">🐾</span> Egg Hunters in the Office
+          </div>
+          <% if mapped_present.empty? %>
+            <div class="empty-state">No one here yet — start the egg hunt! 🐣</div>
+          <% else %>
+            <div class="people-list">
+              <% mapped_present.each do |person| %>
+                <div class="person-card status-<%= person[:status] %>">
+                  <div class="person-avatar">
+                   <%= person[:person][0].upcase %>
+                  </div>
+                  <div class="person-info">
+                    <div class="person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                    <div class="person-device"><%= person[:device] || 'Device' %></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="right-column-sections">
+          <div class="right-section" data-section="top-attendees">
+            <div class="section-header">
+              <div class="section-title">
+                <span class="icon">🧺</span> This Week's Top Hunters
+              </div>
+              <div class="section-meta">
+                <span class="week-range" data-week-range><%= "#{current_week_start} to #{current_week_end}" %></span>
+              </div>
+            </div>
+            <% if top_attendees.empty? %>
+              <div class="empty-state">No data yet</div>
+            <% else %>
+              <div class="podium-container">
+                <% top_attendees.take(3).each_with_index do |attendee, index| %>
+                  <div class="podium-item rank-<%= index + 1 %>">
+                    <div class="podium-rank"><%= ['🥇', '🥈', '🥉'][index] %></div>
+                    <div class="podium-info">
+                      <div class="podium-name"><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></div>
+                      <div class="podium-days" title="<%= attendee[:days] %> days">
+                        <% attendee[:days].times do %>
+                          <span class="egg"></span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="right-section" data-section="recent">
+            <div class="section-header">
+              <span class="icon">🌷</span> Earlier Today
+            </div>
+            <% if mapped_absent.empty? %>
+              <div class="empty-state">No one has found an egg yet</div>
+            <% else %>
+              <div class="recent-list">
+                <% mapped_absent.take(8).each do |person| %>
+                  <div class="recent-item">
+                    <div class="recent-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/easter.js"></script>
+  </body>
+</html>
