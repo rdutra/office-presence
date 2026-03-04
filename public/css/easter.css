@@ -1,0 +1,552 @@
+/* Base on dashboard.css but overridden for easter theme */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: url('../img/easter/background.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    padding: 1rem;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Glassmorphism overrides */
+.stat-card,
+.column,
+.right-section,
+.people-list::-webkit-scrollbar-thumb,
+.person-card,
+.podium-item,
+.recent-item {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.stat-card {
+    background: rgba(255, 235, 245, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(134, 31, 135, 0.15);
+    color: #4a044e;
+    /* Dark purple */
+}
+
+body {
+    color: #4a044e;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.column,
+.right-section {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    color: #4a044e;
+}
+
+.section-header {
+    border-bottom: 2px solid rgba(74, 4, 78, 0.2);
+    color: #4a044e;
+    text-shadow: none;
+}
+
+.person-card {
+    background: rgba(255, 255, 255, 0.65);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: #27062a;
+}
+
+.person-device {
+    opacity: 0.8;
+    color: #4a044e;
+}
+
+.section-title,
+.stat-label,
+.stat-number {
+    text-shadow: none;
+}
+
+/* Colors and details */
+.register-button {
+    background: linear-gradient(135deg, #d946ef, #a21caf);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.person-avatar {
+    background: linear-gradient(135deg, #fbcfe8 0%, #d8b4fe 100%);
+    color: #4a044e;
+    text-shadow: none;
+}
+
+/* Layout overrides from dashboard.css */
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+    padding: 0 1rem;
+    gap: 1rem;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+}
+
+.current-time {
+    font-size: 2.8rem;
+    font-weight: 700;
+    min-width: 200px;
+}
+
+.date {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    text-align: right;
+}
+
+.header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    min-width: 220px;
+}
+
+.register-button {
+    border: none;
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.stat-card {
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.column,
+.right-section {
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.section-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    padding-bottom: 0.75rem;
+    justify-content: flex-start;
+}
+
+.people-list {
+    display: grid;
+    gap: 0.5rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding-right: 0.5rem;
+    align-content: start;
+    grid-auto-rows: min-content;
+}
+
+.people-list.cols-1 {
+    grid-template-columns: 1fr;
+}
+
+.people-list.cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.people-list.cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.person-card {
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    position: relative;
+    transition: transform 0.15s ease;
+}
+
+.person-card.status-active {
+    border: 2px solid #86efac;
+    background: rgba(134, 239, 172, 0.4);
+}
+
+.person-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.person-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.person-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+}
+
+.person-device {
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+/* Right column */
+.right-column-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+}
+
+.right-section:last-child {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Podium / Leaderboard */
+.podium-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.podium-item {
+    border-radius: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: #4a044e;
+}
+
+.podium-rank {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.podium-name {
+    font-weight: 700;
+    color: #27062a;
+}
+
+.podium-days {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    color: #4a044e;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.egg {
+    display: inline-block;
+    width: 14px;
+    height: 18px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.egg:nth-child(7n+1) {
+    background-color: #ffb3ba;
+}
+
+.egg:nth-child(7n+2) {
+    background-color: #ffdfba;
+}
+
+.egg:nth-child(7n+3) {
+    background-color: #ffffba;
+}
+
+.egg:nth-child(7n+4) {
+    background-color: #baffc9;
+}
+
+.egg:nth-child(7n+5) {
+    background-color: #bae1ff;
+}
+
+.egg:nth-child(7n+6) {
+    background-color: #e8baff;
+}
+
+.egg:nth-child(7n) {
+    background-color: #ffb3e6;
+}
+
+/* Recent list */
+.recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.recent-item {
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.65rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    color: #4a044e;
+}
+
+.recent-name {
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* Modal stuff */
+.registration-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.registration-modal.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    position: relative;
+    background: #ffffff;
+    color: #0f172a;
+    border-radius: 1rem;
+    padding: 2rem;
+    width: min(640px, calc(100% - 2rem));
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.35);
+    z-index: 1;
+}
+
+.modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #0f172a;
+}
+
+.register-section {
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 0.25rem;
+}
+
+.form-group input {
+    padding: 0.65rem;
+    border: 1px solid #cbd5f5;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+
+.btn {
+    padding: 0.65rem 1.25rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #d946ef, #a21caf);
+    color: #fff;
+}
+
+/* Week range */
+.week-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    font-weight: 600;
+    text-shadow: none;
+    font-size: 0.85rem;
+    color: #4a044e;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+}
+
+@media (max-width: 1024px) {
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .current-time,
+    .header-actions {
+        align-items: center;
+        min-width: auto;
+    }
+
+    .people-list:not(.has-overflow) {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* "Toasty" Easter Egg style */
+#jesus-toasty {
+    position: fixed;
+    bottom: -400px;
+    /* Hide offscreen */
+    right: 20px;
+    width: 250px;
+    height: auto;
+    z-index: 9999;
+    transition: bottom 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    /* Ignore clicks */
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
+}
+
+#jesus-toasty.show {
+    bottom: 0;
+}
