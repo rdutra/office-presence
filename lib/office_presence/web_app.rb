@@ -213,11 +213,6 @@ module OfficePresence
       existing = person_model.find_by_mac(device[:mac])
       is_update = !existing.nil?
       
-      # Only reject if already registered to a DIFFERENT person and it's not an anonymous registration
-      if existing && existing[:person] != person_name && !existing[:person].to_s.start_with?("Anonymous")
-        halt 409, json(error: "This device is already registered to #{existing[:person]}")
-      end
-
       visible = data["visible"] != false
 
       person_model.create_or_update(

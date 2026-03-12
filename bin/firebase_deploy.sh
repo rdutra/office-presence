@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
             echo "  ./bin/firebase_deploy.sh [--template TEMPLATE] [firebase-options]"
             echo ""
             echo "Options:"
-            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer)"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter)"
             echo "                         Default: modern"
             echo ""
             echo "Examples:"
@@ -49,11 +49,11 @@ done
 
 # Validate template
 case $TEMPLATE in
-    modern|geocities|christmas|summer)
+    modern|geocities|christmas|summer|easter)
         ;;
     *)
         echo "❌ Error: Invalid template '$TEMPLATE'"
-        echo "Valid templates: modern, geocities, christmas, summer"
+        echo "Valid templates: modern, geocities, christmas, summer, easter"
         exit 1
         ;;
 esac
