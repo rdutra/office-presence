@@ -350,16 +350,15 @@ module OfficePresence
     end
 
     def ensure_anonymous_person(mac:, device_id:, hostname:)
-      # If device_id is missing, we still want to map to an anonymous user
-      # to prevent them from showing as a totally unknown/untracked device.
+      # Only auto-map when a persistent device_id is available.
+      # Otherwise, keep the device unmapped so unknown devices stay ignorable.
+      return if device_id.nil? || device_id.empty?
       
       # Try looking up by MAC first
       return if @person_model.find_by_mac(mac)
       
       # If device_id exists, see if it's already registered under another MAC
-      if device_id && !device_id.empty?
-        return if @person_model.find_by_device_id(device_id)
-      end
+      return if @person_model.find_by_device_id(device_id)
 
       @person_model.create_or_update(
         mac: mac,

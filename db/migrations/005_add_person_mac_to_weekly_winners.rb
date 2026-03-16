@@ -12,35 +12,25 @@ Sequel.migration do
         weekly_winners = self[:weekly_winners]
       end
 
-      attendance = table_exists?(:attendance) ? self[:attendance] : nil
       people = table_exists?(:people) ? self[:people] : nil
-      infer_person_mac_from_attendance = lambda do |winner|
-        next nil unless attendance
-        next nil unless winner[:week_start] && winner[:week_end] && winner[:days]
-
-        candidates = attendance
-          .where(date: winner[:week_start]..winner[:week_end])
-          .group_and_count(:mac)
-          .all
-          .select { |row| row[:count].to_i == winner[:days].to_i }
-          .map { |row| row[:mac] }
-          .uniq
-
-        candidates.one? ? candidates.first : nil
-      end
       infer_person_mac_from_people = lambda do |person_name|
         next nil unless people
         next nil if person_name.nil? || person_name.strip.empty?
 
-        matches = people.where(person: person_name).select(:mac).limit(2).all
+        matches = people
+          .where(person: person_name)
+          .exclude(device_id: nil)
+          .exclude(device_id: "")
+          .select(:mac)
+          .limit(2)
+          .all
         next nil unless matches.one?
 
         matches.first[:mac]
       end
 
       weekly_winners.where(person_mac: nil).exclude(person: nil).all.each do |winner|
-        person_mac = infer_person_mac_from_attendance.call(winner)
-        person_mac ||= infer_person_mac_from_people.call(winner[:person])
+        person_mac = infer_person_mac_from_people.call(winner[:person])
         next unless person_mac
 
         weekly_winners.where(id: winner[:id]).update(person_mac: person_mac)
