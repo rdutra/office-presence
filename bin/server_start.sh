@@ -9,6 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 PID_DIR="$PROJECT_DIR/tmp/pids"
+PUMA_BOOT_LOG="$LOG_DIR/puma_boot.log"
 
 # Create directories if they don't exist
 mkdir -p "$LOG_DIR"
@@ -27,10 +28,33 @@ echo ""
 
 cd "$PROJECT_DIR"
 
+ensure_ruby_environment() {
+    local ruby_version_file="$PROJECT_DIR/.ruby-version"
+    local ruby_version
+    local wrapper_dir
+
+    if [ -f "$ruby_version_file" ]; then
+        ruby_version="$(tr -d '[:space:]' < "$ruby_version_file")"
+        wrapper_dir="$HOME/.rvm/wrappers/ruby-$ruby_version"
+        if [ -d "$wrapper_dir" ]; then
+            export PATH="$wrapper_dir:$PATH"
+            return
+        fi
+    fi
+
+    if [ -s "$HOME/.rvm/scripts/rvm" ]; then
+        # shellcheck disable=SC1090
+        source "$HOME/.rvm/scripts/rvm"
+        rvm use . > /dev/null 2>&1 || true
+    fi
+}
+
+ensure_ruby_environment
+
 # Check if Puma is already running
 if [ -f "$PID_DIR/puma.pid" ]; then
     PID=$(cat "$PID_DIR/puma.pid")
-    if ps -p $PID > /dev/null 2>&1; then
+    if kill -0 "$PID" > /dev/null 2>&1; then
         echo -e "${YELLOW}⚠ Puma is already running (PID: $PID)${NC}"
     else
         echo "Cleaning up stale Puma PID file..."
@@ -41,7 +65,7 @@ fi
 # Check if Firebase scheduler is already running
 if [ -f "$PID_DIR/firebase_scheduler.pid" ]; then
     PID=$(cat "$PID_DIR/firebase_scheduler.pid")
-    if ps -p $PID > /dev/null 2>&1; then
+    if kill -0 "$PID" > /dev/null 2>&1; then
         echo -e "${YELLOW}⚠ Firebase scheduler is already running (PID: $PID)${NC}"
     else
         echo "Cleaning up stale Firebase scheduler PID file..."
@@ -55,20 +79,41 @@ echo ""
 
 # Start Puma server
 echo -e "${GREEN}→${NC} Starting Puma web server..."
-nohup bundle exec puma -C config/puma.rb > /dev/null 2>&1 &
-sleep 3
+nohup bundle exec puma -C config/puma.rb >> "$PUMA_BOOT_LOG" 2>&1 &
+PUMA_LAUNCH_PID=$!
+sleep 1
 
-if [ -f "$PID_DIR/puma.pid" ]; then
-    PID=$(cat "$PID_DIR/puma.pid")
-    if ps -p $PID > /dev/null 2>&1; then
-        echo -e "  ${GREEN}✓${NC} Puma started successfully (PID: $PID)"
-        echo -e "  ${GREEN}✓${NC} Server running at http://localhost:9292"
-    else
-        echo -e "  ${RED}✗${NC} Failed to start Puma"
-        exit 1
+PUMA_READY=0
+for _ in {1..20}; do
+    if [ -f "$PID_DIR/puma.pid" ]; then
+        PID=$(cat "$PID_DIR/puma.pid")
+        if kill -0 "$PID" > /dev/null 2>&1; then
+            PUMA_READY=1
+            break
+        fi
     fi
+
+    if ! kill -0 "$PUMA_LAUNCH_PID" > /dev/null 2>&1; then
+        break
+    fi
+
+    sleep 1
+done
+
+if [ "$PUMA_READY" -eq 1 ]; then
+    echo -e "  ${GREEN}✓${NC} Puma started successfully (PID: $PID)"
+    echo -e "  ${GREEN}✓${NC} Server running at http://localhost:9292"
 else
-    echo -e "  ${RED}✗${NC} Puma PID file not found"
+    echo -e "  ${RED}✗${NC} Puma failed to start (PID file not created)"
+    if [ -f "$PUMA_BOOT_LOG" ]; then
+        echo ""
+        echo "Last Puma errors:"
+        tail -n 20 "$PUMA_BOOT_LOG"
+    elif [ -f "$LOG_DIR/puma_stderr.log" ]; then
+        echo ""
+        echo "Last Puma errors:"
+        tail -n 20 "$LOG_DIR/puma_stderr.log"
+    fi
     exit 1
 fi
 
@@ -81,7 +126,7 @@ SCHEDULER_PID=$!
 echo $SCHEDULER_PID > "$PID_DIR/firebase_scheduler.pid"
 sleep 2
 
-if ps -p $SCHEDULER_PID > /dev/null 2>&1; then
+if kill -0 "$SCHEDULER_PID" > /dev/null 2>&1; then
     echo -e "  ${GREEN}✓${NC} Firebase scheduler started successfully (PID: $SCHEDULER_PID)"
     echo -e "  ${GREEN}✓${NC} Syncing every 5 minutes"
 else

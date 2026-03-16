@@ -124,7 +124,7 @@ module OfficePresence
       def dashboard_data
         mapped = mapped_devices
         mapped_present, mapped_absent = split_by_presence(mapped)
-        medal_counts = weekly_winner_model.counts_by_person
+        medal_counts = weekly_winner_model.counts_by_person_key
 
         # Filter "Earlier today" to only show people who were present today
         today_start = Time.now.utc.to_date.to_time.utc.iso8601.gsub(/\+00:00\z/, "Z")
@@ -173,7 +173,7 @@ module OfficePresence
         return nil unless winner
 
         {
-          person: winner[:person],
+          person: winner_display_name(winner),
           days: winner[:days],
           week_start: winner[:week_start],
           week_end: winner[:week_end]
@@ -195,6 +195,7 @@ module OfficePresence
           week_start: start_date,
           week_end: end_date,
           person: winner[:person],
+          person_mac: winner[:person_key],
           days: winner[:days]
         )
 
@@ -202,23 +203,35 @@ module OfficePresence
       end
 
       def select_winner_with_fewest_wins(candidates)
-        win_counts = weekly_winner_model.counts_by_person
-        
+        win_counts = weekly_winner_model.counts_by_person_key
+
         # Sort candidates by their total wins (ascending), then by name for stability
         candidates.min_by do |candidate|
-          wins = win_counts[candidate[:person]] || 0
-          [wins, candidate[:person]]
+          wins = win_counts[candidate[:person_key]] || 0
+          [wins, candidate[:person].to_s.downcase]
         end
       end
 
       def decorate_with_medals(entries, medal_counts)
         entries.map do |entry|
-          wins = medal_counts[entry[:person]] || 0
-          entry.merge(
+          wins = medal_counts[entry_person_key(entry)] || 0
+          entry.reject { |key, _| key == :person_key }.merge(
             weekly_wins: wins,
             medal: medal_string_for(wins)
           )
         end
+      end
+
+      def entry_person_key(entry)
+        entry[:person_key] || entry[:mac] || entry[:person]
+      end
+
+      def winner_display_name(winner)
+        mac = winner[:person_mac]
+        return winner[:person] unless mac
+
+        person = person_model.find_by_mac(mac)
+        person&.[](:person) || winner[:person]
       end
 
       def medal_string_for(wins)

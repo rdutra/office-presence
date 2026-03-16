@@ -350,24 +350,36 @@ module OfficePresence
     end
 
     def ensure_anonymous_person(mac:, device_id:, hostname:)
-      return if device_id.nil? || device_id.empty?
-
-      # Skip if already registered (by mac or device_id)
+      # If device_id is missing, we still want to map to an anonymous user
+      # to prevent them from showing as a totally unknown/untracked device.
+      
+      # Try looking up by MAC first
       return if @person_model.find_by_mac(mac)
-      return if @person_model.find_by_device_id(device_id)
+      
+      # If device_id exists, see if it's already registered under another MAC
+      if device_id && !device_id.empty?
+        return if @person_model.find_by_device_id(device_id)
+      end
 
       @person_model.create_or_update(
         mac: mac,
-        person: anonymous_label(device_id),
+        person: anonymous_label(device_id, mac),
         device: anonymous_device_name(hostname),
         visible: true,
         device_id: device_id
       )
     end
 
-    def anonymous_label(device_id)
-      hex = device_id.gsub(/[^0-9A-Fa-f]/, "")
-      suffix = hex[-4, 4]&.rjust(4, '0')
+    def anonymous_label(device_id, mac)
+      if device_id && !device_id.empty?
+        hex = device_id.gsub(/[^0-9A-Fa-f]/, "")
+        suffix = hex[-4, 4]&.rjust(4, '0')
+      else
+        # Fallback to the last 4 characters of the MAC address
+        hex = mac.gsub(/[^0-9A-Fa-f]/, "")
+        suffix = hex[-4, 4]&.rjust(4, '0')
+      end
+
       suffix ? "Anonymous #{suffix.upcase}" : "Anonymous"
     end
 

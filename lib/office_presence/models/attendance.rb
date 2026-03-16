@@ -56,6 +56,7 @@ module OfficePresence
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        person_key_expr = Sequel.function(:coalesce, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
         visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
 
         dataset = db[:attendance]
@@ -79,14 +80,15 @@ module OfficePresence
 
         dataset
           .select(
+            person_key_expr.as(:person_key),
             person_expr.as(:person),
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
           )
-          .group(person_expr)
-          .order(Sequel.desc(:days))
+          .group(person_key_expr, person_expr)
+          .order(Sequel.desc(:days), person_expr)
           .limit(limit)
           .all
-          .map { |row| { person: row[:person], days: row[:days] } }
+          .map { |row| { person_key: row[:person_key], person: row[:person], days: row[:days] } }
       end
 
       def top_attendees_for_week(reference_time: Time.now, limit: 10)
