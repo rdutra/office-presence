@@ -2,6 +2,7 @@
 
 require "time"
 require "date"
+require_relative "person"
 
 module OfficePresence
   module Models
@@ -70,6 +71,7 @@ module OfficePresence
             )
           )
           .where(visible_expr => true)
+          .exclude(Person.anonymous_name_condition(person_expr))
 
         if start_date
           dataset = dataset.where { Sequel[:attendance][:date] >= start_date.to_s }

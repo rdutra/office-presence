@@ -168,6 +168,7 @@ module OfficePresence
       def last_week_winner_data
         start_date, end_date = last_week_bounds
         existing = weekly_winner_model.find_by_week_start(start_date.to_s)
+        existing = nil if anonymous_winner?(existing)
         winner = existing || store_last_week_winner(start_date, end_date)
 
         return nil unless winner
@@ -232,6 +233,17 @@ module OfficePresence
 
         person = person_model.find_by_mac(mac)
         person&.[](:person) || winner[:person]
+      end
+
+      def anonymous_winner?(winner)
+        return false unless winner
+        return true if Person.anonymous_name?(winner[:person])
+
+        mac = winner[:person_mac]
+        return false unless mac
+
+        person = person_model.find_by_mac(mac)
+        Person.anonymous_name?(person&.[](:person))
       end
 
       def medal_string_for(wins)

@@ -3,10 +3,23 @@
 module OfficePresence
   module Models
     class Person
+      ANONYMOUS_NAME_PATTERN = /\AAnonymous(?:\s|$)/.freeze
+
       attr_reader :db
 
       def initialize(db)
         @db = db
+      end
+
+      def self.anonymous_name?(name)
+        name.to_s.match?(ANONYMOUS_NAME_PATTERN)
+      end
+
+      def self.anonymous_name_condition(column)
+        Sequel.|(
+          Sequel.like(column, "Anonymous"),
+          Sequel.like(column, "Anonymous %")
+        )
       end
 
       def all
