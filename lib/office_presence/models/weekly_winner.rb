@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "person"
+
 module OfficePresence
   module Models
     class WeeklyWinner
@@ -33,13 +35,23 @@ module OfficePresence
       def counts_by_person_key
         person_key_expr = Sequel.function(:coalesce, Sequel[:weekly_winners][:person_mac], Sequel[:weekly_winners][:person])
 
-        db[:weekly_winners]
+        non_anonymous_dataset
           .select(person_key_expr.as(:person_key), Sequel.function(:count, 1).as(:count))
           .group(person_key_expr)
           .all
           .each_with_object({}) do |row, counts|
             counts[row[:person_key]] = row[:count]
           end
+      end
+
+      private
+
+      def non_anonymous_dataset
+        db[:weekly_winners].exclude(anonymous_name_condition)
+      end
+
+      def anonymous_name_condition
+        Person.anonymous_name_condition(Sequel[:weekly_winners][:person])
       end
     end
   end
