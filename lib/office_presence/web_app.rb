@@ -19,7 +19,8 @@ module OfficePresence
       geocities: :dashboard_geocities,
       christmas: :dashboard_christmas,
       summer: :dashboard_summer,
-      easter: :dashboard_easter
+      easter: :dashboard_easter,
+      autumn: :dashboard_autumn
     }.freeze
 
     # Configuration
