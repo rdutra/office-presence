@@ -29,7 +29,9 @@ body {
 .leaf {
   position: absolute;
   top: -50px;
-  z-index: 0;
+  z-index: 55;
+  cursor: pointer;
+  pointer-events: auto;
   /* falling animation */
   animation-name: fall, sway;
   animation-timing-function: linear, ease-in-out;
@@ -56,6 +58,28 @@ body {
   }
   100% {
       margin-left: 0px;
+  }
+}
+
+.fallen-leaf {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 55;
+}
+
+.popping {
+  animation: leaf-pop 0.3s ease-out forwards;
+}
+
+@keyframes leaf-pop {
+  0% {
+      transform: scale(1);
+      opacity: 1;
+  }
+  100% {
+      transform: scale(2.5);
+      opacity: 0;
   }
 }
 
