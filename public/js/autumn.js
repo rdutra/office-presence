@@ -102,12 +102,41 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(treeImg);
 
     function triggerTimber() {
-        treeImg.classList.add('show');
+        // Gust blows the leaves away first
+        const allLeaves = document.querySelectorAll('.leaf, .fallen-leaf');
+        allLeaves.forEach(leaf => {
+            const rect = leaf.getBoundingClientRect();
+            // Freeze position so they fly off from where they are
+            leaf.style.animationName = 'none';
+            leaf.style.top = rect.top + 'px';
+            leaf.style.left = rect.left + 'px';
+            leaf.style.bottom = 'auto';
+            leaf.style.margin = '0'; // remove sway margin if any
+            
+            // Remove classes that might interfere
+            leaf.classList.remove('leaf', 'fallen-leaf');
+            
+            requestAnimationFrame(() => {
+                leaf.classList.add('wind-blown');
+            });
+            
+            setTimeout(() => {
+                if (leaf.parentNode) leaf.remove();
+            }, 1000);
+        });
 
-        // Hide after an appropriate amount of time
+        activeLeafCount = 0;
+        fallenLeaves = [];
+
+        // Wait for the gust to happen, then drop the tree
         setTimeout(() => {
-            treeImg.classList.remove('show');
-        }, 3500);
+            treeImg.classList.add('show');
+
+            // Hide after an appropriate amount of time
+            setTimeout(() => {
+                treeImg.classList.remove('show');
+            }, 3500);
+        }, 700);
     }
 
     function scheduleNextTimber() {

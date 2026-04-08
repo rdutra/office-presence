@@ -83,6 +83,22 @@ body {
   }
 }
 
+.wind-blown {
+  pointer-events: none;
+  animation: wind-gust 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+@keyframes wind-gust {
+  0% {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+  }
+  100% {
+      transform: translate(120vw, -10vh) rotate(1080deg) scale(1.2);
+      opacity: 0;
+  }
+}
+
 /* Glassmorphism overrides */
 .stat-card,
 .column,
