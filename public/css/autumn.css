@@ -569,3 +569,26 @@ header h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* "Timber" Easter Egg style */
+#tree-timber {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  height: 400px;
+  width: auto;
+  z-index: 9999;
+  /* Shift left offscreen, upright */
+  transform: translateX(-100%) rotate(0deg);
+  /* Rotate around bottom right corner, which is now at left=0 due to translation */
+  transform-origin: bottom right;
+  /* Fall quickly like timber, stand up slowly */
+  transition: transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53); 
+  pointer-events: none;
+  filter: drop-shadow(10px 10px 15px rgba(0, 0, 0, 0.5));
+}
+
+#tree-timber.show {
+  /* Tree rotates 90 degrees around that bottom right point, falling flat on screen */
+  transform: translateX(-100%) rotate(90deg);
+}

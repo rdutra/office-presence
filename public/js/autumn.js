@@ -94,4 +94,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Continuously create new ones
     setInterval(createLeaf, 700);
+
+    // Feature: "Timber" style Tree popup from left
+    const treeImg = document.createElement('img');
+    treeImg.src = '/img/autumn/tree.png';
+    treeImg.id = 'tree-timber';
+    document.body.appendChild(treeImg);
+
+    function triggerTimber() {
+        treeImg.classList.add('show');
+
+        // Hide after an appropriate amount of time
+        setTimeout(() => {
+            treeImg.classList.remove('show');
+        }, 3500);
+    }
+
+    function scheduleNextTimber() {
+        // Random time between 1 and 4 minutes to pop up
+        const minTime = 1 * 60 * 1000;
+        const maxTime = 4 * 60 * 1000;
+        const nextTime = Math.random() * (maxTime - minTime) + minTime;
+
+        setTimeout(() => {
+            triggerTimber();
+            scheduleNextTimber();
+        }, nextTime);
+    }
+
+    // Kick off the schedule after first load
+    scheduleNextTimber();
 });
