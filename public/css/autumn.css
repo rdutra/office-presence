@@ -630,7 +630,7 @@ header h1 {
   filter: drop-shadow(10px 10px 15px rgba(0, 0, 0, 0.5));
   mix-blend-mode: multiply;
   display: none;
-  transform-origin: bottom center;
+  transform-origin: bottom 90%;
 }
 
 #tow-truck.drive-in {
@@ -640,26 +640,30 @@ header h1 {
 
 #tow-truck.tow-away {
   /* Truck drives forward */
-  animation: tow-drive-away 3.5s cubic-bezier(0.5, 0, 0.1, 1) forwards;
+  animation: tow-drive-away 4.5s cubic-bezier(0.5, 0, 0.1, 1) forwards;
 }
 
 #tree-timber.drag-away {
   /* Tree is perfectly synced to the truck */
-  animation: tree-drag-away 3.5s cubic-bezier(0.5, 0, 0.1, 1) forwards !important;
+  animation: tree-drag-away 4.5s cubic-bezier(0.5, 0, 0.1, 1) forwards !important;
 }
 
 @keyframes tow-back-in {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(var(--truck-x-hook)); }
+  0% { transform: translateX(0) scaleX(1); }
+  100% { transform: translateX(var(--truck-x-hook)) scaleX(1); }
 }
 
 @keyframes tow-drive-away {
-  0% { transform: translateX(var(--truck-x-hook)); }
-  100% { transform: translateX(calc(var(--truck-x-hook) + var(--pull-dist))); }
+  0% { transform: translateX(var(--truck-x-hook)) scaleX(1); }
+  5% { transform: translateX(var(--truck-x-hook)) scaleX(0); }
+  10% { transform: translateX(var(--truck-x-hook)) scaleX(-1); }
+  20% { transform: translateX(var(--truck-x-hook)) scaleX(-1); }
+  100% { transform: translateX(calc(var(--truck-x-hook) + var(--pull-dist))) scaleX(-1); }
 }
 
 @keyframes tree-drag-away {
   0% { transform: translateX(-100%) rotate(90deg); }
+  20% { transform: translateX(-100%) rotate(90deg); }
   100% { transform: translateX(calc(-100% + var(--pull-dist))) rotate(90deg); }
 }
 

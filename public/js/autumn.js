@@ -192,12 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             truckImg.classList.add('tow-away');
                             treeImg.classList.add('drag-away');
                             
-                            // Let the tow complete (3.5s) before clearing
+                            // Let the tow complete (4.5s) before clearing
                             setTimeout(() => {
                                 treeImg.classList.remove('show', 'drag-away');
                                 truckImg.classList.remove('tow-away');
                                 truckImg.style.display = 'none';
-                            }, 3600);
+                            }, 4800);
                         }, 3000);
                     });
                 });
