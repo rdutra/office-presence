@@ -257,6 +257,18 @@ module OfficePresence
       halt 500, json(error: "Failed to toggle visibility: #{e.message}")
     end
 
+    get "/api/admin/stats" do
+      admin_protected!
+      
+      summary = Models::Attendance.new(db).stats_summary
+      timeline = Models::Attendance.new(db).daily_attendance_timeline
+      
+      json(
+        summary: summary,
+        timeline: timeline
+      )
+    end
+
     get "/api/settings" do
       admin_protected!
       json(settings_model.all)

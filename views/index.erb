@@ -69,12 +69,55 @@
       </div>
     </div>
 
-    <%= erb :_mapped_devices, locals: { mapped_present: mapped_present, mapped_absent: mapped_absent } %>
+    <div class="tabs-container">
+      <div class="tabs">
+        <button class="tab-button active" data-target="debug-view">Live Debug</button>
+        <button class="tab-button" data-target="stats-view">Statistics</button>
+      </div>
+    </div>
 
-    <%= erb :_unmapped_devices, locals: { unmapped_present: unmapped_present, unmapped_past: unmapped_past } %>
+    <div id="debug-view" class="tab-content active">
+      <%= erb :_mapped_devices, locals: { mapped_present: mapped_present, mapped_absent: mapped_absent } %>
+      <%= erb :_unmapped_devices, locals: { unmapped_present: unmapped_present, unmapped_past: unmapped_past } %>
+    </div>
+
+    <div id="stats-view" class="tab-content" style="display: none;">
+      <div class="section">
+        <h2>Attendance by Person</h2>
+        <table id="statsSummaryTable">
+          <thead>
+            <tr>
+              <th>Person</th>
+              <th>Days Attended</th>
+              <th>Total Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="muted">Loading statistics...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>Daily Attendance Timeline</h2>
+        <table id="statsTimelineTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Unique People</th>
+              <th>Total Office Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="muted">Loading timeline...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <script src="/js/timezone.js"></script>
     <script src="/js/presence.js"></script>
+    <script src="/js/admin_stats.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         initializeTimezone();

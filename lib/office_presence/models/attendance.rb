@@ -110,6 +110,96 @@ module OfficePresence
         all_attendees.select { |attendee| attendee[:days] == max_days }
       end
 
+      def stats_summary(start_date: nil, end_date: nil)
+        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
+        people_by_device = db[:people].as(:people_by_device)
+        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        person_key_expr = Sequel.function(:coalesce, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
+        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
+
+        dataset = db[:attendance]
+          .left_join(:people, mac: :mac)
+          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
+          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
+          .where(
+            Sequel.|(
+              Sequel.~(Sequel[:people][:person] => nil),
+              Sequel.~(Sequel[:people_by_device][:person] => nil)
+            )
+          )
+          .where(visible_expr => true)
+          .exclude(Person.anonymous_name_condition(person_expr))
+
+        if start_date
+          dataset = dataset.where { Sequel[:attendance][:date] >= start_date.to_s }
+        end
+        if end_date
+          dataset = dataset.where { Sequel[:attendance][:date] <= end_date.to_s }
+        end
+
+        hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
+
+        dataset
+          .select(
+            person_key_expr.as(:person_key),
+            person_expr.as(:person),
+            Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days_attended),
+            hours_expr.as(:total_hours)
+          )
+          .group(person_key_expr, person_expr)
+          .order(Sequel.desc(:total_hours), person_expr)
+          .all
+          .map do |row|
+            {
+              person_key: row[:person_key],
+              person: row[:person],
+              days_attended: row[:days_attended],
+              total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
+            }
+          end
+      end
+
+      def daily_attendance_timeline(limit: 30)
+        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
+        people_by_device = db[:people].as(:people_by_device)
+        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        person_key_expr = Sequel.function(:coalesce, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
+        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
+
+        dataset = db[:attendance]
+          .left_join(:people, mac: :mac)
+          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
+          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
+          .where(
+            Sequel.|(
+              Sequel.~(Sequel[:people][:person] => nil),
+              Sequel.~(Sequel[:people_by_device][:person] => nil)
+            )
+          )
+          .where(visible_expr => true)
+          .exclude(Person.anonymous_name_condition(person_expr))
+
+        hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
+
+        dataset
+          .select(
+            Sequel[:attendance][:date],
+            Sequel.function(:count, Sequel.function(:distinct, person_key_expr)).as(:unique_people),
+            hours_expr.as(:total_hours)
+          )
+          .group(Sequel[:attendance][:date])
+          .order(Sequel.desc(Sequel[:attendance][:date]))
+          .limit(limit)
+          .all
+          .map do |row|
+            {
+              date: row[:date],
+              unique_people: row[:unique_people],
+              total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
+            }
+          end
+      end
+
       private
 
       def to_date(value)
