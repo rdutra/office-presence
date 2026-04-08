@@ -124,4 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Kick off the schedule after first load
     scheduleNextTimber();
+
+    // Allow manual trigger by pressing 'F' (F for Fall/Timber)
+    document.addEventListener('keydown', (e) => {
+        // Only trigger if 'f' is pressed and the animation is not currently running
+        if (e.key.toLowerCase() === 'f' && !treeImg.classList.contains('show')) {
+            triggerTimber();
+        }
+    });
 });

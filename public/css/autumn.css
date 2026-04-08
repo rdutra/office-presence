@@ -573,22 +573,49 @@ header h1 {
 /* "Timber" Easter Egg style */
 #tree-timber {
   position: fixed;
-  bottom: 0px;
+  bottom: -50px; /* Pull it down so the transparent base is flush with bottom */
   left: 0px;
   height: 400px;
   width: auto;
   z-index: 9999;
-  /* Shift left offscreen, upright */
   transform: translateX(-100%) rotate(0deg);
-  /* Rotate around bottom right corner, which is now at left=0 due to translation */
   transform-origin: bottom right;
-  /* Fall quickly like timber, stand up slowly */
-  transition: transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53); 
   pointer-events: none;
   filter: drop-shadow(10px 10px 15px rgba(0, 0, 0, 0.5));
+  /* Smooth reset for when it stands back up */
+  transition: transform 0.8s ease-in-out; 
 }
 
 #tree-timber.show {
-  /* Tree rotates 90 degrees around that bottom right point, falling flat on screen */
   transform: translateX(-100%) rotate(90deg);
+  /* Use keyframes to simulate a heavy thud and bounce */
+  animation: timber-heavy-fall 1.5s forwards;
+}
+
+@keyframes timber-heavy-fall {
+  0% { 
+    transform: translateX(-100%) rotate(0deg); 
+    /* Slow start, rapid acceleration (gravity) */
+    animation-timing-function: cubic-bezier(0.6, 0.04, 0.98, 0.33); 
+  }
+  65% { 
+    transform: translateX(-100%) rotate(90deg); 
+    /* The THUD */
+    animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1); 
+  }
+  75% { 
+    transform: translateX(-100%) rotate(82deg); 
+    animation-timing-function: ease-in; /* Bounce back up */
+  }
+  85% { 
+    transform: translateX(-100%) rotate(90deg); 
+    animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1); /* Thud again */
+  }
+  92% { 
+    transform: translateX(-100%) rotate(87deg); 
+    animation-timing-function: ease-in; /* Small bounce */
+  }
+  100% { 
+    transform: translateX(-100%) rotate(90deg); 
+  }
 }
