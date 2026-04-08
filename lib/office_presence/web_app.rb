@@ -136,8 +136,7 @@ module OfficePresence
         now: Time.now,
         person_name: person_name,
         summary: summary_stats,
-        timeline: timeline,
-        present_window_minutes: settings.scanner.options[:present_window_minutes] || 15
+        timeline: timeline
       }
     end
 
