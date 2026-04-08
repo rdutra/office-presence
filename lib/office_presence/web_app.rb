@@ -125,6 +125,22 @@ module OfficePresence
       }
     end
 
+    get "/admin/person/:person_name" do
+      admin_protected!
+      
+      person_name = params[:person_name]
+      summary_stats = Models::Attendance.new(db).person_stats_summary_by_name(person_name: person_name)
+      timeline = Models::Attendance.new(db).person_daily_timeline_by_name(person_name: person_name)
+      
+      erb :person_detail, locals: {
+        now: Time.now,
+        person_name: person_name,
+        summary: summary_stats,
+        timeline: timeline,
+        present_window_minutes: settings.scanner.options[:present_window_minutes] || 15
+      }
+    end
+
     get "/admin" do
       admin_protected!
 
@@ -260,12 +276,17 @@ module OfficePresence
     get "/api/admin/stats" do
       admin_protected!
       
+      offset = params[:offset] ? params[:offset].to_i : 0
+      limit = params[:limit] ? params[:limit].to_i : 30
+      
       summary = Models::Attendance.new(db).stats_summary
-      timeline = Models::Attendance.new(db).daily_attendance_timeline
+      timeline = Models::Attendance.new(db).daily_attendance_timeline(limit: limit, offset: offset)
       
       json(
         summary: summary,
-        timeline: timeline
+        timeline: timeline,
+        offset: offset,
+        limit: limit
       )
     end
 

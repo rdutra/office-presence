@@ -159,7 +159,7 @@ module OfficePresence
           end
       end
 
-      def daily_attendance_timeline(limit: 30)
+      def daily_attendance_timeline(limit: 30, offset: 0)
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
@@ -190,6 +190,7 @@ module OfficePresence
           .group(Sequel[:attendance][:date])
           .order(Sequel.desc(Sequel[:attendance][:date]))
           .limit(limit)
+          .offset(offset)
           .all
           .map do |row|
             {
@@ -198,6 +199,70 @@ module OfficePresence
               total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
             }
           end
+      end
+
+      def person_daily_timeline_by_name(person_name:)
+        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
+        people_by_device = db[:people].as(:people_by_device)
+        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
+
+        dataset = db[:attendance]
+          .left_join(:people, mac: :mac)
+          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
+          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
+          .where(person_expr => person_name)
+          .where(visible_expr => true)
+
+        hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
+
+        dataset
+          .select(
+            Sequel[:attendance][:date],
+            Sequel.function(:min, Sequel[:attendance][:first_seen_utc]).as(:first_seen_utc),
+            Sequel.function(:max, Sequel[:attendance][:last_seen_utc]).as(:last_seen_utc),
+            hours_expr.as(:total_hours)
+          )
+          .group(Sequel[:attendance][:date])
+          .order(Sequel.desc(Sequel[:attendance][:date]))
+          .all
+          .map do |row|
+            {
+              date: row[:date],
+              first_seen_utc: row[:first_seen_utc],
+              last_seen_utc: row[:last_seen_utc],
+              total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
+            }
+          end
+      end
+
+      def person_stats_summary_by_name(person_name:)
+        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
+        people_by_device = db[:people].as(:people_by_device)
+        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
+
+        dataset = db[:attendance]
+          .left_join(:people, mac: :mac)
+          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
+          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
+          .where(person_expr => person_name)
+          .where(visible_expr => true)
+
+        hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
+
+        row = dataset
+          .select(
+            Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days_attended),
+            hours_expr.as(:total_hours)
+          )
+          .first
+
+        {
+          person: person_name,
+          days_attended: row[:days_attended] || 0,
+          total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
+        }
       end
 
       private

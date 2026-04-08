@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title><%= person_name %> - Presence Details</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div>
+        <h1 style="margin: 0 0 0.25rem 0;"><%= person_name %>'s Attendance</h1>
+        <div class="ts">
+          <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.utc.strftime("%Y-%m-%d %H:%M") %></span> <span class="tz-label">UTC</span>
+        </div>
+      </div>
+      <div>
+        <a href="/admin" class="btn btn-secondary" style="text-decoration: none;">&larr; Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+        <div style="background: #f6f8fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd; flex: 1; text-align: center;">
+          <h3 style="margin: 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">Total Days Attended</h3>
+          <p style="margin: 0.5rem 0 0 0; font-size: 2.5rem; font-weight: bold; color: #0969da;"><%= summary[:days_attended] %></p>
+        </div>
+        <div style="background: #f6f8fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd; flex: 1; text-align: center;">
+          <h3 style="margin: 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">Total Office Hours</h3>
+          <p style="margin: 0.5rem 0 0 0; font-size: 2.5rem; font-weight: bold; color: #0969da;"><%= summary[:total_hours] %> hrs</p>
+        </div>
+      </div>
+
+      <h2>Daily Attendance Timeline</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>First Seen (UTC)</th>
+            <th>Last Seen (UTC)</th>
+            <th>Duration (Hours)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if timeline.empty? %>
+            <tr><td colspan="4" class="muted">No attendance records found.</td></tr>
+          <% else %>
+            <% timeline.each do |day| %>
+              <tr>
+                <td><strong><%= day[:date] %></strong></td>
+                <td><span class="timestamp" data-utc="<%= day[:first_seen_utc] %>"><%= day[:first_seen_utc] %></span></td>
+                <td><span class="timestamp" data-utc="<%= day[:last_seen_utc] %>"><%= day[:last_seen_utc] %></span></td>
+                <td><%= day[:total_hours] %> hrs</td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (typeof updateTimestamps === "function") {
+          updateTimestamps();
+        }
+      });
+    </script>
+  </body>
+</html>
