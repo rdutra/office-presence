@@ -116,8 +116,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Scatter slightly in timing
-            const delay = Math.random() * 0.2;
+            const delay = Math.random() * 0.4;
             leaf.style.setProperty('animation-delay', `${delay}s`, 'important');
+
+            // Apply custom CSS variables for highly varied physics
+            const duration = 1.8 + Math.random() * 1.2; // 1.8s to 3.0s
+            leaf.style.setProperty('--gust-duration', `${duration}s`);
+            leaf.style.setProperty('--gust-ease', (0.1 + Math.random() * 0.5).toFixed(2));
+            leaf.style.setProperty('--gust-ease-out', (0.1 + Math.random() * 0.5).toFixed(2));
+
+            leaf.style.setProperty('--gust-x1', `${-(2 + Math.random() * 10)}vw`);
+            leaf.style.setProperty('--gust-y1', `${-5 + Math.random() * 15}vh`);
+            leaf.style.setProperty('--gust-r1', `${(Math.random() > 0.5 ? 1 : -1) * (45 + Math.random() * 90)}deg`);
+
+            leaf.style.setProperty('--gust-x2', `${-2 + Math.random() * 10}vw`);
+            leaf.style.setProperty('--gust-y2', `${-5 + Math.random() * 15}vh`);
+            leaf.style.setProperty('--gust-r2', `${(Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 180)}deg`);
+
+            leaf.style.setProperty('--gust-x3', `${-5 + Math.random() * 12}vw`);
+            leaf.style.setProperty('--gust-y3', `${-15 + Math.random() * 25}vh`);
+            leaf.style.setProperty('--gust-r3', `${(Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 180)}deg`);
+
+            leaf.style.setProperty('--gust-y-end', `${-50 + Math.random() * 70}vh`);
+            leaf.style.setProperty('--gust-r-end', `${(Math.random() > 0.5 ? 1 : -1) * (1080 + Math.random() * 720)}deg`);
 
             requestAnimationFrame(() => {
                 leaf.classList.add('wind-blown');
@@ -125,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             setTimeout(() => {
                 if (leaf.parentNode) leaf.remove();
-            }, 3000);
+            }, (duration + delay) * 1000 + 200);
         });
 
         activeLeafCount = 0;

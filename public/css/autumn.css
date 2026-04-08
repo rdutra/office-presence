@@ -86,8 +86,8 @@ body {
 .wind-blown {
   pointer-events: none !important;
   animation-name: wind-gust !important;
-  animation-duration: 2.5s !important;
-  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  animation-duration: var(--gust-duration, 2.5s) !important;
+  animation-timing-function: cubic-bezier(var(--gust-ease, 0.25), 0.1, var(--gust-ease-out, 0.25), 1) !important;
   animation-fill-mode: forwards !important;
 }
 
@@ -95,17 +95,17 @@ body {
   0% {
       transform: translate(0, 0) rotate(0deg);
   }
-  15% {
-      transform: translate(-8vw, -5vh) rotate(-90deg) scale(1.1);
+  20% {
+      transform: translate(var(--gust-x1, -8vw), var(--gust-y1, -5vh)) rotate(var(--gust-r1, -90deg)) scale(1.1);
   }
-  30% {
-      transform: translate(4vw, 5vh) rotate(180deg) scale(1.2);
+  40% {
+      transform: translate(var(--gust-x2, 4vw), var(--gust-y2, 5vh)) rotate(var(--gust-r2, 180deg)) scale(1.2);
   }
-  45% {
-      transform: translate(-3vw, -10vh) rotate(360deg) scale(1.0);
+  60% {
+      transform: translate(var(--gust-x3, -3vw), var(--gust-y3, -10vh)) rotate(var(--gust-r3, 360deg)) scale(1.0);
   }
   100% {
-      transform: translate(150vw, -40vh) rotate(1080deg) scale(1.5);
+      transform: translate(150vw, var(--gust-y-end, -40vh)) rotate(var(--gust-r-end, 1080deg)) scale(1.5);
       opacity: 0;
   }
 }
