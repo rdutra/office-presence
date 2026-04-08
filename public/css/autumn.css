@@ -619,6 +619,50 @@ header h1 {
   animation: timber-heavy-fall 1.5s forwards;
 }
 
+#tow-truck {
+  position: fixed;
+  bottom: -3vh;
+  left: 100vw;
+  height: 45vh;
+  width: auto;
+  z-index: 10001; /* Above the tree */
+  pointer-events: none;
+  filter: drop-shadow(10px 10px 15px rgba(0, 0, 0, 0.5));
+  mix-blend-mode: multiply;
+  display: none;
+  transform-origin: bottom center;
+}
+
+#tow-truck.drive-in {
+  /* Truck backs in */
+  animation: tow-back-in 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+#tow-truck.tow-away {
+  /* Truck drives forward */
+  animation: tow-drive-away 3.5s cubic-bezier(0.5, 0, 0.1, 1) forwards;
+}
+
+#tree-timber.drag-away {
+  /* Tree is perfectly synced to the truck */
+  animation: tree-drag-away 3.5s cubic-bezier(0.5, 0, 0.1, 1) forwards !important;
+}
+
+@keyframes tow-back-in {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(var(--truck-x-hook)); }
+}
+
+@keyframes tow-drive-away {
+  0% { transform: translateX(var(--truck-x-hook)); }
+  100% { transform: translateX(calc(var(--truck-x-hook) + var(--pull-dist))); }
+}
+
+@keyframes tree-drag-away {
+  0% { transform: translateX(-100%) rotate(90deg); }
+  100% { transform: translateX(calc(-100% + var(--pull-dist))) rotate(90deg); }
+}
+
 @keyframes timber-heavy-fall {
   0% { 
     transform: translateX(-100%) rotate(0deg); 

@@ -101,6 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
     treeImg.id = 'tree-timber';
     document.body.appendChild(treeImg);
 
+    // Tow truck
+    const truckImg = document.createElement('img');
+    truckImg.src = '/img/autumn/tow_truck.png';
+    truckImg.id = 'tow-truck';
+    document.body.appendChild(truckImg);
+
     function triggerTimber() {
         // Gust blows the leaves away first
         const allLeaves = document.querySelectorAll('.leaf, .fallen-leaf');
@@ -156,10 +162,46 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             treeImg.classList.add('show');
 
-            // Hide after an appropriate amount of time
+            // Wait for tree to drop (1.5s animation) + a short 0.5s pause
             setTimeout(() => {
-                treeImg.classList.remove('show');
-            }, 3500);
+                truckImg.style.display = 'block';
+                
+                // Double rAF to ensure render measurement is correct
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const truckRect = truckImg.getBoundingClientRect();
+                        const truckWidth = truckRect.width || (window.innerWidth * 0.4);
+                        const treeRect = treeImg.getBoundingClientRect();
+                        const treeTipX = treeRect.right;
+                        
+                        // We want the truck's right edge to securely overlap the tree tip
+                        const overlap = 80;
+                        const truckXHook = treeTipX + overlap - window.innerWidth - truckWidth;
+                        
+                        // Total distance to perfectly drag them both out of screen
+                        const pullDist = window.innerWidth * 1.2 + truckWidth;
+                        
+                        document.documentElement.style.setProperty('--truck-x-hook', `${truckXHook}px`);
+                        document.documentElement.style.setProperty('--pull-dist', `${pullDist}px`);
+                        
+                        truckImg.classList.add('drive-in');
+                        
+                        // Wait for truck to back in (2.5s) + small coupling pause (0.5s)
+                        setTimeout(() => {
+                            truckImg.classList.remove('drive-in');
+                            truckImg.classList.add('tow-away');
+                            treeImg.classList.add('drag-away');
+                            
+                            // Let the tow complete (3.5s) before clearing
+                            setTimeout(() => {
+                                treeImg.classList.remove('show', 'drag-away');
+                                truckImg.classList.remove('tow-away');
+                                truckImg.style.display = 'none';
+                            }, 3600);
+                        }, 3000);
+                    });
+                });
+            }, 2000);
         }, 1200);
     }
 
