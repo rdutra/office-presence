@@ -104,31 +104,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerTimber() {
         // Gust blows the leaves away first
         const allLeaves = document.querySelectorAll('.leaf, .fallen-leaf');
-        allLeaves.forEach(leaf => {
-            const rect = leaf.getBoundingClientRect();
-            // Freeze position so they fly off from where they are
-            leaf.style.animationName = 'none';
-            leaf.style.top = rect.top + 'px';
-            leaf.style.left = rect.left + 'px';
-            leaf.style.bottom = 'auto';
-            leaf.style.margin = '0'; // remove sway margin if any
-            
-            // Remove classes that might interfere
-            leaf.classList.remove('leaf', 'fallen-leaf');
-            
+        allLeaves.forEach((leaf) => {
+            // Only freeze mid-air leaves to stop them falling
+            if (leaf.classList.contains('leaf')) {
+                const rect = leaf.getBoundingClientRect();
+                leaf.style.animationName = 'none';
+                leaf.style.top = rect.top + 'px';
+                leaf.style.left = rect.left + 'px';
+                leaf.style.bottom = 'auto';
+                leaf.style.margin = '0';
+            }
+
+            // Scatter slightly in timing
+            const delay = Math.random() * 0.2;
+            leaf.style.setProperty('animation-delay', `${delay}s`, 'important');
+
             requestAnimationFrame(() => {
                 leaf.classList.add('wind-blown');
             });
             
             setTimeout(() => {
                 if (leaf.parentNode) leaf.remove();
-            }, 1000);
+            }, 3000);
         });
 
         activeLeafCount = 0;
         fallenLeaves = [];
 
-        // Wait for the gust to happen, then drop the tree
+        // Wait for the swirling gust to do its thing
         setTimeout(() => {
             treeImg.classList.add('show');
 
@@ -136,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 treeImg.classList.remove('show');
             }, 3500);
-        }, 700);
+        }, 1200);
     }
 
     function scheduleNextTimber() {

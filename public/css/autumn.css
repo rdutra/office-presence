@@ -84,17 +84,28 @@ body {
 }
 
 .wind-blown {
-  pointer-events: none;
-  animation: wind-gust 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+  animation-name: wind-gust !important;
+  animation-duration: 2.5s !important;
+  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  animation-fill-mode: forwards !important;
 }
 
 @keyframes wind-gust {
   0% {
-      transform: rotate(0deg) scale(1);
-      opacity: 1;
+      transform: translate(0, 0) rotate(0deg);
+  }
+  15% {
+      transform: translate(-8vw, -5vh) rotate(-90deg) scale(1.1);
+  }
+  30% {
+      transform: translate(4vw, 5vh) rotate(180deg) scale(1.2);
+  }
+  45% {
+      transform: translate(-3vw, -10vh) rotate(360deg) scale(1.0);
   }
   100% {
-      transform: translate(120vw, -10vh) rotate(1080deg) scale(1.2);
+      transform: translate(150vw, -40vh) rotate(1080deg) scale(1.5);
       opacity: 0;
   }
 }
