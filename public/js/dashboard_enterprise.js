@@ -20,6 +20,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const ctx = document.getElementById('trendChart').getContext('2d');
 
+  // Calculate linear regression for trend line
+  const n = dataPoints.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += i;
+    sumY += dataPoints[i];
+    sumXY += i * dataPoints[i];
+    sumX2 += i * i;
+  }
+  const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const b = (sumY - m * sumX) / n;
+  
+  const trendLineData = [];
+  for (let i = 0; i < n; i++) {
+    trendLineData.push(m * i + b);
+  }
+
   // Create a gradient for the line chart fill
   const gradient = ctx.createLinearGradient(0, 0, 0, 300);
   gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
@@ -29,20 +46,35 @@ document.addEventListener('DOMContentLoaded', function() {
     type: 'line',
     data: {
       labels: labels,
-      datasets: [{
-        label: 'Unique People',
-        data: dataPoints,
-        borderColor: '#3b82f6',
-        backgroundColor: gradient,
-        borderWidth: 3,
-        pointBackgroundColor: '#0f1115',
-        pointBorderColor: '#3b82f6',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        fill: true,
-        tension: 0.4 // Smooth curves
-      }]
+      datasets: [
+        {
+          label: 'Trend',
+          data: trendLineData,
+          borderColor: '#ef4444',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 1
+        },
+        {
+          label: 'Unique People',
+          data: dataPoints,
+          borderColor: '#3b82f6',
+          backgroundColor: gradient,
+          borderWidth: 3,
+          pointBackgroundColor: '#0f1115',
+          pointBorderColor: '#3b82f6',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4,
+          order: 2
+        }
+      ]
     },
     options: {
       responsive: true,
