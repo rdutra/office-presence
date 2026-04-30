@@ -20,21 +20,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const ctx = document.getElementById('trendChart').getContext('2d');
 
-  // Calculate linear regression for trend line
+  // Calculate 7-day moving average for trend line
   const n = dataPoints.length;
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-  for (let i = 0; i < n; i++) {
-    sumX += i;
-    sumY += dataPoints[i];
-    sumXY += i * dataPoints[i];
-    sumX2 += i * i;
-  }
-  const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const b = (sumY - m * sumX) / n;
-  
   const trendLineData = [];
+  const windowSize = 7;
+  
   for (let i = 0; i < n; i++) {
-    trendLineData.push(m * i + b);
+    if (i < windowSize - 1) {
+      // Not enough data for a full window, just use the growing average
+      let sum = 0;
+      for (let j = 0; j <= i; j++) {
+        sum += dataPoints[j];
+      }
+      trendLineData.push(sum / (i + 1));
+    } else {
+      let sum = 0;
+      for (let j = 0; j < windowSize; j++) {
+        sum += dataPoints[i - j];
+      }
+      trendLineData.push(sum / windowSize);
+    }
   }
 
   // Create a gradient for the line chart fill
