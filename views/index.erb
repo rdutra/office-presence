@@ -73,6 +73,7 @@
       <div class="tabs">
         <button class="tab-button active" data-target="debug-view">Live Debug</button>
         <button class="tab-button" data-target="stats-view">Statistics</button>
+        <button class="tab-button" data-target="charts-view">Charts</button>
       </div>
     </div>
 
@@ -120,9 +121,27 @@
       </div>
     </div>
 
+    <div id="charts-view" class="tab-content" style="display: none;">
+      <div class="section" style="max-width: 1000px; margin: 0 auto 2rem auto;">
+        <h2>Daily Attendance Timeline</h2>
+        <div style="position: relative; height: 400px; width: 100%;">
+          <canvas id="timelineChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="section" style="max-width: 1000px; margin: 0 auto;">
+        <h2>Total Hours by Person (Top 20)</h2>
+        <div style="position: relative; height: 500px; width: 100%;">
+          <canvas id="summaryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/timezone.js"></script>
     <script src="/js/presence.js"></script>
     <script src="/js/admin_stats.js"></script>
+    <script src="/js/admin_charts.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         initializeTimezone();
