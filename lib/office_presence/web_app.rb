@@ -20,7 +20,8 @@ module OfficePresence
       christmas: :dashboard_christmas,
       summer: :dashboard_summer,
       easter: :dashboard_easter,
-      autumn: :dashboard_autumn
+      autumn: :dashboard_autumn,
+      enterprise: :dashboard_enterprise
     }.freeze
 
     # Configuration
@@ -117,6 +118,8 @@ module OfficePresence
         current_week_start: data[:current_week_start],
         current_week_end: data[:current_week_end],
         last_week_winner: data[:last_week_winner],
+        aggregated_winners: data[:aggregated_winners],
+        attendance_trend: data[:attendance_trend],
         show_in_office_tile: settings_model.get_boolean('show_in_office_tile', true),
         show_registered_users_tile: settings_model.get_boolean('show_registered_users_tile', true),
         show_today_record_tile: settings_model.get_boolean('show_today_record_tile', true),

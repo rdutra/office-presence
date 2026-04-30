@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Enterprise Presence Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard_enterprise.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-title">
+          <h1>Presence Overview</h1>
+          <div class="header-subtitle">Real-time office attendance & trends</div>
+        </div>
+        <div class="header-meta">
+          <div class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></div>
+          <div class="current-date"><%= now.strftime("%A, %B %d, %Y") %></div>
+        </div>
+      </header>
+
+      <div class="dashboard-grid">
+        <!-- Left Column: In Office -->
+        <div class="card" style="grid-row: span 2;">
+          <div class="card-header">
+            <div class="card-icon">👥</div>
+            <h2 class="card-title">Currently in Office (<%= present_count %>)</h2>
+          </div>
+          
+          <% if mapped_present.empty? %>
+            <div class="empty-state">
+              <div style="font-size: 2rem; margin-bottom: 1rem;">🏢</div>
+              <div>The office is currently empty.</div>
+            </div>
+          <% else %>
+            <div class="people-list">
+              <% mapped_present.each do |person| %>
+                <div class="person-card status-<%= person[:status] %>">
+                  <div class="person-avatar">
+                    <%= person[:person][0].upcase %>
+                  </div>
+                  <div class="person-info">
+                    <div class="person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                    <div class="person-device"><%= person[:device] || 'Device' %></div>
+                  </div>
+                  <div class="status-indicator" title="<%= person[:status].capitalize %>"></div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Right Column Top: Weekly Award Winners -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🏆</div>
+            <h2 class="card-title">Award History</h2>
+          </div>
+          
+          <% if aggregated_winners.empty? %>
+            <div class="empty-state">
+              <div>No awards have been given out yet.</div>
+            </div>
+          <% else %>
+            <div class="winners-list">
+              <table class="winners-table">
+                <thead>
+                  <tr>
+                    <th>Champion</th>
+                    <th>Times Won</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% aggregated_winners.each do |winner| %>
+                    <tr>
+                      <td>
+                        <div class="winner-name-cell">
+                          <span class="winner-medal">🥇</span>
+                          <strong><%= winner[:person] %></strong>
+                        </div>
+                      </td>
+                      <td><%= winner[:count] %>x</td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Right Column Bottom: Trend Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">📈</div>
+            <h2 class="card-title">90-Day Attendance Trend</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.attendanceTrend = <%= attendance_trend.to_json %>;
+    </script>
+    <script src="/js/timezone.js"></script>
+    <script src="/js/dashboard_enterprise.js"></script>
+  </body>
+</html>

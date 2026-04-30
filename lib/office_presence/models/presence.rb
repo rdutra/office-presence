@@ -137,6 +137,14 @@ module OfficePresence
           medal_counts
         )
 
+        aggregated_winners = weekly_winner_model.db[:weekly_winners]
+          .exclude(Person.anonymous_name_condition(Sequel[:weekly_winners][:person]))
+          .group_and_count(:person)
+          .order(Sequel.desc(:count), :person)
+          .all
+
+        attendance_trend = attendance_model.daily_attendance_timeline(limit: 90)
+
         {
           now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
           mapped_present: decorated_present,
@@ -149,7 +157,9 @@ module OfficePresence
           current_week_start: current_week_bounds.first.to_s,
           current_week_end: current_week_bounds.last.to_s,
           last_week_winner: last_week_winner_data,
-          weekly_winner_counts: medal_counts
+          weekly_winner_counts: medal_counts,
+          aggregated_winners: aggregated_winners,
+          attendance_trend: attendance_trend
         }
       end
 
