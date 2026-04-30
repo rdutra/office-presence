@@ -27,7 +27,8 @@ body {
     radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-primary);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -41,8 +42,7 @@ body {
   flex-direction: column;
   gap: 1rem;
   flex: 1;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 0;
 }
 
 /* Header */
