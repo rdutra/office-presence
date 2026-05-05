@@ -160,6 +160,9 @@ module OfficePresence
       end
 
       def daily_attendance_timeline(limit: 30, offset: 0)
+        end_date = Date.today - offset
+        start_date = end_date - limit + 1
+
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
@@ -178,27 +181,35 @@ module OfficePresence
           )
           .where(visible_expr => true)
           .exclude(Person.anonymous_name_condition(person_expr))
+          .where { Sequel[:attendance][:date] >= start_date.to_s }
+          .where { Sequel[:attendance][:date] <= end_date.to_s }
 
         hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
 
-        dataset
+        db_results = dataset
           .select(
             Sequel[:attendance][:date],
             Sequel.function(:count, Sequel.function(:distinct, person_key_expr)).as(:unique_people),
             hours_expr.as(:total_hours)
           )
           .group(Sequel[:attendance][:date])
-          .order(Sequel.desc(Sequel[:attendance][:date]))
-          .limit(limit)
-          .offset(offset)
           .all
-          .map do |row|
-            {
-              date: row[:date],
-              unique_people: row[:unique_people],
-              total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
-            }
-          end
+
+        results_by_date = db_results.map do |row|
+          [row[:date], {
+            unique_people: row[:unique_people],
+            total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
+          }]
+        end.to_h
+
+        (0...limit).map do |i|
+          date_str = (end_date - i).to_s
+          {
+            date: date_str,
+            unique_people: results_by_date[date_str] ? results_by_date[date_str][:unique_people] : 0,
+            total_hours: results_by_date[date_str] ? results_by_date[date_str][:total_hours] : 0.0
+          }
+        end
       end
 
       def person_daily_timeline_by_name(person_name:)
