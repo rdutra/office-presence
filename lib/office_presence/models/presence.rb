@@ -137,10 +137,14 @@ module OfficePresence
           medal_counts
         )
 
+        current_person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:weekly_winners][:person])
+        person_key_expr = Sequel.function(:coalesce, Sequel[:weekly_winners][:person_mac], Sequel[:weekly_winners][:person])
+
         aggregated_winners = weekly_winner_model.db[:weekly_winners]
+          .left_join(:people, mac: :person_mac)
           .exclude(Person.anonymous_name_condition(Sequel[:weekly_winners][:person]))
-          .group_and_count(:person)
-          .order(Sequel.desc(:count), :person)
+          .group_and_count(person_key_expr.as(:person_key), current_person_expr.as(:person))
+          .order(Sequel.desc(:count), current_person_expr)
           .all
 
         attendance_trend = attendance_model.daily_attendance_timeline(limit: 90)
