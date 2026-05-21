@@ -1,0 +1,1002 @@
+/* 
+   ==========================================================================
+   COPA MUNDIAL 2026 - LA CELESTE EDITION
+   Premium Uruguayan-Themed Football Dashboard Stylesheet
+   ========================================================================== 
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Colors */
+  --celeste: #00A6DA;
+  --celeste-rgb: 0, 166, 218;
+  --uruguay-gold: #FFC72C;
+  --uruguay-gold-rgb: 255, 199, 44;
+  --pitch-green: #2e7d32;
+  --pitch-green-dark: #1b5e20;
+  --pitch-green-light: #4caf50;
+  --dark-turf-bg: #0c0f0d;
+  --dark-turf-card: #141a16;
+  --dark-turf-hover: #1e2621;
+  --glass-bg: rgba(20, 26, 22, 0.7);
+  --glass-border: rgba(0, 166, 218, 0.2);
+  --glass-border-gold: rgba(255, 199, 44, 0.3);
+  --text-primary: #ffffff;
+  --text-secondary: #a3b8a8;
+  --text-muted: #6b7f71;
+  
+  /* Fonts */
+  --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Base resets & theme override */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.worldcup-theme {
+  font-family: var(--font-family);
+  background-color: var(--dark-turf-bg);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(var(--celeste-rgb), 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 10% 20%, rgba(46, 125, 50, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(var(--uruguay-gold-rgb), 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #0c0f0d 0%, #060807 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 2rem 1rem;
+}
+
+/* Beautiful custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--dark-turf-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--celeste-rgb), 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--celeste-rgb), 0.6);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Header & Sol de Mayo banner */
+header.wc-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+/* Header Glowing Backdrops */
+header.wc-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--celeste), var(--uruguay-gold), var(--celeste));
+  background-size: 200% auto;
+  animation: shimmer-border 4s linear infinite;
+}
+
+@keyframes shimmer-border {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Animated Sun of May (Sol de Mayo) */
+.sol-de-mayo {
+  position: relative;
+  width: 65px;
+  height: 65px;
+  filter: drop-shadow(0 0 10px rgba(var(--uruguay-gold-rgb), 0.6));
+  animation: slow-spin 30s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes slow-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.header-text h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #ffffff 40%, rgba(var(--celeste-rgb), 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+
+.header-text .subtitle {
+  font-size: 0.95rem;
+  color: var(--celeste);
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-text .subtitle::after {
+  content: "🇺🇾 🏆 2026";
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stadium-time-card {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Simulated Fixture / Clock Time */
+.stadium-time-card .match-clock-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.stadium-time-card .current-time {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--uruguay-gold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  text-shadow: 0 0 10px rgba(var(--uruguay-gold-rgb), 0.3);
+}
+
+.stadium-time-card .match-half {
+  background: rgba(var(--celeste-rgb), 0.2);
+  border: 1px solid var(--celeste);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--celeste);
+  text-transform: uppercase;
+}
+
+.stadium-time-card .date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.register-button-wc {
+  background: linear-gradient(135deg, var(--celeste) 0%, #0084b0 100%);
+  border: none;
+  color: #ffffff;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 166, 218, 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.register-button-wc:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 25px rgba(0, 166, 218, 0.5);
+  background: linear-gradient(135deg, #00b6f0 0%, var(--celeste) 100%);
+}
+
+.register-button-wc:active {
+  transform: translateY(1px);
+}
+
+/* Stats Scoreboard Grid */
+.scoreboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.scoreboard-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.scoreboard-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(var(--celeste-rgb), 0.4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(var(--celeste-rgb), 0.1);
+}
+
+.scoreboard-card::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  font-size: 5rem;
+  opacity: 0.03;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.scoreboard-card[data-stat="present"]::after { content: "⚽"; }
+.scoreboard-card[data-stat="total"]::after { content: "👥"; }
+.scoreboard-card[data-stat="daily-record"]::after { content: "🏆"; }
+.scoreboard-card[data-stat="all-time-record"]::after { content: "🌟"; }
+
+.scoreboard-card.winner-card {
+  border-color: var(--glass-border-gold);
+  background: linear-gradient(135deg, rgba(var(--uruguay-gold-rgb), 0.05) 0%, rgba(20, 26, 22, 0.8) 100%);
+}
+
+.scoreboard-card.winner-card:hover {
+  border-color: rgba(var(--uruguay-gold-rgb), 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(var(--uruguay-gold-rgb), 0.1);
+}
+
+.scoreboard-card.winner-card::after {
+  content: "👑";
+  opacity: 0.04;
+}
+
+.scoreboard-num {
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.scoreboard-card[data-stat="present"] .scoreboard-num {
+  color: var(--celeste);
+  text-shadow: 0 0 15px rgba(var(--celeste-rgb), 0.25);
+}
+
+.scoreboard-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-top: 0.5rem;
+}
+
+.winner-badge-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.winner-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--uruguay-gold);
+}
+
+.winner-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Two-column layout */
+.dashboard-body {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sections panels */
+.panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(var(--celeste-rgb), 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(var(--celeste-rgb), 0.03);
+}
+
+.panel-header .title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.panel-header h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.panel-header .panel-icon {
+  font-size: 1.35rem;
+}
+
+.panel-header .badge-live {
+  background: #ff1744;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 0 10px rgba(255, 23, 68, 0.5);
+  animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.panel-body {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+/* Empty State */
+.empty-pitch {
+  background: radial-gradient(circle, rgba(46, 125, 50, 0.1) 0%, transparent 80%);
+  border: 2px dashed rgba(var(--celeste-rgb), 0.2);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-pitch .pitch-circle {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed rgba(var(--celeste-rgb), 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  animation: float-ball 3s ease-in-out infinite;
+}
+
+@keyframes float-ball {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(15deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.empty-pitch p {
+  font-size: 1rem;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Fixtures list (Live Matches) */
+.fixtures-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Fixture card representing a match */
+.match-card {
+  background: linear-gradient(135deg, rgba(20, 26, 22, 0.9) 0%, rgba(12, 15, 13, 0.95) 100%);
+  border: 1px solid rgba(var(--celeste-rgb), 0.15);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.match-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--celeste);
+}
+
+.match-card.is-rival::before {
+  background: linear-gradient(to bottom, var(--celeste), var(--uruguay-gold));
+}
+
+.match-card:hover {
+  transform: scale(1.01) translateY(-2px);
+  border-color: rgba(var(--celeste-rgb), 0.4);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4), 0 0 15px rgba(var(--celeste-rgb), 0.08);
+}
+
+.match-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  align-items: center;
+  text-align: center;
+}
+
+/* Match Team / Player column */
+.team-column {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.team-column.team-right {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.player-jersey {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  background-color: var(--celeste);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 166, 218, 0.3);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Beautiful custom backdrops for jersey/avatars */
+.player-jersey::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+/* Style for special AI/humor opponents jersey */
+.team-column.is-opponent .player-jersey {
+  background: linear-gradient(135deg, var(--uruguay-gold) 0%, #cc9900 100%);
+  color: #0c0f0d;
+  box-shadow: 0 4px 10px rgba(var(--uruguay-gold-rgb), 0.3);
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.player-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.player-device {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-top: 1px;
+}
+
+.team-column.is-opponent .player-name {
+  color: var(--uruguay-gold);
+}
+
+/* Match Score / Center box */
+.score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.score-digits {
+  background: #111512;
+  border: 1px solid rgba(var(--celeste-rgb), 0.25);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffffff;
+  display: flex;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.score-separator {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.match-status-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.match-status-badge.live {
+  background: rgba(255, 23, 68, 0.15);
+  color: #ff1744;
+  border: 1px solid rgba(255, 23, 68, 0.3);
+}
+
+.match-status-badge.ft {
+  background: rgba(107, 127, 113, 0.15);
+  color: var(--text-secondary);
+  border: 1px solid rgba(107, 127, 113, 0.3);
+}
+
+.match-status-badge.upcoming {
+  background: rgba(0, 166, 218, 0.15);
+  color: var(--celeste);
+  border: 1px solid rgba(0, 166, 218, 0.3);
+}
+
+/* Tournament Standings (Champions table) */
+.standings-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--celeste-rgb), 0.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.standings-table th {
+  background: rgba(var(--celeste-rgb), 0.08);
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: var(--celeste);
+  border-bottom: 2px solid rgba(var(--celeste-rgb), 0.2);
+}
+
+.standings-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  vertical-align: middle;
+}
+
+.standings-table tr:last-child td {
+  border-bottom: none;
+}
+
+.standings-table tr.top-spot {
+  background: rgba(var(--uruguay-gold-rgb), 0.03);
+}
+
+.standings-table tr.top-spot td {
+  border-bottom-color: rgba(var(--uruguay-gold-rgb), 0.15);
+}
+
+.standings-table tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.table-rank {
+  font-weight: 800;
+  color: var(--text-secondary);
+  width: 40px;
+}
+
+.standings-table tr.top-spot .table-rank {
+  color: var(--uruguay-gold);
+  font-size: 1.1rem;
+}
+
+.table-team {
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.table-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--celeste);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: white;
+}
+
+tr.top-spot .table-avatar {
+  background: var(--uruguay-gold);
+  color: #0c0f0d;
+  box-shadow: 0 0 10px rgba(var(--uruguay-gold-rgb), 0.3);
+}
+
+.table-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.table-num.points {
+  font-weight: 800;
+  color: var(--celeste);
+}
+
+tr.top-spot .table-num.points {
+  color: var(--uruguay-gold);
+}
+
+/* Form Bubbles column */
+.table-form-group {
+  display: flex;
+  gap: 4px;
+}
+
+.form-bubble {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.form-bubble.present {
+  background: var(--pitch-green-light);
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.4);
+}
+
+.form-bubble.absent {
+  background: #37474f;
+}
+
+/* Concluded Results (Earlier today list) */
+.results-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.result-card {
+  background: rgba(20, 26, 22, 0.5);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.result-card:hover {
+  border-color: rgba(var(--celeste-rgb), 0.25);
+  background: rgba(20, 26, 22, 0.8);
+}
+
+.result-team-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  max-width: 60%;
+}
+
+.result-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.result-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.result-score-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-score {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  background: #111512;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.result-badge-ft {
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: rgba(107, 127, 113, 0.2);
+  color: var(--text-secondary);
+  padding: 2px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+/* Modal registration override */
+.registration-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+.registration-modal.is-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--dark-turf-card);
+  border: 1px solid var(--celeste);
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  padding: 2rem;
+  box-shadow: 0 10px 45px rgba(0, 166, 218, 0.3);
+  z-index: 1001;
+  color: #ffffff;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--celeste);
+}
+
+/* General Layout spacing */
+.full-width-panel {
+  grid-column: 1 / -1;
+}
+
+/* Animations and tweaks */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Responsiveness overrides */
+@media (max-width: 768px) {
+  header.wc-header {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .header-title-group {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .header-actions-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .stadium-time-card {
+    text-align: center;
+  }
+  .stadium-time-card .match-clock-wrapper {
+    justify-content: center;
+  }
+
+  .match-card-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .team-column.team-right {
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .score-box {
+    margin: 0.5rem 0;
+  }
+}
+
+/* Bielsa Easter Egg Styles */
+.bielsa-container {
+  position: fixed;
+  bottom: -350px;
+  right: -350px;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  z-index: 99999;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bielsa-container.active {
+  bottom: 0;
+  right: 0;
+}
+
+.bielsa-image {
+  width: 250px;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 25px rgba(0, 166, 218, 0.4));
+}
+
+.bielsa-bubble {
+  background: #141a16;
+  border: 2px solid var(--uruguay-gold);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  margin-bottom: 50px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.15s;
+}
+
+.bielsa-container.active .bielsa-bubble {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Speech bubble tail */
+.bielsa-bubble::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  bottom: 15px;
+  border-width: 10px 0 10px 10px;
+  border-style: solid;
+  border-color: transparent var(--uruguay-gold);
+  display: block;
+  width: 0;
+}

@@ -8,6 +8,7 @@ This project uses a **single source of truth** approach for the dashboard HTML. 
    - [`views/dashboard_modern.erb`](views/dashboard_modern.erb) - Modern template (default)
    - [`views/dashboard_geocities.erb`](views/dashboard_geocities.erb) - Geocities retro template
    - [`views/dashboard_christmas.erb`](views/dashboard_christmas.erb) - Christmas themed template
+   - [`views/dashboard_worldcup.erb`](views/dashboard_worldcup.erb) - World Cup 2026 Uruguay celestial template
 2. **Generation Script**: [`bin/generate_firebase_html.rb`](bin/generate_firebase_html.rb) renders any ERB template to static HTML
 3. **Firebase HTML**: Generated file at `firebase_public/index.html` (git-ignored, generated on-demand)
 4. **Deploy Script**: [`bin/firebase_deploy.sh`](bin/firebase_deploy.sh) handles the full deployment workflow
@@ -51,9 +52,9 @@ The generator script ([`bin/generate_firebase_html.rb`](bin/generate_firebase_ht
   - Hides register button
   - Removes registration JavaScript
 
-- **Injects Firebase JavaScript** ([`bin/firebase_dashboard_script.js`](bin/firebase_dashboard_script.js)):
+- **Injects Firebase JavaScript** ([`bin/firebase_dashboard_script.js`](bin/firebase_dashboard_script.js) or [`bin/firebase_worldcup_dashboard_script.js`](bin/firebase_worldcup_dashboard_script.js)):
   - Loads data from Firebase Realtime Database
-  - Dynamically updates all dashboard sections
+  - Dynamically updates all dashboard sections / live football fixtures
   - Handles loading states and errors
 
 ## Commands
@@ -65,6 +66,7 @@ The generator script ([`bin/generate_firebase_html.rb`](bin/generate_firebase_ht
 # Deploy with a specific template
 ./bin/firebase_deploy.sh --template christmas
 ./bin/firebase_deploy.sh --template geocities
+./bin/firebase_deploy.sh --template worldcup
 
 # Deploy only hosting (HTML/CSS/JS) with Christmas template
 ./bin/firebase_deploy.sh --template christmas --only hosting
@@ -78,6 +80,7 @@ The generator script ([`bin/generate_firebase_html.rb`](bin/generate_firebase_ht
 # Generate Firebase HTML without deploying (for testing)
 bundle exec ruby bin/generate_firebase_html.rb modern
 bundle exec ruby bin/generate_firebase_html.rb christmas
+bundle exec ruby bin/generate_firebase_html.rb worldcup
 ```
 
 ## File Structure
@@ -87,13 +90,15 @@ office-presence/
 ├── views/
 │   ├── dashboard_modern.erb          # 📝 Modern template
 │   ├── dashboard_geocities.erb       # 📝 Geocities template
-│   └── dashboard_christmas.erb       # 📝 Christmas template
+│   ├── dashboard_christmas.erb       # 📝 Christmas template
+│   └── dashboard_worldcup.erb        # 📝 World Cup template
 ├── public/
-│   ├── css/                          # Source CSS files
-│   └── js/                           # Source JS files
+│   ├── css/                          # Source CSS files (e.g. worldcup.css)
+│   └── js/                           # Source JS files (e.g. worldcup-dashboard.js)
 ├── bin/
 │   ├── generate_firebase_html.rb     # Generates static HTML from any ERB template
 │   ├── firebase_dashboard_script.js  # Firebase data loading script
+│   ├── firebase_worldcup_dashboard_script.js # Firebase World Cup data loading script
 │   ├── sync_assets_to_firebase.sh    # Syncs CSS/JS to firebase_public
 │   └── firebase_deploy.sh            # Main deployment script
 ├── firebase_public/

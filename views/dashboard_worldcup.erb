@@ -1,0 +1,277 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>🏆 Copa Mundial 2026 - Estadio Centenario Presence Tracker</title>
+    <link rel="stylesheet" href="/css/worldcup.css">
+  </head>
+  <body class="worldcup-theme">
+    <div class="container">
+      
+      <!-- Header Banner resembling World Cup Stadium Broadcast -->
+      <header class="wc-header">
+        <div class="header-title-group">
+          <!-- Premium Scalable Vector Graphic of Uruguayan Sol de Mayo -->
+          <svg id="wc-sol-de-mayo" class="sol-de-mayo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+            <!-- Outer Glow / Halo -->
+            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255, 199, 44, 0.2)" stroke-width="2" />
+            
+            <!-- Sun Rays (16 Rays: 8 straight, 8 wavy) -->
+            <g fill="#FFC72C" stroke="#E6B000" stroke-width="1.5" stroke-linejoin="round">
+              <!-- Straight Rays -->
+              <polygon points="50,5 47,20 53,20" />
+              <polygon points="50,95 47,80 53,80" />
+              <polygon points="5,50 20,47 20,53" />
+              <polygon points="95,50 80,47 80,53" />
+              
+              <polygon points="18,18 31,28 27,32" />
+              <polygon points="82,82 69,72 73,68" />
+              <polygon points="82,18 69,28 73,32" />
+              <polygon points="18,82 31,72 27,68" />
+              
+              <!-- Wavy / Flame Rays (approximated for SVG) -->
+              <path d="M 50,5 Q 43,12 50,20" />
+              <path d="M 50,95 Q 57,88 50,80" />
+              <path d="M 5,50 Q 12,43 20,50" />
+              <path d="M 95,50 Q 88,57 80,50" />
+              
+              <path d="M 18,18 Q 22,27 30,30" />
+              <path d="M 82,82 Q 78,73 70,70" />
+              <path d="M 82,18 Q 73,22 70,30" />
+              <path d="M 18,82 Q 27,78 30,70" />
+            </g>
+            
+            <!-- Sun Face Disc -->
+            <circle cx="50" cy="50" r="22" fill="#FFC72C" stroke="#E6B000" stroke-width="1.5" />
+            
+            <!-- Sun Face Details (Eyes, Cheeks, Mouth) -->
+            <g fill="none" stroke="#664B00" stroke-width="1.5" stroke-linecap="round">
+              <!-- Eyes -->
+              <path d="M 42,46 Q 45,43 48,46" />
+              <path d="M 52,46 Q 55,43 58,46" />
+              <circle cx="45" cy="48" r="1" fill="#664B00" />
+              <circle cx="55" cy="48" r="1" fill="#664B00" />
+              
+              <!-- Cheeks / Blush lines -->
+              <path d="M 38,52 Q 40,54 42,52" stroke-width="0.8" />
+              <path d="M 58,52 Q 60,54 62,52" stroke-width="0.8" />
+              
+              <!-- Nose -->
+              <path d="M 50,47 L 49,53 L 51,53" />
+              
+              <!-- Smile -->
+              <path d="M 44,57 Q 50,62 56,57" fill="none" />
+            </g>
+          </svg>
+          
+          <div class="header-text">
+            <h1>Copa Mundial 2026</h1>
+            <div class="subtitle">Estadio Centenario Dashboard</div>
+          </div>
+        </div>
+
+        <div class="header-actions-group">
+          <div class="stadium-time-card">
+            <div class="match-clock-wrapper">
+              <span class="match-half" id="wc-match-half">1T</span>
+              <span class="current-time" id="wc-current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
+            </div>
+            <div class="date"><%= now.strftime("%A, %B %d") %></div>
+          </div>
+          <button class="register-button-wc" id="openRegistrationBtn" type="button">
+            <span>🎟️</span> Register Device
+          </button>
+        </div>
+      </header>
+
+      <!-- Stadium Scoreboard Row -->
+      <div class="scoreboard-grid">
+        <% if show_in_office_tile %>
+          <div class="scoreboard-card" data-stat="present">
+            <div class="scoreboard-num" id="wc-present-count"><%= present_count %></div>
+            <div class="scoreboard-label">En Cancha (Present) 🏃‍♂️</div>
+          </div>
+        <% end %>
+        
+        <% if show_registered_users_tile %>
+          <div class="scoreboard-card" data-stat="total">
+            <div class="scoreboard-num" id="wc-total-people"><%= total_people %></div>
+            <div class="scoreboard-label">Plantel (Squad Size) 👥</div>
+          </div>
+        <% end %>
+        
+        <% if show_today_record_tile %>
+          <div class="scoreboard-card" data-stat="daily-record">
+            <div class="scoreboard-num" id="wc-daily-record"><%= daily_record %></div>
+            <div class="scoreboard-label">Récord de Entradas ⚽</div>
+          </div>
+        <% end %>
+        
+        <% if show_all_time_record_tile %>
+          <div class="scoreboard-card" data-stat="all-time-record">
+            <div class="scoreboard-num" id="wc-all-time-record"><%= all_time_record %></div>
+            <div class="scoreboard-label">Lleno Histórico 🌟</div>
+          </div>
+        <% end %>
+        
+        <% if last_week_winner %>
+          <div class="scoreboard-card winner-card" data-stat="winner">
+            <div class="scoreboard-label">🏆 Balón de Oro (Last Week)</div>
+            <div class="winner-badge-details">
+              <div class="winner-name" id="wc-winner-name"><%= last_week_winner[:person] %></div>
+              <div class="winner-meta" id="wc-winner-meta"><%= last_week_winner[:days] %> goles (<%= last_week_winner[:week_start] %> to <%= last_week_winner[:week_end] %>)</div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Main Layout Panels -->
+      <div class="dashboard-body">
+        
+        <!-- Live Match Fixtures (Currently in Office) -->
+        <div class="panel" data-section="present">
+          <div class="panel-header">
+            <div class="title-wrapper">
+              <span class="panel-icon">⚽</span>
+              <h2>Partidos en Vivo (In Office)</h2>
+            </div>
+            <span class="badge-live">● En Vivo</span>
+          </div>
+          
+          <div class="panel-body" id="wc-live-fixtures">
+            <% if mapped_present.empty? %>
+              <div class="empty-pitch">
+                <div class="pitch-circle">⚽</div>
+                <h3>Estadio Vacío</h3>
+                <p>No hay jugadores calentando en la cancha todavía. ¡Sé el primero en entrar a jugar!</p>
+              </div>
+            <% else %>
+              <div class="fixtures-list">
+                <!-- Javascript will dynamically render match fixture cards here -->
+                <div class="empty-pitch">
+                  <div class="pitch-circle">⚽</div>
+                  <h3>Preparando el Campo</h3>
+                  <p>Alineando a los jugadores para el silbatazo inicial...</p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Right Side Panel: Tournament Standings & Final Whistles -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Tournament Leaderboard (Top attendees this week) -->
+          <div class="panel" data-section="top-attendees">
+            <div class="panel-header">
+              <div class="title-wrapper">
+                <span class="panel-icon">🏆</span>
+                <h2>Tabla de Posiciones</h2>
+              </div>
+            </div>
+            
+            <div class="panel-body">
+              <div class="standings-table-wrapper">
+                <table class="standings-table">
+                  <thead>
+                    <tr>
+                      <th class="table-rank">Pos</th>
+                      <th class="table-team">Jugador</th>
+                      <th class="table-num" style="text-align: center;">PTS</th>
+                      <th class="table-num" style="text-align: center;">GF</th>
+                      <th style="padding-left: 1.5rem;">Forma</th>
+                    </tr>
+                  </thead>
+                  <tbody id="wc-standings-body">
+                    <% if top_attendees.empty? %>
+                      <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Sin datos del torneo todavía.</td>
+                      </tr>
+                    <% else %>
+                      <!-- Standings will be dynamically filled by JS -->
+                      <% top_attendees.take(5).each_with_index do |attendee, index| %>
+                        <tr class="<%= 'top-spot' if index == 0 %>">
+                          <td class="table-rank"><%= index == 0 ? "🥇" : "#{index + 1}" %></td>
+                          <td class="table-team">
+                            <div class="table-avatar"><%= attendee[:person][0].upcase %></div>
+                            <span><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></span>
+                          </td>
+                          <td class="table-num points" style="text-align: center;"><%= attendee[:days] %></td>
+                          <td class="table-num" style="text-align: center;"><%= attendee[:days] * 2 %></td>
+                          <td style="padding-left: 1.5rem;">
+                            <div class="table-form-group">
+                              <!-- Form history dots placeholder, JS will enrich -->
+                              <span class="form-bubble present" title="Present"></span>
+                              <span class="form-bubble present" title="Present"></span>
+                              <span class="form-bubble absent" title="Absent"></span>
+                            </div>
+                          </td>
+                        </tr>
+                      <% end %>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Concluded fixtures (Earlier today list) -->
+          <div class="panel" data-section="recent">
+            <div class="panel-header">
+              <div class="title-wrapper">
+                <span class="panel-icon">🏁</span>
+                <h2>Silbatazo Final (Left Today)</h2>
+              </div>
+            </div>
+            
+            <div class="panel-body" id="wc-concluded-results">
+              <% if mapped_absent.empty? %>
+                <div class="empty-pitch" style="padding: 2rem 1rem;">
+                  <div class="pitch-circle" style="width: 50px; height: 50px; font-size: 1.2rem;">⏱️</div>
+                  <p>Ningún jugador ha abandonado la cancha hoy. ¡Todos siguen en el vestuario!</p>
+                </div>
+              <% else %>
+                <div class="results-list">
+                  <!-- Javascript will dynamically build concluded results -->
+                  <% mapped_absent.take(6).each do |person| %>
+                    <div class="result-card">
+                      <div class="result-team-info">
+                        <div class="result-avatar"><%= person[:person][0].upcase %></div>
+                        <div class="result-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                      </div>
+                      <div class="result-score-info">
+                        <div class="result-score">FT</div>
+                        <span class="result-badge-ft">90'</span>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Registration Dialog Box -->
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <!-- Marcelo Bielsa Easter Egg -->
+    <div id="bielsa-easter-egg" class="bielsa-container">
+      <div class="bielsa-bubble">¡Toasty! 🧉</div>
+      <img src="/img/worldcup/bielsa.png" alt="El Loco Bielsa" class="bielsa-image" />
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/worldcup-dashboard.js"></script>
+  </body>
+</html>
