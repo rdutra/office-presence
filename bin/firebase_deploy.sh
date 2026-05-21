@@ -16,20 +16,26 @@ while [[ $# -gt 0 ]]; do
             TEMPLATE="$2"
             shift 2
             ;;
+        modern|geocities|christmas|summer|easter|autumn|worldcup)
+            TEMPLATE="$1"
+            shift
+            ;;
         --help|-h)
             echo "Firebase Deploy Script"
             echo ""
             echo "Usage:"
-            echo "  ./bin/firebase_deploy.sh [--template TEMPLATE] [firebase-options]"
+            echo "  ./bin/firebase_deploy.sh [TEMPLATE] [--template TEMPLATE] [firebase-options]"
             echo ""
             echo "Options:"
-            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn)"
+            echo "  TEMPLATE               Template to deploy (shorthand)"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, worldcup)"
             echo "                         Default: modern"
             echo ""
             echo "Examples:"
             echo "  ./bin/firebase_deploy.sh                          # Deploy modern template"
+            echo "  ./bin/firebase_deploy.sh worldcup                 # Deploy worldcup template"
             echo "  ./bin/firebase_deploy.sh --template christmas     # Deploy christmas template"
-            echo "  ./bin/firebase_deploy.sh --template geocities --only hosting"
+            echo "  ./bin/firebase_deploy.sh geocities --only hosting  # Deploy geocities hosting only"
             echo ""
             echo "The script will:"
             echo "  1. Generate index.html from the selected template"
@@ -49,11 +55,11 @@ done
 
 # Validate template
 case $TEMPLATE in
-    modern|geocities|christmas|summer|easter|autumn)
+    modern|geocities|christmas|summer|easter|autumn|worldcup)
         ;;
     *)
         echo "❌ Error: Invalid template '$TEMPLATE'"
-        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn"
+        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, worldcup"
         exit 1
         ;;
 esac
@@ -64,10 +70,10 @@ PUBLIC_DIR="$PROJECT_DIR/firebase_public"
 
 # Determine Firebase command
 if command -v firebase &> /dev/null; then
-    FIREBASE_CMD="firebase"
+    FIREBASE_CMD=("firebase")
 elif command -v npx &> /dev/null; then
     echo "⚠️ 'firebase' command not found, using 'npx firebase'..."
-    FIREBASE_CMD="npx -p firebase-tools firebase"
+    FIREBASE_CMD=("npx" "-p" "firebase-tools" "firebase")
 else
     echo "❌ Error: Neither 'firebase' nor 'npx' found. Please install firebase-tools."
     exit 1
@@ -155,7 +161,7 @@ echo ""
 #   ./firebase_deploy.sh                    # Deploy everything
 #   ./firebase_deploy.sh --only hosting     # Deploy only hosting
 #   ./firebase_deploy.sh --only database    # Deploy only database rules
-$FIREBASE_CMD deploy "${FIREBASE_ARGS[@]}"
+"${FIREBASE_CMD[@]}" deploy "${FIREBASE_ARGS[@]}"
 
 DEPLOY_STATUS=$?
 

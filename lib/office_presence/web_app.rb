@@ -21,7 +21,8 @@ module OfficePresence
       summer: :dashboard_summer,
       easter: :dashboard_easter,
       autumn: :dashboard_autumn,
-      enterprise: :dashboard_enterprise
+      enterprise: :dashboard_enterprise,
+      worldcup: :dashboard_worldcup
     }.freeze
 
     # Configuration

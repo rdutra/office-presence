@@ -14,7 +14,7 @@ require "stringio"
 TEMPLATE_NAME = ARGV[0] || "modern"
 
 # Validate template name
-valid_templates = %w[modern geocities christmas summer easter autumn]
+valid_templates = %w[modern geocities christmas summer easter autumn worldcup]
 unless valid_templates.include?(TEMPLATE_NAME)
   puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
   puts "Valid templates: #{valid_templates.join(', ')}"
@@ -159,7 +159,7 @@ firebase_styles = <<~FIREBASE_CSS
     }
 
     /* Hide register button in Firebase mode */
-    .register-button {
+    .register-button, .register-button-wc {
       display: none !important;
     }
   </style>
@@ -184,9 +184,11 @@ rendered_html = rendered_html.sub(/<div class="container[^"]*">/, '<div class="c
 # Remove timezone.js and dashboard.js, replace with Firebase script
 rendered_html = rendered_html.gsub(%r{<script src="/js/timezone\.js"></script>\s*}, '')
 rendered_html = rendered_html.gsub(%r{<script src="/js/dashboard\.js"></script>\s*}, '')
+rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"></script>\s*}, '')
 
 # Add Firebase JavaScript before closing body tag
-firebase_script = File.read(File.join(SCRIPT_DIR, "firebase_dashboard_script.js"))
+script_filename = (TEMPLATE_NAME == "worldcup") ? "firebase_worldcup_dashboard_script.js" : "firebase_dashboard_script.js"
+firebase_script = File.read(File.join(SCRIPT_DIR, script_filename))
 
 rendered_html = rendered_html.sub("</body>", "\n  <script type=\"module\">\n#{firebase_script}\n  </script>\n</body>")
 
