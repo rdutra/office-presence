@@ -75,19 +75,22 @@
     }
   }
 
-  function renderForm(days) {
-    // Generate 5 form circles: green check for present day, grey dash for absent
-    // Since we don't have historical days, we simulate it based on attendance days (e.g. 3 days present = 3 green bubbles)
-    const totalDays = 5;
-    const presentCount = Math.min(totalDays, Math.max(0, days));
-    const absentCount = totalDays - presentCount;
+  function renderForm(wins) {
+    // Generate up to 5 green bubbles for weekly wins
+    const winCount = parseInt(wins) || 0;
+    const displayCount = Math.min(5, winCount);
+    const extraCount = winCount > 5 ? winCount - 5 : 0;
     
     let html = '<div class="table-form-group">';
-    for (let i = 0; i < presentCount; i++) {
-      html += '<span class="form-bubble present" title="Present"></span>';
-    }
-    for (let i = 0; i < absentCount; i++) {
-      html += '<span class="form-bubble absent" title="Absent"></span>';
+    if (winCount === 0) {
+      html += '<span class="form-bubble absent" title="No wins yet"></span>';
+    } else {
+      for (let i = 0; i < displayCount; i++) {
+        html += '<span class="form-bubble present" title="Weekly Winner"></span>';
+      }
+      if (extraCount > 0) {
+        html += `<span style="font-size: 0.75rem; color: var(--uruguay-gold); font-weight: 800; margin-left: 2px;">+${extraCount}</span>`;
+      }
     }
     html += '</div>';
     return html;
@@ -187,11 +190,11 @@
       `;
     }
 
-    const medals = ['🥇', '🥈', '🥉'];
     return attendees.slice(0, 5).map((attendee, index) => {
-      const name = formatDisplayName(attendee);
+      const name = attendee.person || 'Unknown';
       const days = attendee.days || 0;
-      const rank = medals[index] || `${index + 1}`;
+      const wins = attendee.weekly_wins || 0;
+      const rank = index + 1;
       const topClass = index === 0 ? 'top-spot' : '';
       const initial = attendee.person ? attendee.person[0].toUpperCase() : '?';
 
@@ -205,7 +208,7 @@
           <td class="table-num points" style="text-align: center;">${days}</td>
           <td class="table-num" style="text-align: center;">${days * 2}</td>
           <td style="padding-left: 1.5rem;">
-            ${renderForm(days)}
+            ${renderForm(wins)}
           </td>
         </tr>
       `;

@@ -178,9 +178,9 @@
                     <tr>
                       <th class="table-rank">Pos</th>
                       <th class="table-team">Jugador</th>
-                      <th class="table-num" style="text-align: center;">PTS</th>
+                      <th class="table-num" style="text-align: center;">PTS (Días)</th>
                       <th class="table-num" style="text-align: center;">GF</th>
-                      <th style="padding-left: 1.5rem;">Forma</th>
+                      <th style="padding-left: 1.5rem;">Copas (Wins)</th>
                     </tr>
                   </thead>
                   <tbody id="wc-standings-body">
@@ -192,19 +192,26 @@
                       <!-- Standings will be dynamically filled by JS -->
                       <% top_attendees.take(5).each_with_index do |attendee, index| %>
                         <tr class="<%= 'top-spot' if index == 0 %>">
-                          <td class="table-rank"><%= index == 0 ? "🥇" : "#{index + 1}" %></td>
+                          <td class="table-rank"><%= index + 1 %></td>
                           <td class="table-team">
                             <div class="table-avatar"><%= attendee[:person][0].upcase %></div>
-                            <span><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></span>
+                            <span><%= attendee[:person] %></span>
                           </td>
                           <td class="table-num points" style="text-align: center;"><%= attendee[:days] %></td>
                           <td class="table-num" style="text-align: center;"><%= attendee[:days] * 2 %></td>
                           <td style="padding-left: 1.5rem;">
                             <div class="table-form-group">
-                              <!-- Form history dots placeholder, JS will enrich -->
-                              <span class="form-bubble present" title="Present"></span>
-                              <span class="form-bubble present" title="Present"></span>
-                              <span class="form-bubble absent" title="Absent"></span>
+                              <% wins = attendee[:weekly_wins] || 0 %>
+                              <% if wins > 0 %>
+                                <% [wins, 5].min.times do %>
+                                  <span class="form-bubble present" title="Weekly Winner"></span>
+                                <% end %>
+                                <% if wins > 5 %>
+                                  <span style="font-size: 0.75rem; color: var(--uruguay-gold); font-weight: 800; margin-left: 2px;">+<%= wins - 5 %></span>
+                                <% end %>
+                              <% else %>
+                                <span class="form-bubble absent" title="No wins yet"></span>
+                              <% end %>
                             </div>
                           </td>
                         </tr>
