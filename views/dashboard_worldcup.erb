@@ -177,7 +177,7 @@
                   <thead>
                     <tr>
                       <th class="table-rank">Pos</th>
-                      <th class="table-team">Jugador</th>
+                      <th>Jugador</th>
                       <th class="table-num" style="text-align: center;">PTS (Días)</th>
                       <th class="table-num" style="text-align: center;">GF</th>
                       <th style="padding-left: 1.5rem;">Copas (Wins)</th>
@@ -245,7 +245,7 @@
                     <div class="result-card">
                       <div class="result-team-info">
                         <div class="result-avatar"><%= person[:person][0].upcase %></div>
-                        <div class="result-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                        <div class="result-name"><%= person[:person] %></div>
                       </div>
                       <div class="result-score-info">
                         <div class="result-score">FT</div>

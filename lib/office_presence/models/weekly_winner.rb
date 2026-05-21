@@ -33,14 +33,15 @@ module OfficePresence
       end
 
       def counts_by_person_key
-        person_key_expr = Sequel.function(:coalesce, Sequel[:weekly_winners][:person_mac], Sequel[:weekly_winners][:person])
+        current_person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:weekly_winners][:person])
 
-        non_anonymous_dataset
-          .select(person_key_expr.as(:person_key), Sequel.function(:count, 1).as(:count))
-          .group(person_key_expr)
+        db[:weekly_winners]
+          .left_join(:people, mac: :person_mac)
+          .exclude(anonymous_name_condition)
+          .group_and_count(current_person_expr.as(:person))
           .all
           .each_with_object({}) do |row, counts|
-            counts[row[:person_key]] = row[:count]
+            counts[row[:person]] = row[:count]
           end
       end
 
