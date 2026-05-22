@@ -115,8 +115,10 @@ rendered_html = render_template
 # 2. Remove registration-related scripts
 # 3. Add Firebase JavaScript and CSS overrides
 
-# Remove registration modal
-rendered_html = rendered_html.gsub(/<div id="registrationModal"[^>]*>.*?<\/div>\s*(?=<script)/m, '')
+# Remove registration modal (specifically targeting the modal div and its contents)
+rendered_html = rendered_html.gsub(/<!-- Registration Dialog Box -->\s*<div id="registrationModal".*?<\/div>\s*<!--/m, '<!--')
+# Also remove the specific registration scripts if any were missed, but ensure we don't catch the easter egg logic
+rendered_html = rendered_html.gsub(/<div id="registrationModal"[^>]*>.*?<\/div>\s*(?=<script)/m, '') if rendered_html.include?('registrationModal')
 
 # Remove registration scripts
 rendered_html = rendered_html.gsub(%r{<script src="/js/registration\.js"></script>\s*}, '')
@@ -184,7 +186,9 @@ rendered_html = rendered_html.sub(/<div class="container[^"]*">/, '<div class="c
 # Remove timezone.js and dashboard.js, replace with Firebase script
 rendered_html = rendered_html.gsub(%r{<script src="/js/timezone\.js"></script>\s*}, '')
 rendered_html = rendered_html.gsub(%r{<script src="/js/dashboard\.js"></script>\s*}, '')
-rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"></script>\s*}, '')
+# ONLY remove worldcup-dashboard.js if it's NOT the worldcup template
+# Actually, for consistency with the user's request, we keep it for worldcup
+rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"></script>\s*}, '') if TEMPLATE_NAME != "worldcup"
 
 # Add Firebase JavaScript before closing body tag
 script_filename = (TEMPLATE_NAME == "worldcup") ? "firebase_worldcup_dashboard_script.js" : "firebase_dashboard_script.js"

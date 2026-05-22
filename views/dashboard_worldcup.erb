@@ -147,7 +147,15 @@
                 <p>No hay jugadores calentando en la cancha todavía. ¡Sé el primero en entrar a jugar!</p>
               </div>
             <% else %>
-              <div class="fixtures-list">
+              <% 
+                column_class = ""
+                if mapped_present.length > 14
+                  column_class = "cols-3"
+                elsif mapped_present.length > 8
+                  column_class = "cols-2"
+                end
+              %>
+              <div class="fixtures-list <%= column_class %>">
                 <!-- Javascript will dynamically render match fixture cards here -->
                 <div class="empty-pitch">
                   <div class="pitch-circle">⚽</div>
@@ -157,6 +165,7 @@
               </div>
             <% end %>
           </div>
+
         </div>
 
         <!-- Right Side Panel: Tournament Standings & Final Whistles -->

@@ -38,8 +38,7 @@
 
   function formatDisplayName(person) {
     if (!person) return '';
-    const name = person.person || 'Unknown';
-    return person.medal ? `${name} ${person.medal}` : name;
+    return person.person || 'Unknown';
   }
 
   function formatClock(utcString) {
@@ -96,8 +95,38 @@
     return html;
   }
 
+  let marqueeInterval = null;
+  function setupFixturesMarquee() {
+    if (marqueeInterval) clearInterval(marqueeInterval);
+    const container = document.getElementById('wc-live-fixtures');
+    const list = container?.querySelector('.fixtures-list');
+    if (!container || !list) return;
+
+    // Reset transform
+    list.style.transform = 'translateY(0)';
+    
+    // Only scroll if content exceeds container height
+    if (list.scrollHeight <= container.clientHeight + 10) return;
+
+    let offset = 0;
+    const scrollStep = 120; // Scroll by roughly one match card height
+    const delay = 4000;    // Pause on each view
+
+    marqueeInterval = setInterval(() => {
+      const maxScroll = list.scrollHeight - container.clientHeight;
+      offset += scrollStep;
+
+      if (offset > maxScroll + 50) {
+        offset = 0;
+      }
+
+      list.style.transform = `translateY(-${offset}px)`;
+    }, delay);
+  }
+
   function renderLiveFixtures(people, clockInfo) {
     if (!Array.isArray(people) || people.length === 0) {
+      if (marqueeInterval) clearInterval(marqueeInterval);
       return `
         <div class="empty-pitch">
           <div class="pitch-circle">⚽</div>
@@ -107,7 +136,7 @@
       `;
     }
 
-    let html = '<div class="fixtures-list">';
+    let html = `<div class="fixtures-list">`;
     
     // Pair people 2-by-2
     for (let i = 0; i < people.length; i += 2) {
@@ -115,27 +144,25 @@
       const name1 = formatDisplayName(p1);
       const dev1 = p1.device || 'Device';
       
-      // Goals are represented by the attendee's score or a simulated metric (e.g. days present, default to 1)
+      // Real weekly days present as goals!
       const goals1 = p1.days || 1;
       
       let name2, dev2, goals2, avatar2, isRivalClass = "";
       
       if (i + 1 < people.length) {
-        // We have a pair!
         const p2 = people[i + 1];
         name2 = formatDisplayName(p2);
         dev2 = p2.device || 'Device';
         goals2 = p2.days || 1;
         avatar2 = `<div class="player-jersey">${p2.person ? p2.person[0].toUpperCase() : '?' }</div>`;
       } else {
-        // Odd player out: Pair with a funny AI Uruguayan rival / Office appliance
         const rivalIdx = (new Date().getDate() + i) % rivals.length;
         const rival = rivals[rivalIdx];
         name2 = rival.name;
         dev2 = rival.device;
         
-        // Simulating rival goals (a fun dynamic value around player goals)
-        goals2 = Math.max(0, Math.floor(goals1 + (Math.random() * 3 - 1.5)));
+        // Rivals have attendance around the average or slightly lower
+        goals2 = Math.max(0, Math.floor(goals1 + (Math.random() * 2 - 1.5)));
         avatar2 = `<div class="player-jersey">🇺🇾</div>`;
         isRivalClass = "is-rival";
       }
@@ -145,7 +172,6 @@
       html += `
         <div class="match-card ${isRivalClass}">
           <div class="match-card-grid">
-            <!-- Team 1 / Player 1 -->
             <div class="team-column">
               ${avatar1}
               <div class="player-details">
@@ -154,7 +180,6 @@
               </div>
             </div>
 
-            <!-- Scoreboard Box -->
             <div class="score-box">
               <div class="score-digits">
                 <span>${goals1}</span>
@@ -164,7 +189,6 @@
               <div class="match-status-badge live">${clockInfo.clock}</div>
             </div>
 
-            <!-- Team 2 / Player 2 -->
             <div class="team-column team-right ${isRivalClass ? 'is-opponent' : ''}">
               ${avatar2}
               <div class="player-details">
@@ -178,6 +202,10 @@
     }
 
     html += '</div>';
+    
+    // Trigger marquee setup after render
+    setTimeout(setupFixturesMarquee, 100);
+    
     return html;
   }
 
@@ -251,49 +279,54 @@
     return html;
   }
 
+  // Expose the update function globally for Firebase mode
+  window.updateWorldCupDashboard = function(data) {
+    if (!data) return;
+
+    const nowUtc = data.now || data.last_updated;
+    const clockInfo = getSimulatedMatchClock();
+
+    // Update time & simulated match half
+    if (timeEl) {
+      timeEl.dataset.utc = normalizeUtc(nowUtc) || '';
+      timeEl.textContent = formatClock(nowUtc);
+    }
+    if (halfEl) {
+      halfEl.textContent = clockInfo.half;
+    }
+
+    // Update scoreboards
+    if (presentCountEl) presentCountEl.textContent = data.present_count ?? 0;
+    if (totalPeopleEl) totalPeopleEl.textContent = data.total_people ?? 0;
+    if (dailyRecordEl) dailyRecordEl.textContent = data.daily_record ?? 0;
+    if (allTimeRecordEl) allTimeRecordEl.textContent = data.all_time_record ?? 0;
+
+    // Update winner badge if available
+    if (data.last_week_winner) {
+      if (winnerNameEl) winnerNameEl.textContent = data.last_week_winner.person || 'Unknown';
+      if (winnerMetaEl) {
+        winnerMetaEl.textContent = `${data.last_week_winner.days || 0} goles (${data.last_week_winner.week_start} to ${data.last_week_winner.week_end})`;
+      }
+    }
+
+    // Render fixtures, standings, and early exits
+    if (liveFixturesEl) {
+      liveFixturesEl.innerHTML = renderLiveFixtures(data.mapped_present, clockInfo);
+    }
+    if (standingsEl) {
+      standingsEl.innerHTML = renderStandings(data.top_attendees);
+    }
+    if (concludedEl) {
+      concludedEl.innerHTML = renderConcluded(data.mapped_absent);
+    }
+  };
+
   async function fetchDashboard() {
     try {
       const res = await fetch('/api/dashboard');
       if (!res.ok) throw new Error('Failed to load dashboard data');
       const data = await res.json();
-
-      const nowUtc = data.now || data.last_updated;
-      const clockInfo = getSimulatedMatchClock();
-
-      // Update time & simulated match half
-      if (timeEl) {
-        timeEl.dataset.utc = normalizeUtc(nowUtc) || '';
-        timeEl.textContent = formatClock(nowUtc);
-      }
-      if (halfEl) {
-        halfEl.textContent = clockInfo.half;
-      }
-
-      // Update scoreboards
-      if (presentCountEl) presentCountEl.textContent = data.present_count ?? 0;
-      if (totalPeopleEl) totalPeopleEl.textContent = data.total_people ?? 0;
-      if (dailyRecordEl) dailyRecordEl.textContent = data.daily_record ?? 0;
-      if (allTimeRecordEl) allTimeRecordEl.textContent = data.all_time_record ?? 0;
-
-      // Update winner badge if available
-      if (data.last_week_winner) {
-        if (winnerNameEl) winnerNameEl.textContent = data.last_week_winner.person || 'Unknown';
-        if (winnerMetaEl) {
-          winnerMetaEl.textContent = `${data.last_week_winner.days || 0} goles (${data.last_week_winner.week_start} to ${data.last_week_winner.week_end})`;
-        }
-      }
-
-      // Render fixtures, standings, and early exits
-      if (liveFixturesEl) {
-        liveFixturesEl.innerHTML = renderLiveFixtures(data.mapped_present, clockInfo);
-      }
-      if (standingsEl) {
-        standingsEl.innerHTML = renderStandings(data.top_attendees);
-      }
-      if (concludedEl) {
-        concludedEl.innerHTML = renderConcluded(data.mapped_absent);
-      }
-
+      window.updateWorldCupDashboard(data);
     } catch (e) {
       console.error('World Cup dashboard update failed', e);
     }
@@ -404,11 +437,18 @@
   }
 
   // Initialization
-  document.addEventListener("DOMContentLoaded", () => {
-    fetchDashboard();
-    setInterval(fetchDashboard, 30000);
-    setupRegistrationModal();
-    updateRegistrationButtonText();
-    setupEasterEgg();
-  });
+  if (!window.FIREBASE_MODE) {
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchDashboard();
+      setInterval(fetchDashboard, 30000);
+      setupRegistrationModal();
+      updateRegistrationButtonText();
+      setupEasterEgg();
+    });
+  } else {
+    // In Firebase mode, just setup the visuals
+    document.addEventListener("DOMContentLoaded", () => {
+      setupEasterEgg();
+    });
+  }
 })();

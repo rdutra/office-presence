@@ -125,13 +125,24 @@ module OfficePresence
         mapped = mapped_devices
         mapped_present, mapped_absent = split_by_presence(mapped)
         medal_counts = weekly_winner_model.counts_by_person_key
+        
+        # Get weekly attendance counts for everyone
+        start_date, end_date = current_week_bounds
+        weekly_stats = attendance_model.top_attendees_in_range(start_date: start_date, end_date: end_date, limit: 1000)
+        attendance_days = weekly_stats.each_with_object({}) { |s, h| h[s[:person]] = s[:days] }
 
         # Filter "Earlier today" to only show people who were present today
         today_start = Time.now.utc.to_date.to_time.utc.iso8601.gsub(/\+00:00\z/, "Z")
         earlier_today = mapped_absent.select { |d| d[:last_seen_utc] >= today_start }
 
-        decorated_present = decorate_with_medals(mapped_present, medal_counts)
-        decorated_absent = decorate_with_medals(earlier_today, medal_counts)
+        decorated_present = decorate_with_medals(mapped_present, medal_counts).map do |p|
+          p.merge(days: attendance_days[p[:person]] || 1) # Default to 1 if they are here today
+        end
+        
+        decorated_absent = decorate_with_medals(earlier_today, medal_counts).map do |p|
+          p.merge(days: attendance_days[p[:person]] || 1)
+        end
+
         decorated_attendees = decorate_with_medals(
           attendance_model.top_attendees_for_week(reference_time: Time.now, limit: 10),
           medal_counts

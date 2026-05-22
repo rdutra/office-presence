@@ -449,20 +449,28 @@ header.wc-header::before {
 }
 
 /* Fixtures list (Live Matches) */
+#wc-live-fixtures {
+  max-height: calc(100vh - 250px);
+  overflow: hidden;
+  position: relative;
+  border-radius: 12px;
+}
+
 .fixtures-list {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Fixture card representing a match */
+/* Match card representing a match */
 .match-card {
-  background: linear-gradient(135deg, rgba(20, 26, 22, 0.9) 0%, rgba(12, 15, 13, 0.95) 100%);
-  border: 1px solid rgba(var(--celeste-rgb), 0.15);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(12, 15, 13, 0.98) 100%);
+  border: 1px solid rgba(var(--celeste-rgb), 0.2);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
 }
@@ -492,6 +500,7 @@ header.wc-header::before {
   grid-template-columns: 1fr 100px 1fr;
   align-items: center;
   text-align: center;
+  gap: 0.5rem;
 }
 
 /* Match Team / Player column */
@@ -500,6 +509,7 @@ header.wc-header::before {
   align-items: center;
   gap: 1rem;
   text-align: left;
+  min-width: 0; /* CRITICAL: allows the column to shrink and trigger ellipsis */
 }
 
 .team-column.team-right {
@@ -554,18 +564,15 @@ header.wc-header::before {
   font-size: 1.1rem;
   font-weight: 700;
   color: #ffffff;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  line-height: 1.1;
+  word-wrap: break-word;
 }
 
 .player-device {
   font-size: 0.75rem;
   color: var(--text-secondary);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  margin-top: 1px;
+  line-height: 1.1;
+  margin-top: 2px;
 }
 
 .team-column.is-opponent .player-name {
