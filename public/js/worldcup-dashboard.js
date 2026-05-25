@@ -322,6 +322,7 @@
   };
 
   async function fetchDashboard() {
+    if (window.FIREBASE_MODE) return;
     try {
       const res = await fetch('/api/dashboard');
       if (!res.ok) throw new Error('Failed to load dashboard data');
@@ -334,6 +335,7 @@
 
   // Setup registration button text check (analogous to standard dashboard.js)
   async function updateRegistrationButtonText() {
+    if (window.FIREBASE_MODE) return;
     const openBtn = document.getElementById('openRegistrationBtn');
     if (!openBtn) return;
     try {

@@ -257,8 +257,60 @@ class StickersDashboard {
     const percentage = Math.min(100, Math.round((present / total) * 100));
     this.completionEl.textContent = `${percentage}%`;
   }
+
+  setupEasterEgg() {
+    const bielsaContainer = document.getElementById('bielsa-easter-egg');
+    if (!bielsaContainer) return;
+
+    // Create audio object
+    const toastyAudio = new Audio('/img/worldcup/toasty.mp3');
+    let isRunning = false;
+
+    function triggerToasty() {
+      if (isRunning) return;
+      isRunning = true;
+
+      // Play audio
+      toastyAudio.currentTime = 0;
+      toastyAudio.play().catch(e => console.log("Audio play failed:", e));
+
+      // Show Bielsa
+      bielsaContainer.classList.add('active');
+
+      // Hide after animation
+      setTimeout(() => {
+        bielsaContainer.classList.remove('active');
+        setTimeout(() => {
+          isRunning = false;
+        }, 500);
+      }, 1500);
+    }
+
+    function scheduleNextToasty() {
+      // Random time between 3 and 10 minutes
+      const minTime = 3 * 60 * 1000;
+      const maxTime = 10 * 60 * 1000;
+      const nextTime = Math.random() * (maxTime - minTime) + minTime;
+
+      setTimeout(() => {
+        triggerToasty();
+        scheduleNextToasty();
+      }, nextTime);
+    }
+
+    // Manual trigger with 'f' key
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'f') {
+        triggerToasty();
+      }
+    });
+
+    // Start random schedule
+    scheduleNextToasty();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   window.stickersDashboard = new StickersDashboard();
+  window.stickersDashboard.setupEasterEgg();
 });

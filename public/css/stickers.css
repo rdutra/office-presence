@@ -325,7 +325,64 @@ body.stickers-theme {
 }
 
 
-@media (max-width: 1200px) {
-  .marginalia { display: none; }
-  .book { width: 98%; }
+
+/* Bielsa Easter Egg Styles */
+.bielsa-container {
+  position: fixed;
+  bottom: -350px;
+  right: -350px;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  z-index: 99999;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+.bielsa-container.active {
+  bottom: 0;
+  right: 0;
+}
+
+.bielsa-image {
+  width: 250px;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 25px rgba(0, 166, 218, 0.4));
+}
+
+.bielsa-bubble {
+  background: #141a16;
+  border: 2px solid #D4AF37;
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  margin-bottom: 50px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.15s;
+}
+
+.bielsa-container.active .bielsa-bubble {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.bielsa-bubble::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  bottom: 15px;
+  border-width: 10px 0 10px 10px;
+  border-style: solid;
+  border-color: transparent #D4AF37;
+  display: block;
+  width: 0;
+}
+
