@@ -145,17 +145,28 @@ class StickersDashboard {
         </div>`;
 
       if (person.image_url) {
-        stickerEl.innerHTML = `
-          <img src="${person.image_url}" alt="${person.person}" onerror="this.parentElement.innerHTML='${silhouetteSvg}<div class=\\'sticker-info\\'><div class=\\'sticker-name\\'>${person.person}</div></div>'">
-          <div class="sticker-info">
-            <div class="sticker-name">${person.person}</div>
-          </div>
-        `;
-      } else {
+        const img = document.createElement('img');
+        img.src = person.image_url;
+        img.alt = person.person;
+        img.addEventListener('error', function() {
+          this.style.display = 'none';
+          const sil = document.createElement('div');
+          sil.className = 'sticker-silhouette';
+          sil.innerHTML = silhouetteSvg;
+          stickerEl.insertBefore(sil, stickerEl.firstChild);
+        });
+        stickerEl.appendChild(img);
+        
+        const info = document.createElement('div');
+        info.className = 'sticker-info';
+        const medal = person.medal ? `<div class="sticker-medal">${person.medal}</div>` : '';
+        info.innerHTML = `<div class="sticker-name">${person.person}</div>${medal}`;
+        stickerEl.appendChild(info);      } else {
+        const medal = person.medal ? `<div class="sticker-medal">${person.medal}</div>` : '';
         stickerEl.innerHTML = `
           ${silhouetteSvg}
           <div class="sticker-info">
-            <div class="sticker-name">${person.person}</div>
+            <div class="sticker-name">${person.person}</div>${medal}
           </div>
         `;
       }

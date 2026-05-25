@@ -251,10 +251,12 @@ body.stickers-theme {
 .sticker-info {
   height: 25%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
   padding: 2px;
   background: white;
+  line-height: 1.1;
 }
 
 .sticker-name {
@@ -263,7 +265,11 @@ body.stickers-theme {
   color: var(--album-blue);
   text-align: center;
   text-transform: uppercase;
-  line-height: 1;
+}
+
+.sticker-medal {
+  font-size: 0.5rem;
+  margin-top: 1px;
 }
 
 /* Footer Styling */
@@ -318,29 +324,6 @@ body.stickers-theme {
   transform: rotate(-5deg);
 }
 
-/* Modal */
-.registration-modal {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  visibility: hidden;
-  opacity: 0;
-  z-index: 10000;
-  pointer-events: none;
-}
-.registration-modal.is-open { visibility: visible; opacity: 1; pointer-events: auto; }
-.modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); }
-.modal-content {
-  position: relative;
-  background: #fff;
-  padding: 20px;
-  width: min(450px, 90vw);
-  box-shadow: 15px 15px 0px rgba(0,0,0,0.3);
-  border: 3px solid var(--uruguay-gold);
-}
-.modal-close { position: absolute; top: 5px; right: 5px; border: none; background: none; font-size: 1.5rem; cursor: pointer; }
 
 @media (max-width: 1200px) {
   .marginalia { display: none; }

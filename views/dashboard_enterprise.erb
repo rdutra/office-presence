@@ -41,7 +41,7 @@
                     <%= person[:person][0].upcase %>
                   </div>
                   <div class="person-info">
-                    <div class="person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                    <div class="person-name"><%= person[:person] %> <%= person[:medal] %></div>
                     <div class="person-device"><%= person[:device] || 'Device' %></div>
                   </div>
                   <div class="status-indicator" title="<%= person[:status].capitalize %>"></div>
