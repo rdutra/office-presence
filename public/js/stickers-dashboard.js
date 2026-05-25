@@ -26,9 +26,15 @@ class StickersDashboard {
   }
 
   init() {
+    if (window.FIREBASE_MODE) {
+      console.log("Stickers Dashboard running in Firebase mode");
+      return; // Skip auto-fetching in static Firebase mode
+    }
+
     this.fetchData();
     setInterval(() => this.fetchData(), this.refreshInterval);
-    
+    // ...
+
     // Setup timezone handling for the clock
     if (typeof initializeTimezone === 'function') {
       initializeTimezone();
