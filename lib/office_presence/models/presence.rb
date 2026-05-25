@@ -66,7 +66,7 @@ module OfficePresence
           .join(:people, mac: :mac)
           .where(Sequel[:people][:visible] => true)
           .select_all(:devices)
-          .select_append(Sequel[:people][:person], Sequel[:people][:device].as(:device_name))
+          .select_append(Sequel[:people][:person], Sequel[:people][:device].as(:device_name), Sequel[:people][:image_url])
           .order(Sequel.desc(:last_seen_utc))
           .all
           .map do |row|
@@ -78,7 +78,8 @@ module OfficePresence
               hostname: row[:hostname],
               device_id: row[:device_id],
               last_seen_utc: row[:last_seen_utc],
-              ping_failure_count: row[:ping_failure_count]
+              ping_failure_count: row[:ping_failure_count],
+              image_url: row[:image_url]
             }
           end
 
@@ -143,6 +144,13 @@ module OfficePresence
           p.merge(days: attendance_days[p[:person]] || 1)
         end
 
+        decorated_all = decorate_with_medals(mapped, medal_counts).map do |p|
+          p.merge(
+            days: attendance_days[p[:person]] || 0,
+            present: mapped_present.any? { |mp| mp[:mac] == p[:mac] }
+          )
+        end
+
         decorated_attendees = decorate_with_medals(
           attendance_model.top_attendees_for_week(reference_time: Time.now, limit: 10),
           medal_counts
@@ -163,6 +171,7 @@ module OfficePresence
           now: Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
           mapped_present: decorated_present,
           mapped_absent: decorated_absent.take(8),
+          mapped_all: decorated_all,
           present_count: decorated_present.length,
           total_people: person_model.count,
           top_attendees: decorated_attendees,

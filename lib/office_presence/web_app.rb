@@ -22,7 +22,8 @@ module OfficePresence
       easter: :dashboard_easter,
       autumn: :dashboard_autumn,
       enterprise: :dashboard_enterprise,
-      worldcup: :dashboard_worldcup
+      worldcup: :dashboard_worldcup,
+      stickers: :dashboard_stickers
     }.freeze
 
     # Configuration
@@ -214,7 +215,8 @@ module OfficePresence
         registered: !person.nil?,
         person: person&.[](:person),
         device: person&.[](:device),
-        visible: person&.[](:visible) != false
+        visible: person&.[](:visible) != false,
+        image_url: person&.[](:image_url)
       )
     end
 
@@ -222,6 +224,7 @@ module OfficePresence
       data = parse_json_body
       person_name = data["person"]&.strip
       device_name = data["device"]&.strip
+      image_url = data["image_url"]&.strip
 
       halt 400, json(error: "Person name is required") if person_name.nil? || person_name.empty?
 
@@ -240,7 +243,8 @@ module OfficePresence
         person: person_name,
         device: device_name || "",
         visible: visible,
-        device_id: device[:device_id]
+        device_id: device[:device_id],
+        image_url: image_url
       )
 
       message = is_update ? "Successfully updated!" : "Successfully registered!"

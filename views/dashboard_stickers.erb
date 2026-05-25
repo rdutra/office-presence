@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>⚽ Álbum Oficial - Uruguay Team 2026</title>
+    <link rel="stylesheet" href="/css/stickers.css">
+  </head>
+  <body class="stickers-theme">
+    <div class="desk-background"></div>
+    
+    <div class="album-container">
+      <div class="book-spine"></div>
+      <div class="book">
+        <!-- LEFT PAGE -->
+        <div class="page left-page">
+          <header class="album-page-header">
+            <div class="header-main">
+              <div class="panini-logo">OFFICE <span>PRESENCE</span></div>
+              <div class="header-titles">
+                <h1>URUGUAY</h1>
+                <div class="subtitle">WORLD CUP 2026</div>
+              </div>
+            </div>
+          </header>
+
+          <main class="sticker-canvas">
+            <div class="sticker-grid" id="stickers-container-left">
+              <div class="loading-stickers">Abriendo...</div>
+            </div>
+          </main>
+
+          <footer class="album-page-footer">
+            <div class="page-number">PÁG 24</div>
+            <div class="tournament-stamp">ESTADIO CENTENARIO</div>
+          </footer>
+        </div>
+
+        <!-- RIGHT PAGE -->
+        <div class="page right-page">
+          <header class="album-page-header">
+            <div class="page-stats-stamp">
+              <div class="stat-circle">
+                <span id="sticker-completion">0%</span>
+                <label>LISTO</label>
+              </div>
+              <div class="stat-counts">
+                <span id="st-present-count">0</span> / <span id="st-total-people">0</span>
+                <small>FIGURITAS</small>
+              </div>
+            </div>
+          </header>
+
+          <main class="sticker-canvas">
+            <div class="sticker-grid" id="stickers-container-right">
+              <div class="loading-stickers">Sobres...</div>
+            </div>
+          </main>
+
+          <footer class="album-page-footer">
+            <div class="timestamp-stamp">
+              <div class="time" id="st-current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></div>
+              <div class="date"><%= now.strftime("%d.%m.%Y") %></div>
+            </div>
+            <div class="page-number">PÁG 25</div>
+          </footer>
+        </div>
+      </div>
+
+      <!-- Marginalia stays outside -->
+      <div class="marginalia">
+        <div class="standings-postit">
+          <h3>TABLA DE POSICIONES</h3>
+          <div id="st-standings-body">
+            <!-- Top attendees as handwritten notes -->
+          </div>
+        </div>
+
+        <button class="packet-button" id="openRegistrationBtn" type="button">
+          <div class="packet-inner">
+            <span class="sparkle">✨</span>
+            PEGAR FIGURITA
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/presence.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/stickers-dashboard.js"></script>
+  </body>
+</html>

@@ -3,6 +3,7 @@ async function loadDeviceInfo() {
   const deviceInfoDiv = document.getElementById('deviceInfo');
   const personInput = document.getElementById('personName');
   const deviceInput = document.getElementById('deviceName');
+  const imageInput = document.getElementById('imageUrl');
   const visibleCheckbox = document.getElementById('visibleCheckbox');
   const submitBtn = document.getElementById('submitBtn');
   const visibilityToggle = document.getElementById('visibilityToggle');
@@ -28,6 +29,7 @@ async function loadDeviceInfo() {
       infoDiv.textContent = `✓ You're currently registered as "${data.person}"${data.device ? ' with device "' + data.device + '"' : ''}. You can update your information below.`;
       personInput.value = data.person;
       deviceInput.value = data.device || '';
+      if (imageInput) imageInput.value = data.image_url || '';
       visibleCheckbox.checked = data.visible;
       submitBtn.textContent = 'Update Registration';
 
@@ -53,12 +55,14 @@ async function registerDevice(event) {
   
   const personInput = document.getElementById('personName');
   const deviceInput = document.getElementById('deviceName');
+  const imageInput = document.getElementById('imageUrl');
   const visibleCheckbox = document.getElementById('visibleCheckbox');
   const submitBtn = document.getElementById('submitBtn');
   const infoDiv = document.getElementById('registerInfo');
 
   const person = personInput.value.trim();
   const device = deviceInput.value.trim();
+  const image_url = imageInput ? imageInput.value.trim() : null;
   const visible = visibleCheckbox.checked;
 
   if (!person) {
@@ -74,7 +78,7 @@ async function registerDevice(event) {
     const response = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ person, device, visible })
+      body: JSON.stringify({ person, device, visible, image_url })
     });
 
     const data = await response.json();
