@@ -107,18 +107,38 @@ class StickersDashboard {
 
     const candidates = (this.data.mapped_all || [])
       .filter(p => p.person && !p.person.startsWith('Anonymous'));
-    const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
+    
+    // Sort: Present first, then alphabetical
+    candidates.sort((a, b) => {
+      if (a.present !== b.present) return a.present ? -1 : 1;
+      return a.person.localeCompare(b.person);
+    });
 
+    const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
     if (totalPages <= 1) return;
 
-    // Determine direction change
-    if (this.currentPage >= totalPages - 1) {
-      this.autoFlipDirection = -1;
-    } else if (this.currentPage <= 0) {
-      this.autoFlipDirection = 1;
+    // Logic: Only auto-flip if the TARGET page has at least one present person
+    let nextPossiblePage = this.currentPage + this.autoFlipDirection;
+    
+    // Reverse direction if at bounds
+    if (nextPossiblePage >= totalPages || nextPossiblePage < 0) {
+      this.autoFlipDirection *= -1;
+      nextPossiblePage = this.currentPage + this.autoFlipDirection;
     }
 
-    this.changePage(this.autoFlipDirection);
+    // Check if the target page has any present people
+    const targetStart = nextPossiblePage * this.stickersPerPage;
+    const targetSquad = candidates.slice(targetStart, targetStart + this.stickersPerPage);
+    const hasPresentPeople = targetSquad.some(p => p.present);
+
+    if (hasPresentPeople) {
+      this.changePage(this.autoFlipDirection);
+    } else {
+      // If we hit empty space while moving forward, reverse to go back to page 0
+      if (this.autoFlipDirection === 1 && this.currentPage > 0) {
+        this.autoFlipDirection = -1;
+      }
+    }
   }
 
   changePage(direction) {
@@ -327,17 +347,60 @@ class StickersDashboard {
 
     // 2. Sort: Present first, then by name
     candidates.sort((a, b) => {
-      if (a.present !== b.present) {
-        return a.present ? -1 : 1;
-      }
+      if (a.present !== b.present) return a.present ? -1 : 1;
       return a.person.localeCompare(b.person);
     });
 
     // 3. Slice for current page
     const start = this.currentPage * this.stickersPerPage;
-    const squad = candidates.slice(start, start + this.stickersPerPage);
+    let squad = candidates.slice(start, start + this.stickersPerPage);
 
-    // 4. Update navigation buttons
+    // 4. If on the first page, shuffle the squad to spread present people
+    if (this.currentPage === 0 && squad.length > 0) {
+      // Use a deterministic "shuffle" so they don't jump around on every refresh
+      // We'll use a simple hash of their names to assign them to slots
+      const present = squad.filter(p => p.present);
+      const absent = squad.filter(p => !p.present);
+      
+      // Create 16 slots
+      const slots = new Array(16).fill(null);
+      
+      // Helper to get a stable pseudo-random index for a name
+      const getSlotIndex = (name, attempt = 0) => {
+        let hash = 0;
+        const seed = name + attempt;
+        for (let i = 0; i < seed.length; i++) {
+          hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash) % 16;
+      };
+
+      // Place present people into "random" stable slots
+      present.forEach(person => {
+        let attempt = 0;
+        let idx = getSlotIndex(person.person, attempt);
+        while (slots[idx] !== null && attempt < 32) {
+          attempt++;
+          idx = getSlotIndex(person.person, attempt);
+        }
+        // Fallback to first available if collision persists
+        if (slots[idx] !== null) {
+          idx = slots.findIndex(s => s === null);
+        }
+        slots[idx] = person;
+      });
+
+      // Fill remaining slots with absent people
+      absent.forEach(person => {
+        const idx = slots.findIndex(s => s === null);
+        if (idx !== -1) slots[idx] = person;
+      });
+
+      squad = slots.filter(p => p !== null);
+    }
+
+    // 5. Update navigation buttons
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
     const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
@@ -345,7 +408,7 @@ class StickersDashboard {
     if (prevBtn) prevBtn.style.display = this.currentPage > 0 ? 'flex' : 'none';
     if (nextBtn) nextBtn.style.display = (this.currentPage < totalPages - 1) ? 'flex' : 'none';
 
-    // 5. Update page numbers
+    // 6. Update page numbers
     const leftPageNum = document.getElementById('left-page-num');
     const rightPageNum = document.getElementById('right-page-num');
     if (leftPageNum) leftPageNum.textContent = `PÁG ${24 + (this.currentPage * 2)}`;
