@@ -210,10 +210,38 @@ body.stickers-theme {
   display: flex;
   flex-direction: column;
   border: 1px solid #eee;
+  overflow: hidden;
 }
 
 .sticker.present {
   border: 1px solid #fff;
+}
+
+/* Periodic shine for present stickers */
+.sticker.present::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-30deg);
+  z-index: 4;
+  pointer-events: none;
+  animation: sticker-shine 4s infinite;
+  animation-delay: var(--shine-delay, 0s);
+}
+
+@keyframes sticker-shine {
+  0% { left: -150%; }
+  15% { left: 150%; }
+  100% { left: 150%; }
 }
 
 .sticker.recent {

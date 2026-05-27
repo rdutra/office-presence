@@ -297,6 +297,9 @@ class StickersDashboard {
       
       const rotation = (Math.random() * 6 - 3).toFixed(1);
       stickerEl.style.transform = `rotate(${rotation}deg)`;
+      if (isPresent) {
+        stickerEl.style.setProperty('--shine-delay', `${(Math.random() * 4).toFixed(1)}s`);
+      }
       stickerEl.onclick = () => this.openModal();
 
       const silhouetteSvg = `
