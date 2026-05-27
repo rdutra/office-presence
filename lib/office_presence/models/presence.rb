@@ -136,8 +136,8 @@ module OfficePresence
         today_start = Time.now.utc.to_date.to_time.utc.iso8601.gsub(/\+00:00\z/, "Z")
         earlier_today = mapped_absent.select { |d| d[:last_seen_utc] >= today_start }
 
-        # Identify recent visitors (last 30 days)
-        thirty_days_ago = (Time.now.utc - (30 * 24 * 60 * 60)).iso8601.gsub(/\+00:00\z/, "Z")
+        # Identify recent visitors (since May 25, 2026)
+        recent_cutoff = "2026-05-25T00:00:00Z"
 
         decorated_present = decorate_with_medals(mapped_present, medal_counts).map do |p|
           p.merge(days: attendance_days[p[:person]] || 1) # Default to 1 if they are here today
@@ -149,7 +149,7 @@ module OfficePresence
 
         decorated_all = decorate_with_medals(mapped, medal_counts).map do |p|
           is_present = mapped_present.any? { |mp| mp[:mac] == p[:mac] }
-          is_recent = !is_present && p[:last_seen_utc] && p[:last_seen_utc] >= thirty_days_ago
+          is_recent = !is_present && p[:last_seen_utc] && p[:last_seen_utc] >= recent_cutoff
           
           p.merge(
             days: attendance_days[p[:person]] || 0,

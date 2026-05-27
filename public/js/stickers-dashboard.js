@@ -118,7 +118,7 @@ class StickersDashboard {
     const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
     if (totalPages <= 1) return;
 
-    // Logic: Only auto-flip if the TARGET page has at least one active person (present or recent)
+    // Logic: Only auto-flip if the TARGET page has at least one present person
     let nextPossiblePage = this.currentPage + this.autoFlipDirection;
     
     // Reverse direction if at bounds
@@ -127,15 +127,15 @@ class StickersDashboard {
       nextPossiblePage = this.currentPage + this.autoFlipDirection;
     }
 
-    // Check if the target page has any active content
+    // Check if the target page has any present people
     const targetStart = nextPossiblePage * this.stickersPerPage;
     const targetSquad = candidates.slice(targetStart, targetStart + this.stickersPerPage);
-    const hasActiveContent = targetSquad.some(p => p.present || p.recent);
+    const hasPresentPeople = targetSquad.some(p => p.present);
 
-    if (hasActiveContent) {
+    if (hasPresentPeople) {
       this.changePage(this.autoFlipDirection);
     } else {
-      // If we hit empty space while moving forward, reverse to go back
+      // If no present people ahead, and we were moving forward, reverse to go back
       if (this.autoFlipDirection === 1 && this.currentPage > 0) {
         this.autoFlipDirection = -1;
       }
