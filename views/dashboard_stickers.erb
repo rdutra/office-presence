@@ -11,7 +11,6 @@
     <div class="desk-background"></div>
     
     <div class="album-container">
-      <div class="book-spine"></div>
       <div class="book">
         <!-- LEFT PAGE -->
         <div class="page left-page">
@@ -32,10 +31,25 @@
           </main>
 
           <footer class="album-page-footer">
-            <div class="page-number">PÁG 24</div>
+            <div class="page-number" id="left-page-num">PÁG 24</div>
             <div class="tournament-stamp">ESTADIO CENTENARIO</div>
           </footer>
         </div>
+
+        <!-- FLIPPING PAGE COMPONENT -->
+        <div id="page-flipper" class="page-flipper">
+          <div class="flipper-side flipper-front" id="flipper-front"></div>
+          <div class="flipper-side flipper-back" id="flipper-back"></div>
+        </div>
+
+        <!-- NAVIGATION ARROWS -->
+      ...
+        <button id="prev-page" class="nav-arrow prev-arrow" aria-label="Previous Page">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <button id="next-page" class="nav-arrow next-arrow" aria-label="Next Page">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
 
         <!-- RIGHT PAGE -->
         <div class="page right-page">
@@ -63,7 +77,7 @@
               <div class="time" id="st-current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></div>
               <div class="date"><%= now.strftime("%d.%m.%Y") %></div>
             </div>
-            <div class="page-number">PÁG 25</div>
+            <div class="page-number" id="right-page-num">PÁG 25</div>
           </footer>
         </div>
       </div>

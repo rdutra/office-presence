@@ -324,6 +324,140 @@ body.stickers-theme {
   transform: rotate(-5deg);
 }
 
+/* Navigation Arrows */
+.nav-arrow {
+  position: absolute;
+  bottom: 50px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: all 0.2s;
+  color: var(--album-blue);
+}
+
+.nav-arrow:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.nav-arrow svg {
+  width: 25px;
+  height: 25px;
+}
+
+.prev-arrow { left: 20px; }
+.next-arrow { right: 20px; }
+
+/* Page Flip Animation */
+.book {
+  position: relative;
+  transform-style: preserve-3d;
+  perspective: 2000px;
+}
+
+.page {
+  position: relative;
+  transition: none; /* We handle transitions via the flipper */
+  backface-visibility: hidden;
+}
+
+.left-page {
+  z-index: 1;
+}
+
+.right-page {
+  z-index: 1;
+}
+
+/* The Flipper element that actually turns */
+.page-flipper {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  z-index: 10;
+  pointer-events: none;
+  display: none; /* Only show during animation */
+}
+
+.page-flipper.active {
+  display: block;
+}
+
+.flipper-side {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background-color: var(--paper-color);
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.1);
+  overflow: hidden;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.flipper-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+  border-left: 1px solid rgba(0,0,0,0.1);
+}
+
+.flipper-back {
+  transform: rotateY(180deg);
+  border-right: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Shadow during flip */
+.page-flipper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.page-flipper.flipping::after {
+  opacity: 1;
+}
+
+/* Positioning for next/prev flips */
+.flip-next {
+  right: 0;
+  transform-origin: left center;
+}
+
+.flip-prev {
+  left: 0;
+  transform-origin: right center;
+}
+
+.flip-next.animate {
+  transform: rotateY(-180deg);
+}
+
+.flip-prev.animate {
+  transform: rotateY(180deg);
+}
+
+/* Hide navigation during flip to prevent double clicks */
+.nav-arrow.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+
 
 
 /* Bielsa Easter Egg Styles */

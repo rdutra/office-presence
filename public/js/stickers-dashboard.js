@@ -10,9 +10,18 @@ class StickersDashboard {
     this.totalPeopleEl = document.getElementById('st-total-people');
     this.completionEl = document.getElementById('sticker-completion');
     this.standingsBody = document.getElementById('st-standings-body');
+    this.bookEl = document.querySelector('.book');
     
     this.refreshInterval = 30000; // 30 seconds
     this.data = null;
+    this.currentPage = 0;
+    this.stickersPerPage = 16;
+    this.isFlipping = false;
+    
+    // Auto-flip properties
+    this.autoFlipTimer = null;
+    this.autoFlipDelay = 20000; // 20 seconds
+    this.autoFlipDirection = 1; // 1 for next, -1 for prev
 
     this.init();
   }
@@ -28,24 +37,149 @@ class StickersDashboard {
   init() {
     if (window.FIREBASE_MODE) {
       console.log("Stickers Dashboard running in Firebase mode");
-      return; // Skip auto-fetching in static Firebase mode
     }
 
     this.fetchData();
-    setInterval(() => this.fetchData(), this.refreshInterval);
-    // ...
+    if (!window.FIREBASE_MODE) {
+      setInterval(() => this.fetchData(), this.refreshInterval);
+    }
 
-    // Setup timezone handling for the clock
     if (typeof initializeTimezone === 'function') {
       initializeTimezone();
     }
 
     this.setupRegistrationModal();
     this.updateRegistrationButtonText();
+    this.setupNavigation();
+    this.startAutoFlip();
     
-    // Proactively load device info for pre-filling
     if (typeof loadDeviceInfo === 'function') {
       loadDeviceInfo();
+    }
+  }
+
+  setupNavigation() {
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+      this.changePage(-1);
+      this.resetAutoFlip();
+    });
+    
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+      this.changePage(1);
+      this.resetAutoFlip();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        this.changePage(-1);
+        this.resetAutoFlip();
+      }
+      if (e.key === 'ArrowRight') {
+        this.changePage(1);
+        this.resetAutoFlip();
+      }
+    });
+  }
+
+  startAutoFlip() {
+    this.stopAutoFlip();
+    this.autoFlipTimer = setInterval(() => {
+      this.performAutoFlip();
+    }, this.autoFlipDelay);
+  }
+
+  stopAutoFlip() {
+    if (this.autoFlipTimer) {
+      clearInterval(this.autoFlipTimer);
+      this.autoFlipTimer = null;
+    }
+  }
+
+  resetAutoFlip() {
+    this.startAutoFlip();
+  }
+
+  performAutoFlip() {
+    if (!this.data || this.isFlipping) return;
+
+    const candidates = (this.data.mapped_all || [])
+      .filter(p => p.person && !p.person.startsWith('Anonymous'));
+    const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
+
+    if (totalPages <= 1) return;
+
+    // Determine direction change
+    if (this.currentPage >= totalPages - 1) {
+      this.autoFlipDirection = -1;
+    } else if (this.currentPage <= 0) {
+      this.autoFlipDirection = 1;
+    }
+
+    this.changePage(this.autoFlipDirection);
+  }
+
+  changePage(direction) {
+    if (!this.data || this.isFlipping) return;
+    
+    const candidates = (this.data.mapped_all || [])
+      .filter(p => p.person && !p.person.startsWith('Anonymous'));
+    
+    candidates.sort((a, b) => {
+      if (a.present !== b.present) return a.present ? -1 : 1;
+      return a.person.localeCompare(b.person);
+    });
+
+    const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
+    const newPage = this.currentPage + direction;
+
+    if (newPage >= 0 && newPage < totalPages) {
+      const flipper = document.getElementById('page-flipper');
+      const front = document.getElementById('flipper-front');
+      const back = document.getElementById('flipper-back');
+      const leftPage = document.querySelector('.left-page');
+      const rightPage = document.querySelector('.right-page');
+      const prevBtn = document.getElementById('prev-page');
+      const nextBtn = document.getElementById('next-page');
+
+      if (flipper && front && back) {
+        this.isFlipping = true;
+        if (prevBtn) prevBtn.classList.add('disabled');
+        if (nextBtn) nextBtn.classList.add('disabled');
+
+        // Prepare flipper
+        if (direction > 0) {
+          // Flip Next: Right page content moves to Left
+          front.innerHTML = rightPage.innerHTML;
+          this.currentPage = newPage;
+          this.render(); // This updates the static pages to the new content
+          back.innerHTML = leftPage.innerHTML;
+          
+          flipper.className = 'page-flipper active flip-next';
+          setTimeout(() => flipper.classList.add('animate', 'flipping'), 50);
+        } else {
+          // Flip Prev: Left page content moves to Right
+          front.innerHTML = leftPage.innerHTML;
+          this.currentPage = newPage;
+          this.render();
+          back.innerHTML = rightPage.innerHTML;
+          
+          flipper.className = 'page-flipper active flip-prev';
+          setTimeout(() => flipper.classList.add('animate', 'flipping'), 50);
+        }
+
+        setTimeout(() => {
+          flipper.className = 'page-flipper';
+          this.isFlipping = false;
+          if (prevBtn) prevBtn.classList.remove('disabled');
+          if (nextBtn) nextBtn.classList.remove('disabled');
+        }, 650);
+      } else {
+        this.currentPage = newPage;
+        this.render();
+      }
     }
   }
 
@@ -188,50 +322,52 @@ class StickersDashboard {
     if (!this.stickersContainerLeft || !this.stickersContainerRight) return;
 
     // 1. Get all candidates (non-anonymous)
-    let candidates = this.data.mapped_all || [];
-    candidates = candidates.filter(p => p.person && !p.person.startsWith('Anonymous'));
+    let candidates = (this.data.mapped_all || [])
+      .filter(p => p.person && !p.person.startsWith('Anonymous'));
 
-    // 2. Separate into present and absent
-    const present = candidates.filter(p => p.present);
-    const absent = candidates.filter(p => !p.present);
+    // 2. Sort: Present first, then by name
+    candidates.sort((a, b) => {
+      if (a.present !== b.present) {
+        return a.present ? -1 : 1;
+      }
+      return a.person.localeCompare(b.person);
+    });
 
-    // 3. Select the squad of 16:
-    // We want ALL present people first. If there are more than 16 present, we take the most frequent 16.
-    // If fewer than 16 present, we fill with the most frequent absent people.
-    let squad = [];
-    
-    // Sort present by frequency to pick the top ones if > 16
-    present.sort((a, b) => (b.days || 0) - (a.days || 0));
-    squad = present.slice(0, 16);
+    // 3. Slice for current page
+    const start = this.currentPage * this.stickersPerPage;
+    const squad = candidates.slice(start, start + this.stickersPerPage);
 
-    if (squad.length < 16) {
-      // Sort absent by frequency to fill remaining slots
-      absent.sort((a, b) => (b.days || 0) - (a.days || 0));
-      const remainingSlots = 16 - squad.length;
-      squad = squad.concat(absent.slice(0, remainingSlots));
-    }
+    // 4. Update navigation buttons
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
 
-    // 4. Sort the final squad by name to keep their positions relatively stable
-    squad.sort((a, b) => a.person.localeCompare(b.person));
+    if (prevBtn) prevBtn.style.display = this.currentPage > 0 ? 'flex' : 'none';
+    if (nextBtn) nextBtn.style.display = (this.currentPage < totalPages - 1) ? 'flex' : 'none';
+
+    // 5. Update page numbers
+    const leftPageNum = document.getElementById('left-page-num');
+    const rightPageNum = document.getElementById('right-page-num');
+    if (leftPageNum) leftPageNum.textContent = `PÁG ${24 + (this.currentPage * 2)}`;
+    if (rightPageNum) rightPageNum.textContent = `PÁG ${25 + (this.currentPage * 2)}`;
 
     this.stickersContainerLeft.innerHTML = '';
     this.stickersContainerRight.innerHTML = '';
     
     if (squad.length === 0) {
-      this.stickersContainerLeft.innerHTML = '<div class="loading-stickers">No hay jugadores registrados.</div>';
+      this.stickersContainerLeft.innerHTML = '<div class="loading-stickers">No hay jugadores.</div>';
       return;
     }
 
-    const half = Math.ceil(squad.length / 2);
-    const leftPagePeople = squad.slice(0, half);
-    const rightPagePeople = squad.slice(half);
+    const leftPagePeople = squad.slice(0, 8);
+    const rightPagePeople = squad.slice(8);
 
     leftPagePeople.forEach((person, index) => {
-      this.stickersContainerLeft.appendChild(this.createStickerElement(person, index, person.present));
+      this.stickersContainerLeft.appendChild(this.createStickerElement(person, start + index, person.present));
     });
 
     rightPagePeople.forEach((person, index) => {
-      this.stickersContainerRight.appendChild(this.createStickerElement(person, half + index, person.present));
+      this.stickersContainerRight.appendChild(this.createStickerElement(person, start + 8 + index, person.present));
     });
   }
 
@@ -266,7 +402,7 @@ class StickersDashboard {
     const toastyAudio = new Audio('/img/worldcup/toasty.mp3');
     let isRunning = false;
 
-    function triggerToasty() {
+    const triggerToasty = () => {
       if (isRunning) return;
       isRunning = true;
 
@@ -284,9 +420,9 @@ class StickersDashboard {
           isRunning = false;
         }, 500);
       }, 1500);
-    }
+    };
 
-    function scheduleNextToasty() {
+    const scheduleNextToasty = () => {
       // Random time between 3 and 10 minutes
       const minTime = 3 * 60 * 1000;
       const maxTime = 10 * 60 * 1000;
@@ -296,7 +432,7 @@ class StickersDashboard {
         triggerToasty();
         scheduleNextToasty();
       }, nextTime);
-    }
+    };
 
     // Manual trigger with 'f' key
     document.addEventListener('keydown', (e) => {
