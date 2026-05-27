@@ -108,16 +108,17 @@ class StickersDashboard {
     const candidates = (this.data.mapped_all || [])
       .filter(p => p.person && !p.person.startsWith('Anonymous'));
     
-    // Sort: Present first, then alphabetical
+    // Sort: Present first, then Recent, then alphabetical
     candidates.sort((a, b) => {
       if (a.present !== b.present) return a.present ? -1 : 1;
+      if (a.recent !== b.recent) return a.recent ? -1 : 1;
       return a.person.localeCompare(b.person);
     });
 
     const totalPages = Math.ceil(candidates.length / this.stickersPerPage);
     if (totalPages <= 1) return;
 
-    // Logic: Only auto-flip if the TARGET page has at least one present person
+    // Logic: Only auto-flip if the TARGET page has at least one active person (present or recent)
     let nextPossiblePage = this.currentPage + this.autoFlipDirection;
     
     // Reverse direction if at bounds
@@ -126,15 +127,15 @@ class StickersDashboard {
       nextPossiblePage = this.currentPage + this.autoFlipDirection;
     }
 
-    // Check if the target page has any present people
+    // Check if the target page has any active content
     const targetStart = nextPossiblePage * this.stickersPerPage;
     const targetSquad = candidates.slice(targetStart, targetStart + this.stickersPerPage);
-    const hasPresentPeople = targetSquad.some(p => p.present);
+    const hasActiveContent = targetSquad.some(p => p.present || p.recent);
 
-    if (hasPresentPeople) {
+    if (hasActiveContent) {
       this.changePage(this.autoFlipDirection);
     } else {
-      // If we hit empty space while moving forward, reverse to go back to page 0
+      // If we hit empty space while moving forward, reverse to go back
       if (this.autoFlipDirection === 1 && this.currentPage > 0) {
         this.autoFlipDirection = -1;
       }
@@ -149,6 +150,7 @@ class StickersDashboard {
     
     candidates.sort((a, b) => {
       if (a.present !== b.present) return a.present ? -1 : 1;
+      if (a.recent !== b.recent) return a.recent ? -1 : 1;
       return a.person.localeCompare(b.person);
     });
 
@@ -287,9 +289,11 @@ class StickersDashboard {
     slotEl.className = 'sticker-slot';
     slotEl.innerHTML = `<div class="number">${index + 1}</div><div class="slot-name">${person.person}</div>`;
 
-    if (isPresent) {
+    const isRecent = person.recent;
+
+    if (isPresent || isRecent) {
       const stickerEl = document.createElement('div');
-      stickerEl.className = 'sticker present';
+      stickerEl.className = `sticker ${isPresent ? 'present' : 'recent'}`;
       
       const rotation = (Math.random() * 6 - 3).toFixed(1);
       stickerEl.style.transform = `rotate(${rotation}deg)`;
@@ -348,6 +352,7 @@ class StickersDashboard {
     // 2. Sort: Present first, then by name
     candidates.sort((a, b) => {
       if (a.present !== b.present) return a.present ? -1 : 1;
+      if (a.recent !== b.recent) return a.recent ? -1 : 1;
       return a.person.localeCompare(b.person);
     });
 
@@ -355,17 +360,13 @@ class StickersDashboard {
     const start = this.currentPage * this.stickersPerPage;
     let squad = candidates.slice(start, start + this.stickersPerPage);
 
-    // 4. If on the first page, shuffle the squad to spread present people
+    // 4. If on the first page, shuffle the squad to spread active people (present + recent)
     if (this.currentPage === 0 && squad.length > 0) {
-      // Use a deterministic "shuffle" so they don't jump around on every refresh
-      // We'll use a simple hash of their names to assign them to slots
-      const present = squad.filter(p => p.present);
-      const absent = squad.filter(p => !p.present);
+      const active = squad.filter(p => p.present || p.recent);
+      const inactive = squad.filter(p => !p.present && !p.recent);
       
-      // Create 16 slots
       const slots = new Array(16).fill(null);
       
-      // Helper to get a stable pseudo-random index for a name
       const getSlotIndex = (name, attempt = 0) => {
         let hash = 0;
         const seed = name + attempt;
@@ -376,23 +377,18 @@ class StickersDashboard {
         return Math.abs(hash) % 16;
       };
 
-      // Place present people into "random" stable slots
-      present.forEach(person => {
+      active.forEach(person => {
         let attempt = 0;
         let idx = getSlotIndex(person.person, attempt);
         while (slots[idx] !== null && attempt < 32) {
           attempt++;
           idx = getSlotIndex(person.person, attempt);
         }
-        // Fallback to first available if collision persists
-        if (slots[idx] !== null) {
-          idx = slots.findIndex(s => s === null);
-        }
+        if (slots[idx] !== null) idx = slots.findIndex(s => s === null);
         slots[idx] = person;
       });
 
-      // Fill remaining slots with absent people
-      absent.forEach(person => {
+      inactive.forEach(person => {
         const idx = slots.findIndex(s => s === null);
         if (idx !== -1) slots[idx] = person;
       });

@@ -216,6 +216,15 @@ body.stickers-theme {
   border: 1px solid #fff;
 }
 
+.sticker.recent {
+  border: 1px solid #ddd;
+  filter: grayscale(1) opacity(0.7);
+}
+
+.sticker.recent:hover {
+  filter: grayscale(0.5) opacity(0.9);
+}
+
 .sticker::after {
   content: '';
   position: absolute;
