@@ -120,20 +120,20 @@ fi
 echo ""
 
 # Start Firebase scheduler
-echo -e "${GREEN}→${NC} Starting Firebase sync scheduler..."
-bundle exec ruby bin/firebase_scheduler.rb >> "$LOG_DIR/firebase_scheduler.log" 2>&1 &
-SCHEDULER_PID=$!
-echo $SCHEDULER_PID > "$PID_DIR/firebase_scheduler.pid"
-sleep 2
+# echo -e "${GREEN}→${NC} Starting Firebase sync scheduler..."
+# bundle exec ruby bin/firebase_scheduler.rb >> "$LOG_DIR/firebase_scheduler.log" 2>&1 &
+# SCHEDULER_PID=$!
+# echo $SCHEDULER_PID > "$PID_DIR/firebase_scheduler.pid"
+# sleep 2
 
-if kill -0 "$SCHEDULER_PID" > /dev/null 2>&1; then
-    echo -e "  ${GREEN}✓${NC} Firebase scheduler started successfully (PID: $SCHEDULER_PID)"
-    echo -e "  ${GREEN}✓${NC} Syncing every 5 minutes"
-else
-    echo -e "  ${RED}✗${NC} Failed to start Firebase scheduler"
-    rm -f "$PID_DIR/firebase_scheduler.pid"
-    exit 1
-fi
+# if kill -0 "$SCHEDULER_PID" > /dev/null 2>&1; then
+#     echo -e "  ${GREEN}✓${NC} Firebase scheduler started successfully (PID: $SCHEDULER_PID)"
+#     echo -e "  ${GREEN}✓${NC} Syncing every 5 minutes"
+# else
+#     echo -e "  ${RED}✗${NC} Failed to start Firebase scheduler"
+#     rm -f "$PID_DIR/firebase_scheduler.pid"
+#     exit 1
+# fi
 
 echo ""
 echo "================================================"

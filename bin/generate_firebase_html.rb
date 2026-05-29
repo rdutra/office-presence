@@ -170,7 +170,16 @@ firebase_styles = <<~FIREBASE_CSS
     /* Stickers theme specific fix for firebase embed */
     body.stickers-theme {
       overflow: auto;
-      height: auto;
+    }
+    
+    body.stickers-theme .album-container {
+      height: 95vh;
+    }
+    
+    @media (max-width: 850px) {
+      body.stickers-theme .album-container {
+        height: auto;
+      }
     }
   </style>
 FIREBASE_CSS
@@ -186,10 +195,19 @@ if ["modern", "stickers", "autumn", "summer", "easter", "christmas"].include?(TE
           var(--foil-color-bright, white) 50%, 
           var(--foil-color, white) 100%
         ) !important;
+        overflow: hidden;
+      }
+
+      .person-card.status-active {
         border: 2px solid var(--foil-color-dark, #fff) !important;
         border-left-width: 6px !important;
-        overflow: hidden;
         position: relative;
+      }
+
+      .sticker.present {
+        /* Keep absolute positioning and 1px border from stickers.css */
+        position: absolute;
+        border: 1px solid var(--foil-color-dark, #fff) !important;
       }
 
       .person-card.status-active .person-name, 
