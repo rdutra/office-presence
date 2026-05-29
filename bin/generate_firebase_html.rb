@@ -175,6 +175,59 @@ firebase_styles = <<~FIREBASE_CSS
   </style>
 FIREBASE_CSS
 
+# Add foil/shine CSS only for compatible templates
+if ["modern", "stickers", "autumn", "summer", "easter", "christmas"].include?(TEMPLATE_NAME)
+  foil_styles = <<~FOIL_CSS
+    <style>
+      /* Foil/Shine effect for present individuals */
+      .person-card.status-active, .sticker.present {
+        background: linear-gradient(135deg, 
+          var(--foil-color, white) 0%, 
+          var(--foil-color-bright, white) 50%, 
+          var(--foil-color, white) 100%
+        ) !important;
+        border: 2px solid var(--foil-color-dark, #fff) !important;
+        border-left-width: 6px !important;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .person-card.status-active .person-name, 
+      .person-card.status-active .person-device,
+      .sticker.present .sticker-name {
+        color: var(--foil-color-dark, #000) !important;
+      }
+
+      .person-card.status-active::before, .sticker.present::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.6) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-30deg);
+        z-index: 4;
+        pointer-events: none;
+        animation: sticker-shine 4s infinite;
+        animation-delay: var(--shine-delay, 0s);
+      }
+
+      @keyframes sticker-shine {
+        0% { left: -150%; }
+        15% { left: 150%; }
+        100% { left: 150%; }
+      }
+    </style>
+  FOIL_CSS
+  firebase_styles += foil_styles
+end
+
 rendered_html = rendered_html.sub("</head>", firebase_styles)
 
 # Add loading and error states at the beginning of body

@@ -1,5 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // Firebase config placeholders (will be replaced by firebase_deploy.sh)
 const firebaseConfig = {
@@ -13,10 +13,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const database = getDatabase(app);
 
 // Stickers Dashboard Firebase Integration
-const dashboardRef = ref(db, 'dashboard');
+const dashboardRef = ref(database, 'dashboard');
 
 // Instantiate the dashboard logic
 window.FIREBASE_MODE = true;

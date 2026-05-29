@@ -175,8 +175,20 @@ function updateDashboard(data) {
           const device = person?.device || 'Device';
           const status = person?.status || 'inactive';
           const initial = baseName.trim().charAt(0).toUpperCase() || '?';
+          
+          // Add random foil/shine properties for present people
+          const shineDelay = (Math.random() * 4).toFixed(1);
+          const hues = [0, 45, 90, 135, 180, 225, 270, 315];
+          const hue = hues[Math.floor(Math.random() * hues.length)];
+          const foilColor = `hsl(${hue}, 80%, 90%)`;
+          const foilColorBright = `hsl(${hue}, 100%, 95%)`;
+          const foilColorDark = `hsl(${hue}, 70%, 40%)`;
+          
+          const foilStyles = status === 'active' ? 
+            `style="--shine-delay: ${shineDelay}s; --foil-hue: ${hue}; --foil-color: ${foilColor}; --foil-color-bright: ${foilColorBright}; --foil-color-dark: ${foilColorDark};"` : '';
+
           return `
-            <div class="person-card status-${status}">
+            <div class="person-card status-${status}" ${foilStyles}>
               <div class="person-avatar">${initial}</div>
               <div class="person-info">
                 <div class="person-name">${name}</div>

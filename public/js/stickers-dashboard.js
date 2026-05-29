@@ -299,6 +299,14 @@ class StickersDashboard {
       stickerEl.style.transform = `rotate(${rotation}deg)`;
       if (isPresent) {
         stickerEl.style.setProperty('--shine-delay', `${(Math.random() * 4).toFixed(1)}s`);
+        
+        // Add random foil color
+        const hues = [0, 45, 90, 135, 180, 225, 270, 315];
+        const hue = hues[Math.floor(Math.random() * hues.length)];
+        stickerEl.style.setProperty('--foil-hue', hue);
+        stickerEl.style.setProperty('--foil-color', `hsl(${hue}, 80%, 90%)`);
+        stickerEl.style.setProperty('--foil-color-bright', `hsl(${hue}, 100%, 95%)`);
+        stickerEl.style.setProperty('--foil-color-dark', `hsl(${hue}, 70%, 40%)`);
       }
       stickerEl.onclick = () => this.openModal();
 

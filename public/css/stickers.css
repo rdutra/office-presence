@@ -214,7 +214,22 @@ body.stickers-theme {
 }
 
 .sticker.present {
-  border: 1px solid #fff;
+  background: linear-gradient(135deg, 
+    var(--foil-color, white) 0%, 
+    var(--foil-color-bright, white) 50%, 
+    var(--foil-color, white) 100%
+  );
+  border: 1px solid var(--foil-color-dark, #fff);
+}
+
+.sticker.present .sticker-info,
+.sticker.present .sticker-silhouette,
+.sticker.present img {
+  background: transparent;
+}
+
+.sticker.present .sticker-name {
+  color: var(--foil-color-dark, var(--album-blue));
 }
 
 /* Periodic shine for present stickers */
