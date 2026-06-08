@@ -11,6 +11,8 @@ class StickersDashboard {
     this.completionEl = document.getElementById('sticker-completion');
     this.standingsBody = document.getElementById('st-standings-body');
     this.bookEl = document.querySelector('.book');
+    this.currentTimeEl = document.getElementById('st-current-time');
+    this.currentDateEl = document.getElementById('st-current-date');
     
     this.refreshInterval = 30000; // 30 seconds
     this.data = null;
@@ -282,6 +284,29 @@ class StickersDashboard {
   renderStats() {
     if (this.presentCountEl) this.presentCountEl.textContent = this.data.present_count;
     if (this.totalPeopleEl) this.totalPeopleEl.textContent = this.data.total_people;
+    this.updateTimeAndDate();
+  }
+
+  updateTimeAndDate() {
+    if (!this.currentTimeEl || !this.currentDateEl) return;
+
+    let date;
+    if (this.data && this.data.last_updated) {
+      date = new Date(this.data.last_updated);
+    } else {
+      date = new Date();
+    }
+
+    if (isNaN(date.getTime())) return;
+
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    this.currentTimeEl.textContent = `${hours}:${minutes}`;
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    this.currentDateEl.textContent = `${day}.${month}.${year}`;
   }
 
   createStickerElement(person, index, isPresent) {
