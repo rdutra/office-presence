@@ -19,6 +19,7 @@ echo ""
 mkdir -p "$DEST_DIR/css"
 mkdir -p "$DEST_DIR/js"
 mkdir -p "$DEST_DIR/img"
+mkdir -p "$DEST_DIR/video"
 
 # Copy CSS files
 echo "Copying CSS files..."
@@ -40,6 +41,13 @@ echo ""
 echo "Copying images..."
 cp -R "$SOURCE_DIR/img/"* "$DEST_DIR/img/"
 
+# Copy videos
+echo ""
+echo "Copying videos..."
+if [ -d "$SOURCE_DIR/video" ]; then
+    cp -R "$SOURCE_DIR/video/"* "$DEST_DIR/video/"
+fi
+
 echo ""
 echo "================================================"
 echo "✓ Assets synced successfully"
@@ -50,3 +58,10 @@ ls -la "$DEST_DIR/css/"
 echo ""
 echo "Files in firebase_public/js/:"
 ls -la "$DEST_DIR/js/"
+echo ""
+echo "Files in firebase_public/video/:"
+if [ -d "$DEST_DIR/video/" ]; then
+    ls -la "$DEST_DIR/video/"
+else
+    echo "Directory does not exist"
+fi

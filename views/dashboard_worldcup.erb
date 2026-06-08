@@ -280,10 +280,42 @@
       </div>
     </div>
 
-    <!-- Marcelo Bielsa Easter Egg -->
-    <div id="bielsa-easter-egg" class="bielsa-container">
-      <div class="bielsa-bubble">¡Toasty! 🧉</div>
-      <img src="/img/worldcup/bielsa.png" alt="El Loco Bielsa" class="bielsa-image" />
+    <!-- Video Broadcast Overlay -->
+    <div id="video-broadcast-overlay" class="video-overlay-container">
+      <div class="video-wrapper">
+        <video id="broadcast-video" playsinline muted>
+          <source src="/video/rodos.mov" type="video/quicktime">
+          <source src="/video/rodos.mp4" type="video/mp4">
+        </video>
+        
+        <!-- Broadcast Graphics -->
+        <div class="broadcast-graphics">
+          <div class="graphic-player-card">
+            <div class="card-header">
+              <span class="country-flag">🇺🇾</span>
+              <span class="player-number">10</span>
+            </div>
+            <div class="card-body">
+              <div class="player-name-large">RODOS</div>
+              <div class="player-team">CENTENARIO STADIUM</div>
+            </div>
+            <div class="card-stats">
+              <div class="stat-row">
+                <span class="stat-label">GOLES (PRESENCE)</span>
+                <span class="stat-value" id="overlay-stat-goals">15</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">ASISTENCIAS (PINGS)</span>
+                <span class="stat-value" id="overlay-stat-pings">2.4k</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">KM RECORRIDOS</span>
+                <span class="stat-value" id="overlay-stat-km">12.4</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="/js/timezone.js"></script>

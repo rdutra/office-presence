@@ -1007,3 +1007,123 @@ tr.top-spot .table-num.points {
   display: block;
   width: 0;
 }
+
+/* Video Broadcast Overlay */
+.video-overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: none;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* Allow clicking through to the dashboard */
+}
+
+.video-overlay-container.active {
+  display: flex;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 85%;
+  max-width: 1100px;
+  aspect-ratio: 16 / 9;
+  background: transparent;
+  overflow: hidden;
+  animation: zoom-in-overlay 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes zoom-in-overlay {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+#broadcast-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.broadcast-graphics {
+  position: absolute;
+  bottom: 8%;
+  left: 5%;
+  width: 380px;
+  z-index: 10001;
+  pointer-events: auto; /* Re-enable clicks for the graphics card if needed */
+}
+
+.graphic-player-card {
+  background: linear-gradient(135deg, rgba(20, 26, 22, 0.95) 0%, rgba(0, 166, 218, 0.9) 100%);
+  border-left: 8px solid var(--uruguay-gold);
+  color: white;
+  padding: 1.25rem;
+  box-shadow: 15px 15px 30px rgba(0,0,0,0.6);
+  border-radius: 0 12px 12px 0;
+  animation: slide-in-broadcast 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s both;
+}
+
+@keyframes slide-in-broadcast {
+  from { transform: translateX(-120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.country-flag { font-size: 1.8rem; }
+.player-number { font-weight: 900; font-size: 1.5rem; color: var(--uruguay-gold); font-family: 'Outfit', sans-serif; }
+
+.player-name-large {
+  font-size: 2.2rem;
+  font-weight: 950;
+  letter-spacing: 2px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-family: 'Outfit', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.player-team {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--uruguay-gold);
+  margin-bottom: 1.25rem;
+  letter-spacing: 1px;
+}
+
+.card-stats {
+  border-top: 2px solid rgba(255,255,255,0.15);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label { 
+  font-size: 0.8rem; 
+  font-weight: 800; 
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+}
+
+.stat-value { 
+  font-size: 1.1rem; 
+  font-weight: 900; 
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}

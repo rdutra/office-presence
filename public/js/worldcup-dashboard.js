@@ -384,58 +384,82 @@
         closeModal();
       }
     });
-  }
+    }
 
-  // Marcelo Bielsa "Toasty!" Easter Egg
-  function setupEasterEgg() {
-    const bielsaContainer = document.getElementById('bielsa-easter-egg');
-    if (!bielsaContainer) return;
+    // Video Broadcast Overlay Logic
+    function setupVideoBroadcast() {
+    const overlay = document.getElementById('video-broadcast-overlay');
+    const video = document.getElementById('broadcast-video');
+    const statGoals = document.getElementById('overlay-stat-goals');
+    const statPings = document.getElementById('overlay-stat-pings');
+    const statKm = document.getElementById('overlay-stat-km');
 
-    // Create audio object
-    const toastyAudio = new Audio('/img/worldcup/toasty.mp3');
-    let isRunning = false;
+    if (!overlay || !video) return;
 
-    function triggerToasty() {
-      if (isRunning) return;
-      isRunning = true;
+    let isPlaying = false;
 
-      // Play audio
-      toastyAudio.currentTime = 0;
-      toastyAudio.play().catch(e => console.log("Audio play failed:", e));
+    function triggerBroadcast() {
+      if (isPlaying) return;
+      isPlaying = true;
 
-      // Show Bielsa
-      bielsaContainer.classList.add('active');
+      // Randomize stats for that "made up" broadcast feel
+      if (statGoals) statGoals.textContent = Math.floor(Math.random() * 80) + 20;
+      if (statPings) statPings.textContent = (Math.random() * 10 + 2).toFixed(1) + 'k';
+      if (statKm) statKm.textContent = (Math.random() * 20 + 5).toFixed(1);
 
-      // Hide after animation
-      setTimeout(() => {
-        bielsaContainer.classList.remove('active');
+      // Show overlay and play
+      overlay.classList.add('active');
+      
+      video.currentTime = 0;
+      video.playbackRate = 0.3; // Play even slower
+      
+      // Try to play with sound, but fallback to muted if browser blocks it
+      video.muted = false;
+      const playPromise = video.play();
+
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Autoplay with sound prevented, playing muted.");
+          video.muted = true;
+          video.play();
+        });
+      }
+
+      // Linger for 3 seconds after video ends
+      video.onended = () => {
         setTimeout(() => {
-          isRunning = false;
-        }, 500);
-      }, 1500);
+          overlay.classList.remove('active');
+          isPlaying = false;
+        }, 3000);
+      };
+
+      // Also close on click
+      overlay.onclick = () => {
+        video.pause();
+        overlay.classList.remove('active');
+        isPlaying = false;
+      };
     }
 
-    function scheduleNextToasty() {
-      // Random time between 3 and 10 minutes
-      const minTime = 3 * 60 * 1000;
-      const maxTime = 10 * 60 * 1000;
-      const nextTime = Math.random() * (maxTime - minTime) + minTime;
-
-      setTimeout(() => {
-        triggerToasty();
-        scheduleNextToasty();
-      }, nextTime);
-    }
-
-    // Manual trigger with 'f' key
+    // Trigger with 'v' key (for Video)
     document.addEventListener('keydown', (e) => {
-      if (e.key.toLowerCase() === 'f') {
-        triggerToasty();
+      if (e.key.toLowerCase() === 'v') {
+        triggerBroadcast();
       }
     });
 
-    // Start random schedule
-    scheduleNextToasty();
+    // Random broadcast every 8-20 minutes
+    function scheduleNext() {
+      const delay = (Math.random() * 12 + 8) * 60 * 1000;
+      setTimeout(() => {
+        if (!document.hidden) triggerBroadcast();
+        scheduleNext();
+      }, delay);
+    }
+    scheduleNext();
+
+    // Expose to window for manual console triggers
+    window.triggerRodosBroadcast = triggerBroadcast;
   }
 
   // Initialization
@@ -445,12 +469,12 @@
       setInterval(fetchDashboard, 30000);
       setupRegistrationModal();
       updateRegistrationButtonText();
-      setupEasterEgg();
+      setupVideoBroadcast();
     });
   } else {
     // In Firebase mode, just setup the visuals
     document.addEventListener("DOMContentLoaded", () => {
-      setupEasterEgg();
+      setupVideoBroadcast();
     });
   }
 })();
