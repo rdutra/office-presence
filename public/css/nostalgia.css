@@ -102,12 +102,13 @@ body.scene-lit .nostalgia-bg::after {
 
 .drop-disco-ball {
   position: fixed;
-  z-index: 50;
+  z-index: 1000;
   top: -34vh;
   left: var(--drop-x, 50%);
   width: min(20vw, 260px);
   min-width: 150px;
   opacity: 0;
+  pointer-events: none;
   transform: translateX(-50%) rotate(-10deg);
   filter: drop-shadow(0 0 42px rgba(141, 233, 255, 0.86)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.42));
 }

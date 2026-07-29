@@ -46,14 +46,15 @@ function showError(message) {
 function setupDiscoDrop() {
   const ball = document.querySelector('.drop-disco-ball');
   const layer = document.querySelector('.nostalgia-bg');
-  if (!ball || !layer) return;
+  const root = document.documentElement;
+  if (!ball || !layer || !root) return;
 
   const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) return;
 
   const triggerDrop = () => {
-    const x = 18 + Math.random() * 64;
-    layer.style.setProperty('--drop-x', `${x}%`);
+    const x = 62 + Math.random() * 14;
+    root.style.setProperty('--drop-x', `${x}%`);
     document.body.classList.add('scene-lit');
     ball.classList.remove('is-dropping');
     void ball.offsetWidth;

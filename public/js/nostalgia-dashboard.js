@@ -11,6 +11,7 @@ class NostalgiaDashboard {
     this.currentTimeEl = document.getElementById('ns-current-time');
     this.discoBallEl = document.querySelector('.drop-disco-ball');
     this.discoLayerEl = document.querySelector('.nostalgia-bg');
+    this.discoRootEl = document.documentElement;
     this.refreshInterval = 30000;
     this.discoDropTimer = null;
     this.data = null;
@@ -65,10 +66,10 @@ class NostalgiaDashboard {
   }
 
   triggerDiscoDrop() {
-    if (!this.discoBallEl || !this.discoLayerEl) return;
+    if (!this.discoBallEl || !this.discoLayerEl || !this.discoRootEl) return;
 
-    const x = 18 + Math.random() * 64;
-    this.discoLayerEl.style.setProperty('--drop-x', `${x}%`);
+    const x = 62 + Math.random() * 14;
+    this.discoRootEl.style.setProperty('--drop-x', `${x}%`);
     document.body.classList.add('scene-lit');
 
     this.discoBallEl.classList.remove('is-dropping');
