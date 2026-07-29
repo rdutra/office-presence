@@ -139,6 +139,44 @@ firebase_styles = <<~FIREBASE_CSS
       overflow: hidden;
     }
 
+    body.nostalgia-theme .loading,
+    body.nostalgia-theme .error {
+      position: fixed;
+      z-index: 1200;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: 0;
+      border-radius: 0;
+      backdrop-filter: blur(6px);
+    }
+
+    @media (max-width: 760px) {
+      body.nostalgia-theme {
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      body.nostalgia-theme .loading {
+        top: auto;
+        bottom: 8px;
+        left: auto;
+        right: 8px;
+        width: auto;
+        max-width: calc(100vw - 24px);
+        padding: 0.45rem 0.6rem;
+        font-size: 0.78rem;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(7, 4, 10, 0.68);
+      }
+
+      body.nostalgia-theme .error {
+        font-size: 0.78rem;
+        padding: 0.6rem;
+      }
+    }
+
     .error {
       display: none;
       background: rgba(239, 68, 68, 0.2);
@@ -250,7 +288,7 @@ if ["modern", "stickers", "autumn", "summer", "easter", "christmas"].include?(TE
   firebase_styles += foil_styles
 end
 
-rendered_html = rendered_html.sub("</head>", firebase_styles)
+rendered_html = rendered_html.sub("</head>", "#{firebase_styles}\n</head>")
 
 # Add loading and error states at the beginning of body
 loading_text = TEMPLATE_NAME == "nostalgia" ? "Cargando datos de la pista..." : "Loading dashboard data..."
@@ -266,7 +304,7 @@ rendered_html = rendered_html.sub(/(<body[^>]*>)/, "\\1\n#{loading_divs}")
 if TEMPLATE_NAME == "stickers"
   rendered_html = rendered_html.sub(/<div class="album-container[^"]*">/, '<div class="album-container" id="album-container" style="display: none;">')
 elsif TEMPLATE_NAME == "nostalgia"
-  rendered_html = rendered_html.sub(/<main class="nostalgia-stage">/, '<main class="nostalgia-stage" id="dashboard" style="display: none;">')
+  rendered_html = rendered_html.sub(/<main class="nostalgia-stage">/, '<main class="nostalgia-stage" id="dashboard">')
 else
   rendered_html = rendered_html.sub(/<div class="container[^"]*">/, '<div class="container" id="dashboard" style="display: none;">')
 end

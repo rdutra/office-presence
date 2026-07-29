@@ -712,3 +712,231 @@ body.scene-lit .nostalgia-bg::after {
     min-height: 0;
   }
 }
+
+@media (max-width: 760px) {
+  html,
+  body.nostalgia-theme {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body.nostalgia-theme {
+    background:
+      radial-gradient(circle at 20% 8%, rgba(240, 49, 142, 0.38), transparent 55vw),
+      radial-gradient(circle at 86% 22%, rgba(141, 233, 255, 0.28), transparent 50vw),
+      linear-gradient(145deg, #160716 0%, #2a0916 46%, #050409 100%);
+  }
+
+  .nostalgia-stage {
+    width: 100%;
+    height: auto;
+    min-height: 100svh;
+    padding: 12px;
+  }
+
+  .tv-poster {
+    height: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 12px;
+  }
+
+  .album-cover,
+  .track-panel,
+  .nostalgia-side {
+    width: 100%;
+    min-width: 0;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+  }
+
+  .album-cover {
+    order: 2;
+    height: auto;
+    aspect-ratio: 1;
+    max-height: none;
+  }
+
+  .cover-topline {
+    font-size: 0.62rem;
+  }
+
+  .now-label {
+    inset: 11% 5% 8%;
+  }
+
+  .now-label span {
+    font-size: clamp(4.4rem, 30vw, 8rem);
+  }
+
+  .now-label strong {
+    max-width: 92%;
+    font-size: clamp(0.86rem, 5.2vw, 1.38rem);
+  }
+
+  .now-label b {
+    font-size: clamp(6.5rem, 40vw, 10.5rem);
+  }
+
+  .chart-hits {
+    font-size: clamp(1rem, 6.2vw, 1.7rem);
+  }
+
+  .track-panel {
+    order: 1;
+    min-height: 470px;
+    padding: 14px;
+  }
+
+  .track-header {
+    gap: 0.25rem 0.55rem;
+    padding-bottom: 10px;
+    border-bottom-width: 4px;
+  }
+
+  .track-header span {
+    font-size: 0.84rem;
+  }
+
+  .track-header strong {
+    font-size: clamp(1.9rem, 9.5vw, 3rem);
+  }
+
+  .track-header small {
+    font-size: 0.78rem;
+  }
+
+  .track-list {
+    grid-auto-rows: minmax(34px, auto);
+    gap: 5px;
+    --track-font: clamp(0.82rem, 3.8vw, 1rem);
+  }
+
+  .track-list.is-dense,
+  .track-list.is-ultra-dense {
+    grid-auto-rows: minmax(30px, auto);
+    --track-font: clamp(0.72rem, 3.4vw, 0.9rem);
+  }
+
+  .track-list li {
+    grid-template-columns: 2.4em minmax(0, 1fr);
+    gap: 0.35em 0.5em;
+    padding: 0.45em 0.6em;
+    line-height: 1.1;
+  }
+
+  .track-status {
+    grid-column: 2;
+    font-size: 0.68em;
+  }
+
+  .track-name {
+    white-space: normal;
+  }
+
+  .nostalgia-side {
+    order: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 12px;
+    padding: 12px;
+    overflow: visible;
+  }
+
+  .brand-cluster {
+    min-height: 132px;
+  }
+
+  .concierto-logo {
+    width: 54%;
+  }
+
+  .punta-bus {
+    right: 0;
+    top: 40%;
+    width: 76%;
+  }
+
+  .berch-sticker {
+    width: min(72%, 260px);
+    height: auto;
+    justify-self: center;
+  }
+
+  .stats-stack {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .on-air-box,
+  .stat-tape,
+  .winner-card,
+  .ranking-card,
+  .music-card {
+    padding: 10px;
+  }
+
+  .on-air-box span,
+  .stat-tape span,
+  .winner-card span,
+  .ranking-card > span,
+  .music-header span {
+    font-size: 0.7rem;
+  }
+
+  .on-air-box strong,
+  .stat-tape strong {
+    font-size: clamp(2rem, 12vw, 3rem);
+  }
+
+  .on-air-box small {
+    font-size: 0.62rem;
+  }
+
+  .performance-board {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .winner-card strong {
+    font-size: clamp(1.2rem, 6.4vw, 1.8rem);
+  }
+
+  .winner-card small,
+  .spin-row {
+    font-size: clamp(0.78rem, 3.8vw, 1rem);
+  }
+
+  .music-card {
+    min-height: 300px;
+  }
+
+  .music-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .music-links {
+    width: 100%;
+  }
+
+  .music-header a {
+    flex: 1 1 0;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.68rem;
+    text-align: center;
+  }
+
+  .register-button-ns {
+    min-height: 48px;
+    font-size: 0.82rem;
+  }
+
+  .drop-disco-ball {
+    width: min(42vw, 190px);
+    min-width: 128px;
+  }
+}

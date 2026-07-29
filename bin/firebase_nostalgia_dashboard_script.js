@@ -11,12 +11,17 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
 const dashboardEl = document.getElementById('dashboard');
 const loadingEl = document.getElementById('loading');
 const errorEl = document.getElementById('error');
+
+let database = null;
+try {
+  const app = initializeApp(firebaseConfig);
+  database = getDatabase(app);
+} catch (error) {
+  showError(`Error al inicializar Firebase: ${error.message}`);
+}
 
 function normalizeUtc(value) {
   if (!value) return null;
@@ -31,16 +36,18 @@ function formatClock(utcString) {
 }
 
 function showDashboard() {
-  loadingEl.style.display = 'none';
-  errorEl.style.display = 'none';
-  dashboardEl.style.display = 'block';
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (errorEl) errorEl.style.display = 'none';
+  if (dashboardEl) dashboardEl.style.display = 'block';
 }
 
 function showError(message) {
-  errorEl.textContent = message;
-  errorEl.style.display = 'block';
-  dashboardEl.style.display = 'none';
-  loadingEl.style.display = 'none';
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (dashboardEl) dashboardEl.style.display = 'block';
 }
 
 function setupDiscoDrop() {
@@ -188,9 +195,11 @@ function updateDashboard(data) {
 window.FIREBASE_MODE = true;
 setupDiscoDrop();
 
-const dashboardRef = ref(database, 'dashboard');
-onValue(dashboardRef, (snapshot) => {
-  updateDashboard(snapshot.val());
-}, (error) => {
-  showError(`Error de conexión con Firebase: ${error.message}`);
-});
+if (database) {
+  const dashboardRef = ref(database, 'dashboard');
+  onValue(dashboardRef, (snapshot) => {
+    updateDashboard(snapshot.val());
+  }, (error) => {
+    showError(`Error de conexión con Firebase: ${error.message}`);
+  });
+}

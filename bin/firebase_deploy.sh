@@ -16,7 +16,7 @@ while [[ $# -gt 0 ]]; do
             TEMPLATE="$2"
             shift 2
             ;;
-        modern|geocities|christmas|summer|easter|autumn|worldcup|stickers)
+        modern|geocities|christmas|summer|easter|autumn|worldcup|stickers|nostalgia)
             TEMPLATE="$1"
             shift
             ;;
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  TEMPLATE               Template to deploy (shorthand)"
-            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, worldcup, stickers)"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, worldcup, stickers, nostalgia)"
             echo "                         Default: modern"
             echo ""
             echo "Examples:"
@@ -55,11 +55,11 @@ done
 
 # Validate template
 case $TEMPLATE in
-    modern|geocities|christmas|summer|easter|autumn|worldcup|stickers)
+    modern|geocities|christmas|summer|easter|autumn|worldcup|stickers|nostalgia)
         ;;
     *)
         echo "❌ Error: Invalid template '$TEMPLATE'"
-        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, worldcup, stickers"
+        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, worldcup, stickers, nostalgia"
         exit 1
         ;;
 esac
@@ -144,8 +144,8 @@ fi
 echo "✓ Injecting Firebase config from .env.firebase..."
 sed -e "s|YOUR_API_KEY_HERE|$FIREBASE_API_KEY|g" \
     -e "s|YOUR_PROJECT_ID\.firebaseapp\.com|$FIREBASE_AUTH_DOMAIN|g" \
-    -e "s|YOUR_PROJECT_ID|$FIREBASE_PROJECT_ID|g" \
     -e "s|https://YOUR_PROJECT_ID-default-rtdb\.firebaseio\.com|$FIREBASE_DATABASE_URL|g" \
+    -e "s|YOUR_PROJECT_ID|$FIREBASE_PROJECT_ID|g" \
     -e "s|YOUR_MESSAGING_SENDER_ID|$FIREBASE_MESSAGING_SENDER_ID|g" \
     -e "s|YOUR_APP_ID|$FIREBASE_APP_ID|g" \
     "$PUBLIC_DIR/index.html.bak" > "$PUBLIC_DIR/index.html.tmp"
