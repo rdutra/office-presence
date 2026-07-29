@@ -9,7 +9,10 @@ class NostalgiaDashboard {
     this.lastWinnerNameEl = document.getElementById('ns-last-winner-name');
     this.lastWinnerMetaEl = document.getElementById('ns-last-winner-meta');
     this.currentTimeEl = document.getElementById('ns-current-time');
+    this.discoBallEl = document.querySelector('.drop-disco-ball');
+    this.discoLayerEl = document.querySelector('.nostalgia-bg');
     this.refreshInterval = 30000;
+    this.discoDropTimer = null;
     this.data = null;
 
     this.init();
@@ -28,10 +31,54 @@ class NostalgiaDashboard {
 
     this.setupRegistrationModal();
     this.updateRegistrationButtonText();
+    this.setupDiscoDrop();
 
     if (typeof loadDeviceInfo === 'function') {
       loadDeviceInfo();
     }
+  }
+
+  setupDiscoDrop() {
+    if (!this.discoBallEl || !this.discoLayerEl) return;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const scheduleNextDrop = (initial = false) => {
+      const minDelay = initial ? 35000 : 120000;
+      const maxDelay = initial ? 75000 : 300000;
+      const delay = minDelay + Math.random() * (maxDelay - minDelay);
+
+      this.discoDropTimer = window.setTimeout(() => {
+        this.triggerDiscoDrop();
+        scheduleNextDrop();
+      }, delay);
+    };
+
+    scheduleNextDrop(true);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key?.toLowerCase() !== 'f') return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      this.triggerDiscoDrop();
+    });
+  }
+
+  triggerDiscoDrop() {
+    if (!this.discoBallEl || !this.discoLayerEl) return;
+
+    const x = 18 + Math.random() * 64;
+    this.discoLayerEl.style.setProperty('--drop-x', `${x}%`);
+    document.body.classList.add('scene-lit');
+
+    this.discoBallEl.classList.remove('is-dropping');
+    void this.discoBallEl.offsetWidth;
+    this.discoBallEl.classList.add('is-dropping');
+
+    window.setTimeout(() => {
+      this.discoBallEl.classList.remove('is-dropping');
+      document.body.classList.remove('scene-lit');
+    }, 8500);
   }
 
   async fetchData() {
@@ -41,7 +88,7 @@ class NostalgiaDashboard {
       this.data = await response.json();
       this.render();
     } catch (error) {
-      console.error('Error fetching nostalgia dashboard data:', error);
+      console.error('Error al cargar datos del dashboard nostalgia:', error);
     }
   }
 
@@ -62,11 +109,9 @@ class NostalgiaDashboard {
   renderTracks() {
     if (!this.trackListEl) return;
 
-    const people = (this.data.mapped_all || [])
+    const people = (this.data.mapped_present || [])
       .filter((person) => person.person && !person.person.startsWith('Anonymous'))
       .sort((a, b) => {
-        if (a.present !== b.present) return a.present ? -1 : 1;
-        if (a.recent !== b.recent) return a.recent ? -1 : 1;
         return a.person.localeCompare(b.person);
       });
 
@@ -74,19 +119,20 @@ class NostalgiaDashboard {
     this.trackListEl.classList.toggle('is-dense', people.length > 28);
     this.trackListEl.classList.toggle('is-ultra-dense', people.length > 36);
     if (this.totalPeopleEl) this.totalPeopleEl.textContent = people.length;
+    if (this.presentCountEl) this.presentCountEl.textContent = people.length;
 
     if (people.length === 0) {
       const empty = document.createElement('li');
-      empty.innerHTML = '<span class="track-num">00</span><span class="track-name">No office tracks yet</span><span class="track-status">silence</span>';
+      empty.innerHTML = '<span class="track-num">00</span><span class="track-name">Nadie en la pista</span><span class="track-status">silencio</span>';
       this.trackListEl.appendChild(empty);
       return;
     }
 
     people.forEach((person, index) => {
       const row = document.createElement('li');
-      if (person.present) row.classList.add('is-present');
+      row.classList.add('is-present');
 
-      const status = person.present ? 'playing' : (person.recent ? 'rewind' : 'archive');
+      const status = 'sonando';
       const name = [person.person, person.medal].filter(Boolean).join(' ');
 
       row.innerHTML = `
@@ -108,7 +154,7 @@ class NostalgiaDashboard {
     if (attendees.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'spin-row';
-      empty.innerHTML = '<b>-</b><span>No spins yet</span><em>0</em>';
+      empty.innerHTML = '<b>-</b><span>Sin ranking</span><em>0</em>';
       this.topAttendeesEl.appendChild(empty);
       return;
     }
@@ -133,7 +179,7 @@ class NostalgiaDashboard {
     }
 
     this.lastWinnerNameEl.textContent = [winner.person, winner.medal].filter(Boolean).join(' ');
-    this.lastWinnerMetaEl.textContent = `${winner.days || 0} dias`;
+    this.lastWinnerMetaEl.textContent = `${winner.days || 0} días`;
   }
 
   updateTime() {
@@ -192,10 +238,10 @@ class NostalgiaDashboard {
       const data = await response.json();
 
       if (data.registered) {
-        openBtn.textContent = 'Update Track';
+        openBtn.textContent = 'Actualizar tema';
       }
     } catch (error) {
-      console.error('Error checking registration status:', error);
+      console.error('Error al revisar el registro:', error);
     }
   }
 }

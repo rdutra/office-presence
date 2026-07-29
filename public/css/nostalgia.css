@@ -40,8 +40,13 @@ body.modal-open {
 .nostalgia-bg {
   position: fixed;
   inset: 0;
-  pointer-events: none;
   overflow: hidden;
+}
+
+.nostalgia-bg,
+.nostalgia-bg::before,
+.nostalgia-bg::after {
+  pointer-events: none;
 }
 
 .nostalgia-bg::before {
@@ -53,6 +58,23 @@ body.modal-open {
     linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
   background-size: 38px 38px;
   mask-image: linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+}
+
+.nostalgia-bg::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  opacity: 0;
+  background:
+    radial-gradient(circle at var(--drop-x, 50%) 26%, rgba(255, 255, 255, 0.34), transparent 18%),
+    conic-gradient(from 12deg at var(--drop-x, 50%) 22%, transparent 0 8%, rgba(141, 233, 255, 0.42) 10% 14%, transparent 16% 30%, rgba(240, 49, 142, 0.34) 32% 36%, transparent 38% 58%, rgba(255, 228, 109, 0.34) 60% 64%, transparent 66% 100%);
+  mix-blend-mode: screen;
+  transition: opacity 700ms ease;
+}
+
+body.scene-lit .nostalgia-bg::after {
+  opacity: 1;
+  animation: scene-light-pan 7.8s ease-in-out forwards;
 }
 
 .light-beam {
@@ -76,6 +98,22 @@ body.modal-open {
   right: 12vw;
   background: linear-gradient(to bottom, rgba(240, 49, 142, 0.62), transparent 70%);
   animation: beam-sweep-b 11s ease-in-out infinite alternate;
+}
+
+.drop-disco-ball {
+  position: fixed;
+  z-index: 50;
+  top: -34vh;
+  left: var(--drop-x, 50%);
+  width: min(20vw, 260px);
+  min-width: 150px;
+  opacity: 0;
+  transform: translateX(-50%) rotate(-10deg);
+  filter: drop-shadow(0 0 42px rgba(141, 233, 255, 0.86)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.42));
+}
+
+.drop-disco-ball.is-dropping {
+  animation: disco-drop 8.2s cubic-bezier(0.2, 0.86, 0.18, 1) forwards;
 }
 
 .nostalgia-stage {
@@ -317,22 +355,24 @@ body.modal-open {
   padding: 0;
   list-style: none;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-auto-rows: minmax(26px, 3.15vh);
+  align-content: start;
+  gap: 3px;
   --track-font: clamp(0.46rem, 0.78vw, 0.82rem);
 }
 
 .track-list.is-dense {
   --track-font: clamp(0.4rem, 0.66vw, 0.7rem);
+  grid-auto-rows: minmax(21px, 2.55vh);
 }
 
 .track-list.is-ultra-dense {
   --track-font: clamp(0.34rem, 0.56vw, 0.62rem);
+  grid-auto-rows: minmax(17px, 2vh);
 }
 
 .track-list li {
-  flex: 1 1 0;
   min-height: 0;
   display: grid;
   grid-template-columns: 2.2em minmax(0, 1fr) auto;
@@ -343,6 +383,20 @@ body.modal-open {
   border-left: 0.28em solid rgba(224, 26, 38, 0.58);
   font-size: var(--track-font);
   line-height: 1;
+}
+
+.track-list::after {
+  content: "";
+  display: block;
+  height: 100%;
+  min-height: 60px;
+  border: 1px dashed rgba(224, 26, 38, 0.22);
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(224, 26, 38, 0.045) 0 1px,
+      transparent 1px 23px
+    );
 }
 
 .track-list li.is-present {
@@ -374,7 +428,7 @@ body.modal-open {
 
 .nostalgia-side {
   display: grid;
-  grid-template-rows: 0.56fr 0.86fr auto 0.6fr auto;
+  grid-template-rows: 0.42fr 0.46fr auto 0.3fr 200px auto;
   gap: min(1.2vh, 12px);
   overflow: hidden;
   padding: min(1vw, 14px);
@@ -407,7 +461,9 @@ body.modal-open {
 
 .berch-sticker {
   align-self: center;
+  min-height: 0;
   width: 100%;
+  height: 100%;
   max-height: 100%;
   object-fit: contain;
   transform: rotate(-4deg);
@@ -423,7 +479,8 @@ body.modal-open {
 .on-air-box,
 .stat-tape,
 .winner-card,
-.ranking-card {
+.ranking-card,
+.music-card {
   min-width: 0;
   padding: min(0.9vw, 12px);
   border: 1px solid rgba(255, 246, 218, 0.18);
@@ -438,7 +495,8 @@ body.modal-open {
 .on-air-box span,
 .stat-tape span,
 .winner-card span,
-.ranking-card > span {
+.ranking-card > span,
+.music-header span {
   display: block;
   color: var(--ns-cyan);
   font-size: clamp(0.42rem, 0.62vw, 0.68rem);
@@ -534,6 +592,46 @@ body.modal-open {
   font-weight: 900;
 }
 
+.music-card {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.38rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.music-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.music-links {
+  display: flex;
+  gap: 0.28rem;
+}
+
+.music-header a {
+  flex: 0 0 auto;
+  color: #170910;
+  background: #ffe46d;
+  padding: 0.18rem 0.34rem;
+  font-size: clamp(0.4rem, 0.58vw, 0.62rem);
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.music-card iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  background: #070409;
+}
+
 .register-button-ns {
   width: 100%;
   min-height: 42px;
@@ -557,6 +655,37 @@ body.modal-open {
   to { transform: rotate(-31deg); }
 }
 
+@keyframes disco-drop {
+  0% {
+    top: -34vh;
+    opacity: 0;
+    transform: translateX(-50%) rotate(-16deg) scale(0.88);
+  }
+  16% {
+    opacity: 1;
+  }
+  38% {
+    top: 1.8vh;
+    transform: translateX(-50%) rotate(8deg) scale(1);
+  }
+  68% {
+    top: 1.8vh;
+    opacity: 1;
+    transform: translateX(-50%) rotate(-6deg) scale(1);
+  }
+  100% {
+    top: -34vh;
+    opacity: 0;
+    transform: translateX(-50%) rotate(14deg) scale(0.92);
+  }
+}
+
+@keyframes scene-light-pan {
+  0% { transform: rotate(-8deg) scale(1); }
+  42% { transform: rotate(7deg) scale(1.03); }
+  100% { transform: rotate(-2deg) scale(1); }
+}
+
 @media (max-aspect-ratio: 4 / 3) {
   .nostalgia-stage {
     padding: 10px;
@@ -577,6 +706,7 @@ body.modal-open {
   .berch-sticker,
   .stats-stack,
   .performance-board,
+  .music-card,
   .register-button-ns {
     min-height: 0;
   }

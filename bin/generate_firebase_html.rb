@@ -135,6 +135,10 @@ firebase_styles = <<~FIREBASE_CSS
       opacity: 0.85;
     }
 
+    body.nostalgia-theme {
+      overflow: hidden;
+    }
+
     .error {
       display: none;
       background: rgba(239, 68, 68, 0.2);
@@ -249,8 +253,9 @@ end
 rendered_html = rendered_html.sub("</head>", firebase_styles)
 
 # Add loading and error states at the beginning of body
+loading_text = TEMPLATE_NAME == "nostalgia" ? "Cargando datos de la pista..." : "Loading dashboard data..."
 loading_divs = <<~LOADING_HTML
-  <div id="loading" class="loading">Loading dashboard data...</div>
+  <div id="loading" class="loading">#{loading_text}</div>
   <div id="error" class="error"></div>
 
 LOADING_HTML

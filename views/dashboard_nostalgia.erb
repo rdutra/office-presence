@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Noche de la Nostalgia - Office Mix</title>
+    <title>Noche de la Nostalgia - Mix de Oficina</title>
     <link rel="stylesheet" href="/css/nostalgia.css">
     <link rel="stylesheet" href="/css/registration_modal.css">
   </head>
@@ -11,14 +11,15 @@
     <div class="nostalgia-bg">
       <div class="light-beam beam-a"></div>
       <div class="light-beam beam-b"></div>
-      <img class="disco-ball" src="/img/nostalgia/disco-ball.png" alt="Disco ball">
+      <img class="drop-disco-ball" src="/img/nostalgia/disco-ball.png" alt="Bola de espejos">
     </div>
 
     <main class="nostalgia-stage">
-      <section class="tv-poster" aria-label="Noche de la Nostalgia office mix">
-        <section class="album-cover" aria-label="Now That's What I Call Office 9 album cover">
+      <section class="tv-poster" aria-label="Mix de oficina para la Noche de la Nostalgia">
+        <% track_people = mapped_present.reject { |person| person[:person].to_s.start_with?("Anonymous") } %>
+        <section class="album-cover" aria-label="Tapa del disco Now Office 9">
           <div class="cover-topline">
-            <span>Includes every office classic</span>
+            <span>Incluye todos los clásicos de la oficina</span>
             <span id="ns-current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
           </div>
           <div class="cover-cubes" aria-hidden="true">
@@ -28,25 +29,25 @@
           </div>
           <div class="now-label">
             <span>NOW</span>
-            <strong>THAT'S WHAT I CALL OFFICE!</strong>
+            <strong>ESTO SÍ ES OFICINA!</strong>
             <b>9</b>
           </div>
-          <div class="chart-hits"><span id="ns-total-people"><%= total_people %></span> CHART-TOPPING HITS!</div>
-          <img class="disco-ball" src="/img/nostalgia/disco-ball.png" alt="Disco ball">
+          <div class="chart-hits"><span id="ns-total-people"><%= track_people.length %></span> HITS DE OFICINA!</div>
+          <img class="disco-ball" src="/img/nostalgia/disco-ball.png" alt="Bola de espejos">
         </section>
 
-        <section class="track-panel" aria-label="Office CD track list">
+        <section class="track-panel" aria-label="Lista de temas del CD de oficina">
           <div class="track-header">
             <span>CD 94.7</span>
-            <strong>Track List</strong>
+            <strong>Lista de temas</strong>
             <small>La Noche de la Nostalgia</small>
           </div>
           <ol class="track-list" id="ns-track-list">
-            <% (mapped_present + mapped_absent).each_with_index do |person, index| %>
+            <% track_people.each_with_index do |person, index| %>
               <li>
                 <span class="track-num"><%= (index + 1).to_s.rjust(2, "0") %></span>
                 <span class="track-name"><%= [person[:person], person[:medal]].compact.join(" ") %></span>
-                <span class="track-status"><%= person[:status] == "active" ? "playing" : "rewind" %></span>
+                <span class="track-status">sonando</span>
               </li>
             <% end %>
           </ol>
@@ -61,11 +62,11 @@
           <div class="stats-stack">
             <div class="on-air-box">
               <span>AL AIRE</span>
-              <strong id="ns-present-count"><%= present_count %></strong>
+              <strong id="ns-present-count"><%= track_people.length %></strong>
               <small>en la pista</small>
             </div>
             <div class="stat-tape">
-              <span>Record</span>
+              <span>Récord</span>
               <strong id="ns-daily-record"><%= daily_record %></strong>
             </div>
             <div class="stat-tape">
@@ -74,18 +75,18 @@
             </div>
           </div>
           <div class="performance-board">
-            <section class="winner-card" aria-label="Previous week winner">
+            <section class="winner-card" aria-label="Ganador de la semana anterior">
               <span>Ganador anterior</span>
               <strong id="ns-last-winner-name"><%= last_week_winner ? last_week_winner[:person] : "Sin ganador" %></strong>
               <small id="ns-last-winner-meta">
                 <% if last_week_winner %>
-                  <%= last_week_winner[:days] %> dias
+                  <%= last_week_winner[:days] %> días
                 <% else %>
                   --
                 <% end %>
               </small>
             </section>
-            <section class="ranking-card" aria-label="Weekly ranking">
+            <section class="ranking-card" aria-label="Ranking semanal">
               <span>Ranking semanal</span>
               <div id="ns-top-attendees">
                 <% top_attendees.take(5).each_with_index do |attendee, index| %>
@@ -98,15 +99,30 @@
               </div>
             </section>
           </div>
-          <button class="register-button-ns" id="openRegistrationBtn" type="button">Register Device</button>
+          <section class="music-card" aria-label="Playlist colaborativa">
+            <div class="music-header">
+              <span>Playlist nostalgia</span>
+              <div class="music-links">
+                <a href="https://music.youtube.com/playlist?list=PLT3Ef56-3Nl37ycrVTMM5jfs7zRf264SP&si=GWkd_gMHXBOwHZqr" target="_blank" rel="noopener">Escuchar</a>
+                <a href="https://music.youtube.com/playlist?list=PLT3Ef56-3Nl37ycrVTMM5jfs7zRf264SP&jct=LbFEiQul1_4XTA8TMvjfjA" target="_blank" rel="noopener">Sumar tema</a>
+              </div>
+            </div>
+            <iframe
+              title="Playlist Noche de la Nostalgia"
+              src="https://www.youtube.com/embed?listType=playlist&list=PLT3Ef56-3Nl37ycrVTMM5jfs7zRf264SP"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              loading="lazy">
+            </iframe>
+          </section>
+          <button class="register-button-ns" id="openRegistrationBtn" type="button">Registrar dispositivo</button>
         </aside>
       </section>
     </main>
 
     <div id="registrationModal" class="registration-modal" aria-hidden="true">
       <div class="modal-overlay" data-close-modal></div>
-      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
-        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Registrar dispositivo">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Cerrar formulario">&times;</button>
         <%= erb :_registration %>
       </div>
     </div>

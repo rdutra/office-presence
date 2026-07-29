@@ -33,7 +33,7 @@ function formatClock(utcString) {
 function showDashboard() {
   loadingEl.style.display = 'none';
   errorEl.style.display = 'none';
-  dashboardEl.style.display = 'flex';
+  dashboardEl.style.display = 'block';
 }
 
 function showError(message) {
@@ -43,15 +43,53 @@ function showError(message) {
   loadingEl.style.display = 'none';
 }
 
+function setupDiscoDrop() {
+  const ball = document.querySelector('.drop-disco-ball');
+  const layer = document.querySelector('.nostalgia-bg');
+  if (!ball || !layer) return;
+
+  const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  const triggerDrop = () => {
+    const x = 18 + Math.random() * 64;
+    layer.style.setProperty('--drop-x', `${x}%`);
+    document.body.classList.add('scene-lit');
+    ball.classList.remove('is-dropping');
+    void ball.offsetWidth;
+    ball.classList.add('is-dropping');
+
+    window.setTimeout(() => {
+      ball.classList.remove('is-dropping');
+      document.body.classList.remove('scene-lit');
+    }, 8500);
+  };
+
+  const schedule = (initial = false) => {
+    const minDelay = initial ? 35000 : 120000;
+    const maxDelay = initial ? 75000 : 300000;
+    window.setTimeout(() => {
+      triggerDrop();
+      schedule();
+    }, minDelay + Math.random() * (maxDelay - minDelay));
+  };
+
+  schedule(true);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key?.toLowerCase() !== 'f') return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    triggerDrop();
+  });
+}
+
 function renderTracks(data) {
   const trackListEl = document.getElementById('ns-track-list');
   if (!trackListEl) return;
 
-  const people = (data.mapped_all || [])
+  const people = (data.mapped_present || [])
     .filter((person) => person.person && !person.person.startsWith('Anonymous'))
     .sort((a, b) => {
-      if (a.present !== b.present) return a.present ? -1 : 1;
-      if (a.recent !== b.recent) return a.recent ? -1 : 1;
       return a.person.localeCompare(b.person);
     });
 
@@ -60,16 +98,18 @@ function renderTracks(data) {
   trackListEl.classList.toggle('is-ultra-dense', people.length > 36);
   const totalPeopleEl = document.getElementById('ns-total-people');
   if (totalPeopleEl) totalPeopleEl.textContent = people.length;
+  const presentCountEl = document.getElementById('ns-present-count');
+  if (presentCountEl) presentCountEl.textContent = people.length;
 
   if (people.length === 0) {
-    trackListEl.innerHTML = '<li><span class="track-num">00</span><span class="track-name">No office tracks yet</span><span class="track-status">silence</span></li>';
+    trackListEl.innerHTML = '<li><span class="track-num">00</span><span class="track-name">Nadie en la pista</span><span class="track-status">silencio</span></li>';
     return;
   }
 
   people.forEach((person, index) => {
     const row = document.createElement('li');
-    if (person.present) row.classList.add('is-present');
-    const status = person.present ? 'playing' : (person.recent ? 'rewind' : 'archive');
+    row.classList.add('is-present');
+    const status = 'sonando';
     const name = [person.person, person.medal].filter(Boolean).join(' ');
     row.innerHTML = `<span class="track-num">${String(index + 1).padStart(2, '0')}</span><span class="track-name"></span><span class="track-status">${status}</span>`;
     row.querySelector('.track-name').textContent = name;
@@ -85,7 +125,7 @@ function renderTopAttendees(data) {
   topAttendeesEl.innerHTML = '';
 
   if (attendees.length === 0) {
-    topAttendeesEl.innerHTML = '<div class="spin-row"><b>-</b><span>No spins yet</span><em>0</em></div>';
+    topAttendeesEl.innerHTML = '<div class="spin-row"><b>-</b><span>Sin ranking</span><em>0</em></div>';
     return;
   }
 
@@ -111,12 +151,12 @@ function renderLastWeekWinner(data) {
   }
 
   nameEl.textContent = [winner.person, winner.medal].filter(Boolean).join(' ');
-  metaEl.textContent = `${winner.days || 0} dias`;
+  metaEl.textContent = `${winner.days || 0} días`;
 }
 
 function updateDashboard(data) {
   if (!data) {
-    showError('No data available. Make sure the sync script is running.');
+    showError('No hay datos disponibles. Verifica que el script de sincronización esté activo.');
     return;
   }
 
@@ -145,10 +185,11 @@ function updateDashboard(data) {
 }
 
 window.FIREBASE_MODE = true;
+setupDiscoDrop();
 
 const dashboardRef = ref(database, 'dashboard');
 onValue(dashboardRef, (snapshot) => {
   updateDashboard(snapshot.val());
 }, (error) => {
-  showError(`Firebase connection error: ${error.message}`);
+  showError(`Error de conexión con Firebase: ${error.message}`);
 });
