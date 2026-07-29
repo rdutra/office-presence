@@ -14,7 +14,7 @@ require "stringio"
 TEMPLATE_NAME = ARGV[0] || "modern"
 
 # Validate template name
-valid_templates = %w[modern geocities christmas summer easter autumn worldcup stickers]
+valid_templates = %w[modern geocities christmas summer easter autumn worldcup stickers nostalgia]
 unless valid_templates.include?(TEMPLATE_NAME)
   puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
   puts "Valid templates: #{valid_templates.join(', ')}"
@@ -163,7 +163,7 @@ firebase_styles = <<~FIREBASE_CSS
     }
 
     /* Hide register button in Firebase mode */
-    .register-button, .register-button-wc, .packet-button {
+    .register-button, .register-button-wc, .packet-button, .register-button-ns {
       display: none !important;
     }
 
@@ -258,13 +258,19 @@ LOADING_HTML
 rendered_html = rendered_html.sub(/(<body[^>]*>)/, "\\1\n#{loading_divs}")
 
 # Wrap the container div to be hidden initially
-target_id = (TEMPLATE_NAME == "stickers") ? "album-container" : "dashboard"
-rendered_html = rendered_html.sub(/<div class="(?:album-)?container[^"]*">/, "<div class=\"#{(TEMPLATE_NAME == 'stickers' ? 'album-container' : 'container')}\" id=\"#{target_id}\" style=\"display: none;\">")
+if TEMPLATE_NAME == "stickers"
+  rendered_html = rendered_html.sub(/<div class="album-container[^"]*">/, '<div class="album-container" id="album-container" style="display: none;">')
+elsif TEMPLATE_NAME == "nostalgia"
+  rendered_html = rendered_html.sub(/<main class="nostalgia-stage">/, '<main class="nostalgia-stage" id="dashboard" style="display: none;">')
+else
+  rendered_html = rendered_html.sub(/<div class="container[^"]*">/, '<div class="container" id="dashboard" style="display: none;">')
+end
 
 
 # Remove timezone.js and dashboard.js, replace with Firebase script
 rendered_html = rendered_html.gsub(%r{<script src="/js/timezone\.js"></script>\s*}, '')
 rendered_html = rendered_html.gsub(%r{<script src="/js/dashboard\.js"></script>\s*}, '')
+rendered_html = rendered_html.gsub(%r{<script src="/js/nostalgia-dashboard\.js"></script>\s*}, '') if TEMPLATE_NAME == "nostalgia"
 # ONLY remove worldcup-dashboard.js if it's NOT the worldcup template
 # Actually, for consistency with the user's request, we keep it for worldcup
 rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"></script>\s*}, '') if TEMPLATE_NAME != "worldcup"
@@ -274,6 +280,8 @@ script_filename = if TEMPLATE_NAME == "worldcup"
                     "firebase_worldcup_dashboard_script.js"
                   elsif TEMPLATE_NAME == "stickers"
                     "firebase_stickers_dashboard_script.js"
+                  elsif TEMPLATE_NAME == "nostalgia"
+                    "firebase_nostalgia_dashboard_script.js"
                   else
                     "firebase_dashboard_script.js"
                   end

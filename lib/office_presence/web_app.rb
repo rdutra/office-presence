@@ -23,7 +23,8 @@ module OfficePresence
       autumn: :dashboard_autumn,
       enterprise: :dashboard_enterprise,
       worldcup: :dashboard_worldcup,
-      stickers: :dashboard_stickers
+      stickers: :dashboard_stickers,
+      nostalgia: :dashboard_nostalgia
     }.freeze
 
     # Configuration
