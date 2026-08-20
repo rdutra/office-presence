@@ -66,7 +66,7 @@ module OfficePresence
           .join(:people, mac: :mac)
           .where(Sequel[:people][:visible] => true)
           .select_all(:devices)
-          .select_append(Sequel[:people][:person], Sequel[:people][:device].as(:device_name), Sequel[:people][:image_url])
+          .select_append(Sequel[:people][:person], Sequel[:people][:device].as(:device_name), Sequel[:people][:image_url], Sequel[:people][:audio_filename])
           .order(Sequel.desc(:last_seen_utc))
           .all
           .map do |row|
@@ -79,7 +79,8 @@ module OfficePresence
               device_id: row[:device_id],
               last_seen_utc: row[:last_seen_utc],
               ping_failure_count: row[:ping_failure_count],
-              image_url: row[:image_url]
+              image_url: row[:image_url],
+              audio_filename: row[:audio_filename]
             }
           end
 

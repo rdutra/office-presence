@@ -56,6 +56,7 @@ async function registerDevice(event) {
   const personInput = document.getElementById('personName');
   const deviceInput = document.getElementById('deviceName');
   const imageInput = document.getElementById('imageUrl');
+  const audioInput = document.getElementById('audioFile');
   const visibleCheckbox = document.getElementById('visibleCheckbox');
   const submitBtn = document.getElementById('submitBtn');
   const infoDiv = document.getElementById('registerInfo');
@@ -63,6 +64,7 @@ async function registerDevice(event) {
   const person = personInput.value.trim();
   const device = deviceInput.value.trim();
   const image_url = imageInput ? imageInput.value.trim() : null;
+  const audio_file = audioInput ? audioInput.files[0] : null;
   const visible = visibleCheckbox.checked;
 
   if (!person) {
@@ -75,10 +77,16 @@ async function registerDevice(event) {
   submitBtn.textContent = 'Registering...';
 
   try {
+    const formData = new FormData();
+    formData.append('person', person);
+    formData.append('device', device);
+    formData.append('visible', visible);
+    if (image_url) formData.append('image_url', image_url);
+    if (audio_file) formData.append('audio_file', audio_file);
+
     const response = await fetch('/api/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ person, device, visible, image_url })
+      body: formData
     });
 
     const data = await response.json();

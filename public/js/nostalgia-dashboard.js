@@ -15,6 +15,9 @@ class NostalgiaDashboard {
     this.refreshInterval = 30000;
     this.discoDropTimer = null;
     this.data = null;
+    this.previousPresentMacs = null;
+    this.isPlayingAnnouncement = false;
+    this.audioEnabled = false;
 
     this.init();
   }
@@ -37,6 +40,40 @@ class NostalgiaDashboard {
     if (typeof loadDeviceInfo === 'function') {
       loadDeviceInfo();
     }
+    
+    this.setupAudioEnabler();
+  }
+
+  setupAudioEnabler() {
+    const enableAudio = () => {
+      this.audioEnabled = true;
+      document.body.removeEventListener('click', enableAudio);
+      // Wake up speech synthesis
+      if ('speechSynthesis' in window) {
+        const u = new SpeechSynthesisUtterance('');
+        u.volume = 0;
+        window.speechSynthesis.speak(u);
+      }
+    };
+    document.body.addEventListener('click', enableAudio);
+    
+    // Testing shortcut: Press 'a' to announce a random person
+    document.addEventListener('keydown', (event) => {
+      if (event.key?.toLowerCase() === 'a' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        if (!this.data || !this.data.mapped_present) return;
+        
+        if (!this.audioEnabled) enableAudio();
+        
+        const people = this.data.mapped_present.filter(p => p.person && !p.person.startsWith('Anonymous'));
+        if (people.length === 0) {
+          console.log("No non-anonymous people to announce");
+          return;
+        }
+        
+        const randomPerson = people[Math.floor(Math.random() * people.length)];
+        this.playDjAnnouncements([randomPerson]);
+      }
+    });
   }
 
   setupDiscoDrop() {
@@ -105,6 +142,110 @@ class NostalgiaDashboard {
     this.renderTopAttendees();
     this.renderLastWeekWinner();
     this.updateTime();
+    
+    this.checkForNewArrivals();
+  }
+
+  checkForNewArrivals() {
+    if (!this.data || !this.data.mapped_present) return;
+    
+    const currentPresentMacs = this.data.mapped_present.map(p => p.mac);
+    
+    if (this.previousPresentMacs !== null) {
+      const newArrivals = this.data.mapped_present.filter(p => !this.previousPresentMacs.includes(p.mac));
+      if (newArrivals.length > 0) {
+        this.playDjAnnouncements(newArrivals);
+      }
+    }
+    
+    this.previousPresentMacs = currentPresentMacs;
+  }
+
+  async playDjAnnouncements(arrivals) {
+    if (this.isPlayingAnnouncement || !this.audioEnabled) return;
+    this.isPlayingAnnouncement = true;
+    
+    for (const person of arrivals) {
+      if (person.person && !person.person.startsWith('Anonymous')) {
+        await this.playSingleAnnouncement(person);
+      }
+    }
+    
+    this.isPlayingAnnouncement = false;
+  }
+
+  playSingleAnnouncement(person) {
+    return new Promise((resolve) => {
+      this.showDjBanner(person);
+      
+      const intros = ['/audio/intros/intro1.m4a', '/audio/intros/intro2.m4a'];
+      const introUrl = intros[Math.floor(Math.random() * intros.length)];
+      
+      const introAudio = new Audio(introUrl);
+      introAudio.onended = () => {
+        if (person.audio_filename) {
+          const nameAudio = new Audio(`/audio/${person.audio_filename}`);
+          nameAudio.onended = resolve;
+          nameAudio.onerror = () => this.speakName(person.person, resolve);
+          nameAudio.play().catch(e => {
+            console.error("Name audio play failed", e);
+            resolve();
+          });
+        } else {
+          this.speakName(person.person, resolve);
+        }
+      };
+      
+      introAudio.onerror = resolve;
+      introAudio.play().catch(e => {
+        console.error("Intro audio play failed", e);
+        resolve();
+      });
+    });
+  }
+
+  speakName(name, callback) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(name);
+      const voices = window.speechSynthesis.getVoices();
+      const esVoice = voices.find(v => v.lang.startsWith('es'));
+      if (esVoice) utterance.voice = esVoice;
+      
+      utterance.onend = callback;
+      utterance.onerror = callback;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      callback();
+    }
+  }
+
+  showDjBanner(person) {
+    const banner = document.getElementById('dj-banner');
+    const nameEl = document.getElementById('dj-banner-name');
+    const photoEl = document.getElementById('dj-banner-photo');
+    const avatarEl = document.getElementById('dj-banner-avatar');
+    
+    if (!banner || !nameEl) return;
+    
+    nameEl.textContent = person.person;
+    
+    if (person.image_url) {
+      photoEl.src = person.image_url;
+    } else {
+      // Use a consistent random stock photo based on their name
+      const seed = encodeURIComponent(person.person || "Unknown");
+      photoEl.src = `https://picsum.photos/seed/${seed}/150/150`;
+    }
+    
+    photoEl.style.display = 'block';
+    if (avatarEl) avatarEl.style.display = 'none';
+    
+    banner.classList.add('is-visible');
+    
+    if (this.bannerTimer) clearTimeout(this.bannerTimer);
+    this.bannerTimer = setTimeout(() => {
+      banner.classList.remove('is-visible');
+    }, 10000);
   }
 
   renderTracks() {

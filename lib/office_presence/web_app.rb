@@ -222,7 +222,12 @@ module OfficePresence
     end
 
     post "/api/register" do
-      data = parse_json_body
+      data = if request.content_type.to_s.include?("multipart/form-data")
+        params
+      else
+        parse_json_body
+      end
+
       person_name = data["person"]&.strip
       device_name = data["device"]&.strip
       image_url = data["image_url"]&.strip
@@ -237,7 +242,21 @@ module OfficePresence
       existing = person_model.find_by_mac(device[:mac])
       is_update = !existing.nil?
       
-      visible = data["visible"] != false
+      visible = data["visible"] == "true" || data["visible"] == true
+
+      audio_filename = existing&.[](:audio_filename)
+      if data["audio_file"] && data["audio_file"][:tempfile]
+        filename = data["audio_file"][:filename]
+        ext = File.extname(filename)
+        audio_filename = "audio_#{device[:mac].gsub(':', '')}#{ext}"
+        
+        audio_dir = File.join(settings.public_folder, "audio")
+        FileUtils.mkdir_p(audio_dir)
+        
+        File.open(File.join(audio_dir, audio_filename), 'wb') do |f|
+          f.write(data["audio_file"][:tempfile].read)
+        end
+      end
 
       person_model.create_or_update(
         mac: device[:mac],
@@ -245,7 +264,8 @@ module OfficePresence
         device: device_name || "",
         visible: visible,
         device_id: device[:device_id],
-        image_url: image_url
+        image_url: image_url,
+        audio_filename: audio_filename
       )
 
       message = is_update ? "Successfully updated!" : "Successfully registered!"

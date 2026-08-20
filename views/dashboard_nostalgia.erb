@@ -14,6 +14,18 @@
     </div>
 
     <main class="nostalgia-stage">
+      <div id="dj-banner" class="dj-banner" aria-hidden="true">
+        <div class="dj-banner-content">
+          <div class="dj-banner-photo-wrapper">
+            <img id="dj-banner-photo" src="" alt="" style="display:none;">
+            <div id="dj-banner-avatar" class="dj-banner-avatar"></div>
+          </div>
+          <div class="dj-banner-text">
+            <span>Now playing -</span>
+            <strong id="dj-banner-name"></strong>
+          </div>
+        </div>
+      </div>
       <section class="tv-poster" aria-label="Mix de oficina para la Noche de la Nostalgia">
         <% track_people = mapped_present.reject { |person| person[:person].to_s.start_with?("Anonymous") } %>
         <section class="album-cover" aria-label="Tapa del disco Now Office 9">

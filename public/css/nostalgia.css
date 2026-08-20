@@ -646,6 +646,76 @@ body.scene-lit .nostalgia-bg::after {
   cursor: pointer;
 }
 
+/* DJ Banner */
+.dj-banner {
+  position: absolute;
+  bottom: 4vh;
+  left: -100%;
+  z-index: 2000;
+  transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dj-banner.is-visible {
+  left: 2rem;
+}
+
+.dj-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.5rem;
+  background: var(--ns-panel);
+  border: 3px solid var(--ns-cyan);
+  border-radius: 100px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px var(--ns-cyan);
+  color: #fff;
+}
+
+.dj-banner-photo-wrapper {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--ns-magenta);
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+.dj-banner-photo-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dj-banner-avatar {
+  font-family: "Archivo Black", Impact, sans-serif;
+  font-size: 2.2rem;
+  color: var(--ns-magenta);
+}
+
+.dj-banner-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.dj-banner-text span {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--ns-cyan);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.dj-banner-text strong {
+  font-family: "Archivo Black", Impact, sans-serif;
+  font-size: 2.2rem;
+  line-height: 1.1;
+  text-shadow: 3px 3px 0 var(--ns-magenta);
+}
+
 @keyframes beam-sweep-a {
   from { transform: rotate(18deg); }
   to { transform: rotate(34deg); }

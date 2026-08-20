@@ -39,10 +39,11 @@ module OfficePresence
         db[:people].where(device_id: device_id).first
       end
 
-      def create_or_update(mac:, person:, device:, visible: true, device_id: nil, image_url: nil)
+      def create_or_update(mac:, person:, device:, visible: true, device_id: nil, image_url: nil, audio_filename: nil)
         updates = { person: person, device: device, visible: visible }
         updates[:device_id] = device_id if device_id && !device_id.empty?
         updates[:image_url] = image_url if image_url && !image_url.empty?
+        updates[:audio_filename] = audio_filename if audio_filename && !audio_filename.empty?
 
         attributes = {
           mac: mac,
@@ -52,6 +53,7 @@ module OfficePresence
         }
         attributes[:device_id] = device_id if device_id && !device_id.empty?
         attributes[:image_url] = image_url if image_url && !image_url.empty?
+        attributes[:audio_filename] = audio_filename if audio_filename && !audio_filename.empty?
 
         db[:people].insert_conflict(
           target: :mac,
