@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>🌸 Spring in Montevideo - Plátanos Survivor</title>
+    <link rel="stylesheet" href="/css/spring.css">
+  </head>
+  <body class="spring-theme">
+    
+    <!-- Background Elements -->
+    <div class="sky-background"></div>
+    <div class="park-ground"></div>
+    <div class="platano-tree-left"></div>
+    <div class="platano-tree-right"></div>
+    
+    <div class="container full-field">
+      
+      <!-- Sky Stats / Clouds -->
+      <div class="sky-stats">
+        <div class="cloud-stat">
+          <div class="cloud-text">
+            <strong><span id="spring-present-count"><%= present_count %></span></strong>
+            <span>Surviving</span>
+          </div>
+        </div>
+        <div class="cloud-stat">
+          <div class="cloud-text">
+            <strong><span id="spring-total-people"><%= total_people %></span></strong>
+            <span>Citizens</span>
+          </div>
+        </div>
+        <div class="cloud-stat">
+          <div class="cloud-text">
+            <strong><span id="spring-daily-record"><%= daily_record %></span></strong>
+            <span>Record</span>
+          </div>
+        </div>
+        <div class="cloud-stat time-cloud">
+          <div class="cloud-text">
+             <span class="current-time" id="spring-current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
+             <br/>
+             <button class="register-btn" id="openRegistrationBtn">Register</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Field (Present People as Blooming Flowers randomly positioned) -->
+      <div class="flower-field" id="spring-present-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Sky (Top Attendees as Bees randomly flying) -->
+      <div class="sky-bees" id="spring-top-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Ground (Recent Absentees as Leaves on the ground) -->
+      <div class="fallen-leaves" id="spring-recent-container">
+        <!-- Rendered by JS -->
+      </div>
+      
+    </div>
+
+    <!-- Registration Dialog Box -->
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/spring.js"></script>
+  </body>
+</html>

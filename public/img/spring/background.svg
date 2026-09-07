@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%" preserveAspectRatio="none">
+  <!-- Sky Gradient -->
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4facfe" />
+      <stop offset="60%" stop-color="#00f2fe" />
+      <stop offset="100%" stop-color="#d4fc79" />
+    </linearGradient>
+    <linearGradient id="grassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#84d650" />
+      <stop offset="100%" stop-color="#308a1c" />
+    </linearGradient>
+    <!-- Sun Glow -->
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff200" stop-opacity="1" />
+      <stop offset="40%" stop-color="#ff9900" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#ff9900" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1920" height="1080" fill="url(#skyGrad)" />
+
+  <!-- Sun -->
+  <circle cx="1600" cy="250" r="180" fill="url(#sunGlow)" />
+  <circle cx="1600" cy="250" r="70" fill="#fff9e6" />
+
+  <!-- Sun Beams -->
+  <g opacity="0.1" fill="#ffffff">
+    <polygon points="1600,250 1400,0 1800,0" />
+    <polygon points="1600,250 1920,100 1920,400" />
+    <polygon points="1600,250 1800,1080 1400,1080" />
+    <polygon points="1600,250 0,400 0,100" />
+  </g>
+
+  <!-- Clouds -->
+  <g fill="#ffffff" opacity="0.8">
+    <!-- Cloud 1 -->
+    <path d="M 200 250 Q 230 200 280 230 Q 320 180 380 220 Q 430 210 440 260 Q 480 270 450 310 Q 440 340 380 330 Q 340 360 280 340 Q 220 370 190 320 Q 150 310 180 270 Z" />
+    <!-- Cloud 2 -->
+    <path d="M 800 150 Q 830 100 880 130 Q 920 80 980 120 Q 1030 110 1040 160 Q 1080 170 1050 210 Q 1040 240 980 230 Q 940 260 880 240 Q 820 270 790 220 Q 750 210 780 170 Z" transform="scale(0.8) translate(200, 50)" />
+    <!-- Cloud 3 -->
+    <path d="M 1200 350 Q 1230 300 1280 330 Q 1320 280 1380 320 Q 1430 310 1440 360 Q 1480 370 1450 410 Q 1440 440 1380 430 Q 1340 460 1280 440 Q 1220 470 1190 420 Q 1150 410 1180 370 Z" transform="scale(0.6) translate(600, -200)" />
+  </g>
+
+  <!-- Hills -->
+  <path d="M 0 700 Q 400 600 800 750 T 1920 650 L 1920 1080 L 0 1080 Z" fill="#6bc238" />
+  <path d="M 0 850 Q 500 700 1000 850 T 1920 750 L 1920 1080 L 0 1080 Z" fill="url(#grassGrad)" />
+  
+  <!-- Back trees for depth -->
+  <g fill="#439e24">
+    <!-- Tree 1 -->
+    <circle cx="200" cy="730" r="60" />
+    <circle cx="240" cy="700" r="50" />
+    <circle cx="160" cy="700" r="50" />
+    <rect x="190" y="750" width="20" height="50" fill="#694121" />
+    
+    <!-- Tree 2 -->
+    <circle cx="1500" cy="680" r="80" />
+    <circle cx="1560" cy="650" r="60" />
+    <circle cx="1440" cy="650" r="60" />
+    <rect x="1485" y="700" width="30" height="80" fill="#694121" />
+  </g>
+
+</svg>

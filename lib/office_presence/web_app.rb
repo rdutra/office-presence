@@ -24,7 +24,8 @@ module OfficePresence
       enterprise: :dashboard_enterprise,
       worldcup: :dashboard_worldcup,
       stickers: :dashboard_stickers,
-      nostalgia: :dashboard_nostalgia
+      nostalgia: :dashboard_nostalgia,
+      spring: :dashboard_spring
     }.freeze
 
     # Configuration
