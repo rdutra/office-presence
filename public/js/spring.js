@@ -1,37 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const isMobile = window.innerWidth <= 768;
-  const particleCount = isMobile ? 30 : 70; // High pelusa count
+  // Render the server snapshot immediately, then keep it live.
+  if (window.springInitialData) updateDashboard(window.springInitialData);
 
-  // 1. Generate Pelusa
-  for (let i = 0; i < particleCount; i++) {
-    createPelusa(document.body);
-  }
-
-  // 2. Fetch Dashboard Data
+  // Fetch Dashboard Data
   fetchDashboardData();
   setInterval(fetchDashboardData, 5000);
 });
-
-function createPelusa(container) {
-  const pelusa = document.createElement('div');
-  pelusa.classList.add('pelusa');
-  
-  // Plátano fluff size
-  const size = Math.random() * 15 + 8;
-  pelusa.style.width = `${size}px`;
-  pelusa.style.height = `${size}px`;
-  
-  const startX = Math.random() * window.innerWidth;
-  pelusa.style.left = `${startX}px`;
-  
-  const duration = Math.random() * 10 + 6;
-  pelusa.style.animationDuration = `${duration}s`;
-  
-  const delay = Math.random() * 15;
-  pelusa.style.animationDelay = `-${delay}s`;
-
-  container.appendChild(pelusa);
-}
 
 async function fetchDashboardData() {
   try {
@@ -46,16 +20,22 @@ async function fetchDashboardData() {
 
 function updateDashboard(data) {
   // Update stats
-  document.getElementById('spring-present-count').textContent = data.present_count;
-  document.getElementById('spring-total-people').textContent = data.total_people;
-  document.getElementById('spring-daily-record').textContent = data.daily_record;
+  const presentCount = document.getElementById('spring-present-count');
+  const totalPeople = document.getElementById('spring-total-people');
+  const dailyRecord = document.getElementById('spring-daily-record');
+  if (presentCount) presentCount.textContent = data.present_count;
+  if (totalPeople) totalPeople.textContent = data.total_people;
+  if (dailyRecord) dailyRecord.textContent = data.daily_record;
   
   const now = new Date(data.now + "Z");
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('spring-current-time').textContent = timeStr;
+  const currentTime = document.getElementById('spring-current-time');
+  if (currentTime) currentTime.textContent = timeStr;
+  const trayTime = document.getElementById('xp-tray-time');
+  if (trayTime) trayTime.textContent = timeStr;
 
   renderFlowers(data.mapped_present);
-  renderBees(data.top_attendees);
+  renderRankingNotes(data.top_attendees);
   renderLeaves(data.mapped_absent);
 }
 
@@ -65,7 +45,7 @@ function renderFlowers(people) {
 
   // Track existing elements to remove ones that left
   const existingFlowers = Array.from(container.children);
-  const currentMacs = new Set(people.map(p => p.mac));
+  const currentMacs = new Set(people.map(p => p.mac || p.person));
 
   existingFlowers.forEach(el => {
     if (!currentMacs.has(el.dataset.mac)) {
@@ -73,11 +53,10 @@ function renderFlowers(people) {
     }
   });
 
-  const segmentWidth = 100 / (people.length || 1);
-
   people.forEach((person, i) => {
     // Check if flower already exists
-    let flower = container.querySelector(`[data-mac="${person.mac}"]`);
+    const personId = person.mac || person.person;
+    let flower = container.querySelector(`[data-mac="${CSS.escape(personId)}"]`);
     
     if (!flower) {
       // Create new stationary flower
@@ -86,19 +65,8 @@ function renderFlowers(people) {
         avatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(person.person)}&backgroundColor=transparent`;
       }
 
-      const baseLeft = i * segmentWidth;
-      const randomOffset = (Math.random() * (segmentWidth * 0.6)) - (segmentWidth * 0.3);
-      let leftPos = baseLeft + (segmentWidth / 2) + randomOffset;
-      leftPos = Math.max(5, Math.min(90, leftPos));
-
-      const bottomPos = Math.random() * 25 + 5; // 5vh to 30vh
-      const zIndex = 100 - Math.floor(bottomPos);
-
       flower = document.createElement('div');
-      flower.dataset.mac = person.mac;
-      flower.style.left = `${leftPos}vw`;
-      flower.style.bottom = `${bottomPos}vh`;
-      flower.style.zIndex = zIndex;
+      flower.dataset.mac = personId;
 
       flower.innerHTML = `
         <div class="flower-petals">
@@ -117,59 +85,56 @@ function renderFlowers(people) {
     }
 
     // Update dynamic properties on existing or new flower
-    const statusClass = person.present ? 'active' : 'inactive';
-    flower.className = `flower-item status-${statusClass}`;
+    // mapped_present is already filtered to people currently in the office;
+    // older API payloads may not include the optional `present` flag.
+    const statusClass = person.present === false ? 'inactive' : 'active';
+    flower.className = `desktop-icon status-${statusClass}`;
     
     const medal = person.medal ? ` ${person.medal}` : '';
     flower.querySelector('.flower-name').textContent = `${person.person}${medal}`;
   });
 }
 
-function renderBees(attendees) {
-  const container = document.getElementById('spring-top-container');
+function renderRankingNotes(attendees) {
+  const window = document.getElementById('spring-top-container');
+  const container = window?.querySelector('.ranking-list');
+  if (!container) return;
   if (!attendees) return;
 
-  const topFive = attendees.slice(0, 5);
-  const currentMacs = new Set(topFive.map(a => a.mac || a.person));
+  const topFour = attendees.slice(0, 4);
+  const currentMacs = new Set(topFour.map(a => a.mac || a.person));
   
-  const existingBees = Array.from(container.children);
-  existingBees.forEach(el => {
+  const existingNotes = Array.from(container.children);
+  existingNotes.forEach(el => {
     if (!currentMacs.has(el.dataset.mac)) el.remove();
   });
 
-  topFive.forEach((attendee, i) => {
+  topFour.forEach((attendee, i) => {
     const id = attendee.mac || attendee.person;
-    let bee = container.querySelector(`[data-mac="${id}"]`);
+    let note = container.querySelector(`[data-mac="${id}"]`);
     
-    if (!bee) {
+    if (!note) {
       let avatar = attendee.image_url;
       if (!avatar) {
         avatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(attendee.person)}&backgroundColor=transparent`;
       }
 
-      const leftPos = Math.random() * 80 + 10;
-      const topPos = Math.random() * 30 + 5;
-      const animDelay = Math.random() * 2;
+      note = document.createElement('div');
+      note.className = 'ranking-note';
+      note.dataset.mac = id;
+      note.style.setProperty('--note-rotation', `${Math.random() * 8 - 4}deg`);
 
-      bee = document.createElement('div');
-      bee.className = 'bee-item';
-      bee.dataset.mac = id;
-      bee.style.left = `${leftPos}vw`;
-      bee.style.top = `${topPos}vh`;
-      bee.style.animationDelay = `-${animDelay}s`;
-
-      bee.innerHTML = `
-        <div class="bee-body">
-          <div class="bee-wing wing-left"></div>
-          <div class="bee-wing wing-right"></div>
-          <img src="${avatar}" class="bee-face">
-        </div>
-        <div class="bee-label"></div>
+      note.innerHTML = `
+        <div class="note-pin">📌</div>
+        <img src="${avatar}" class="note-avatar" alt="">
+        <div class="note-rank"></div>
+        <div class="note-name"></div>
       `;
-      container.appendChild(bee);
+      container.appendChild(note);
     }
     
-    bee.querySelector('.bee-label').textContent = `🏅${i+1} ${attendee.person}`;
+    note.querySelector('.note-rank').textContent = `#${i + 1}`;
+    note.querySelector('.note-name').textContent = attendee.person;
   });
 }
 
