@@ -16,7 +16,7 @@ while [[ $# -gt 0 ]]; do
             TEMPLATE="$2"
             shift 2
             ;;
-        modern|geocities|christmas|summer|easter|autumn|worldcup|stickers|nostalgia)
+            modern|geocities|christmas|summer|easter|autumn|spring|worldcup|stickers|nostalgia|enterprise)
             TEMPLATE="$1"
             shift
             ;;
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  TEMPLATE               Template to deploy (shorthand)"
-            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, worldcup, stickers, nostalgia)"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, spring, worldcup, stickers, nostalgia, enterprise)"
             echo "                         Default: modern"
             echo ""
             echo "Examples:"
@@ -55,11 +55,11 @@ done
 
 # Validate template
 case $TEMPLATE in
-    modern|geocities|christmas|summer|easter|autumn|worldcup|stickers|nostalgia)
+    modern|geocities|christmas|summer|easter|autumn|spring|worldcup|stickers|nostalgia|enterprise)
         ;;
     *)
         echo "❌ Error: Invalid template '$TEMPLATE'"
-        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, worldcup, stickers, nostalgia"
+        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, spring, worldcup, stickers, nostalgia, enterprise"
         exit 1
         ;;
 esac
