@@ -35,22 +35,21 @@ body {
 }
 
 /* Active users as desktop shortcuts */
-.flower-field {
-  position: absolute;
-  top: 12vh;
-  width: 100%;
+.icon-field {
+  position: relative;
+  width: calc(100% - 290px);
   height: calc(100vh - 12vh - 36px);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(104px, 112px));
   grid-auto-rows: 112px;
   align-content: start;
-  gap: 10px 12px;
-  padding: 12px 2vw;
+  padding: 3rem;
+  column-gap: 2rem;
   pointer-events: auto;
 }
 
 .desktop-icon {
-  position: absolute;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -62,19 +61,6 @@ body {
 }
 .desktop-icon:hover { transform: scale(1.08); filter: brightness(1.12); }
 
-.flower-petals { display: none; }
-
-.petal {
-  position: absolute;
-  width: 35px;
-  height: 35px;
-  background: radial-gradient(circle at center, #FF80AB 0%, #F50057 100%);
-  border-radius: 50% 50% 0 50%;
-  top: 50%;
-  left: 50%;
-  transform-origin: 0 0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
 .p1 { transform: rotate(0deg) translate(20px, -20px); }
 .p2 { transform: rotate(45deg) translate(20px, -20px); }
 .p3 { transform: rotate(90deg) translate(20px, -20px); }
@@ -84,7 +70,7 @@ body {
 .p7 { transform: rotate(270deg) translate(20px, -20px); }
 .p8 { transform: rotate(315deg) translate(20px, -20px); }
 
-.flower-center {
+.icon-center {
   position: relative;
   width: 56px;
   height: 56px;
@@ -93,11 +79,10 @@ body {
   z-index: 2;
   border: 2px solid #fff;
   background-size: cover;
-  background-position: center;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   margin-bottom: 4px;
 }
-.flower-center::after {
+.icon-center::after {
   content: '↗';
   position: absolute;
   left: -3px;
@@ -121,7 +106,7 @@ body {
   pointer-events: none;
 }
 
-.flower-info {
+.icon-info {
   background: rgba(31, 83, 150, 0.78);
   padding: 0.2rem 0.3rem;
   border-radius: 2px;
@@ -132,13 +117,13 @@ body {
   white-space: nowrap;
 }
 
-.flower-name {
+.icon-name {
   font-weight: 800;
   font-size: 0.9rem;
   color: #fff;
 }
 
-.flower-stem { display: none; }
+.icon-stem { display: none; }
 
 .status-inactive .petal { background: radial-gradient(circle at center, #90CAF9 0%, #1976D2 100%); }
 .status-inactive { filter: grayscale(0.2); }
@@ -147,7 +132,7 @@ body {
 .ranking-window {
   position: absolute;
   top: 15vh;
-  right: 2vw;
+  right: 1vw;
   width: 315px;
   height: 275px;
   background: rgba(235, 246, 255, 0.94);
@@ -204,7 +189,7 @@ body {
 
 @media (max-width: 700px) {
   .ranking-window { top: 17vh; right: 2vw; width: 270px; height: 275px; }
-  .flower-field { top: 12vh; height: calc(100vh - 12vh - 36px); grid-template-columns: repeat(auto-fill, minmax(88px, 96px)); grid-auto-rows: 104px; gap: 8px; padding-left: 10px; }
+  .icon-field { top: 12vh; height: calc(100vh - 12vh - 36px); grid-template-columns: repeat(auto-fill, minmax(88px, 96px)); grid-auto-rows: 104px; gap: 8px; padding-left: 10px; }
   .desktop-icon { width: 88px; }
   .start-button { min-width: 92px; }
   .quick-launch { display:none; }
