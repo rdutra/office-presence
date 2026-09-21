@@ -41,6 +41,15 @@ presence_model = OfficePresence::Models::Presence.new(
 # Get dashboard data
 dashboard_data = presence_model.dashboard_data
 
+# These fields are consumed by the enterprise Firebase dashboard. Keep the
+# contract explicit so a model change cannot silently remove them from the
+# scheduled payload.
+required_dashboard_fields = %i[aggregated_winners attendance_trend]
+missing_dashboard_fields = required_dashboard_fields.reject { |field| dashboard_data.key?(field) }
+unless missing_dashboard_fields.empty?
+  abort "ERROR: Dashboard data is missing required Firebase fields: #{missing_dashboard_fields.join(', ')}"
+end
+
 # Add timestamp
 dashboard_data[:last_updated] = Time.now.utc.iso8601
 
@@ -54,6 +63,8 @@ puts "Present: #{dashboard_data[:present_count]} / #{dashboard_data[:total_peopl
 puts "Mapped Present: #{dashboard_data[:mapped_present].length}"
 puts "Mapped Absent: #{dashboard_data[:mapped_absent].length}"
 puts "Top Attendees: #{dashboard_data[:top_attendees].length}"
+puts "Aggregated Winners: #{dashboard_data[:aggregated_winners].length}"
+puts "Attendance Trend: #{dashboard_data[:attendance_trend].length} days"
 puts "-" * 60
 
 # Push to Firebase using REST API

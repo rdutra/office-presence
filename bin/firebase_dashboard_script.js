@@ -30,7 +30,9 @@ function showDashboard() {
 function showError(message) {
   errorEl.textContent = message;
   errorEl.style.display = 'block';
-  dashboardEl.style.display = 'none';
+  // Keep the server-rendered template visible as a useful offline fallback.
+  dashboardEl.style.display = 'flex';
+  dashboardEl.style.flexDirection = 'column';
   loadingEl.style.display = 'none';
 }
 
@@ -82,9 +84,71 @@ function updateDashboard(data) {
     timeEl.textContent = formatClock(nowUtc);
   }
 
-  const dateEl = document.querySelector('.date');
+  const dateEl = document.querySelector('.current-date, .date');
   if (dateEl) {
     dateEl.textContent = formatDisplayDate(nowUtc);
+  }
+
+  // Spring template uses a lightweight desktop scene rather than the generic
+  // dashboard data attributes.
+  const springPresent = document.getElementById('spring-present-count');
+  const springTotal = document.getElementById('spring-total-people');
+  const springRecord = document.getElementById('spring-daily-record');
+  const springTime = document.getElementById('spring-current-time');
+  if (springPresent) springPresent.textContent = data.present_count ?? 0;
+  if (springTotal) springTotal.textContent = data.total_people ?? 0;
+  if (springRecord) springRecord.textContent = data.daily_record ?? 0;
+  if (springTime) springTime.textContent = formatClock(nowUtc);
+  const trayTime = document.getElementById('xp-tray-time');
+  if (trayTime) trayTime.textContent = formatClock(nowUtc);
+  if (typeof renderFlowers === 'function') renderFlowers(data.mapped_present || []);
+  if (typeof renderRankingNotes === 'function') renderRankingNotes(data.top_attendees || []);
+  if (typeof renderLeaves === 'function') renderLeaves(data.mapped_absent || []);
+
+  // Enterprise template fields are rendered statically and need their own
+  // small Firebase update path (the modern template uses data attributes).
+  const enterpriseTitle = Array.from(document.querySelectorAll('.card-title'))
+    .find(el => el.textContent.includes('Currently in Office'));
+  if (enterpriseTitle) {
+    enterpriseTitle.textContent = `Currently in Office (${data.present_count ?? 0})`;
+  }
+
+  const enterprisePeopleCard = enterpriseTitle?.closest('.card');
+  if (enterprisePeopleCard) {
+    const emptyState = enterprisePeopleCard.querySelector('.empty-state');
+    const existingPeople = enterprisePeopleCard.querySelector('.people-list');
+    const people = Array.isArray(data.mapped_present) ? data.mapped_present : [];
+    if (people.length) {
+      const cards = people.map(person => {
+        const name = formatDisplayName(person);
+        const initial = (person?.person || '?').trim().charAt(0).toUpperCase();
+        return `<div class="person-card status-${person?.status || 'inactive'}">
+          <div class="person-avatar">${initial}</div>
+          <div class="person-info"><div class="person-name">${name}</div>
+          <div class="person-device">${person?.device || 'Device'}</div></div>
+        </div>`;
+      }).join('');
+      existingPeople?.remove();
+      (emptyState || enterprisePeopleCard.querySelector('.card-header'))?.insertAdjacentHTML('afterend', `<div class="people-list">${cards}</div>`);
+      emptyState?.remove();
+    } else {
+      existingPeople?.remove();
+      if (emptyState) emptyState.style.display = '';
+    }
+  }
+
+  const enterpriseWinnersCard = Array.from(document.querySelectorAll('.card'))
+    .find(card => card.querySelector('.card-title')?.textContent.includes('Award History'));
+  const winners = Array.isArray(data.aggregated_winners) ? data.aggregated_winners : [];
+  if (enterpriseWinnersCard && winners.length) {
+    const emptyState = enterpriseWinnersCard.querySelector('.empty-state');
+    const existingWinners = enterpriseWinnersCard.querySelector('.winners-list');
+    const rows = winners.map(winner => `<tr><td><div class="winner-name-cell"><span class="winner-medal">🥇</span><strong>${formatDisplayName(winner)}</strong></div></td><td>${winner.count ?? 0}x</td></tr>`).join('');
+    existingWinners?.remove();
+    (emptyState || enterpriseWinnersCard.querySelector('.card-header'))?.insertAdjacentHTML('afterend', `<div class="winners-list"><table class="winners-table"><thead><tr><th>Champion</th><th>Times Won</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+    emptyState?.remove();
+  } else if (enterpriseWinnersCard) {
+    enterpriseWinnersCard.querySelector('.winners-list')?.remove();
   }
 
   // Update stats - only update numbers, preserve labels from template

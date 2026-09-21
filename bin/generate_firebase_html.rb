@@ -14,7 +14,7 @@ require "stringio"
 TEMPLATE_NAME = ARGV[0] || "modern"
 
 # Validate template name
-valid_templates = %w[modern geocities christmas summer easter autumn worldcup stickers nostalgia]
+valid_templates = %w[modern geocities christmas summer easter autumn spring worldcup stickers nostalgia enterprise]
 unless valid_templates.include?(TEMPLATE_NAME)
   puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
   puts "Valid templates: #{valid_templates.join(', ')}"
@@ -89,6 +89,8 @@ def render_template
   context.define_singleton_method(:current_week_start) { "" }
   context.define_singleton_method(:current_week_end) { "" }
   context.define_singleton_method(:last_week_winner) { nil }
+  context.define_singleton_method(:aggregated_winners) { [] }
+  context.define_singleton_method(:attendance_trend) { [] }
   context.define_singleton_method(:show_in_office_tile) { true }
   context.define_singleton_method(:show_registered_users_tile) { true }
   context.define_singleton_method(:show_today_record_tile) { true }
@@ -98,8 +100,12 @@ def render_template
 
   # Define the erb helper method for the context
   context.define_singleton_method(:erb) do |partial_name|
-    # Don't include the registration partial in Firebase mode
-    ""
+    if TEMPLATE_NAME == "spring" && partial_name == :_registration
+      partial_path = File.join(PROJECT_DIR, "views", "_registration.erb")
+      ERB.new(File.read(partial_path, encoding: "UTF-8"), trim_mode: "-").result(context.instance_eval { binding })
+    else
+      ""
+    end
   end
 
   # Render the template with UTF-8 encoding
@@ -115,13 +121,15 @@ rendered_html = render_template
 # 2. Remove registration-related scripts
 # 3. Add Firebase JavaScript and CSS overrides
 
-# Remove registration modal (specifically targeting the modal div and its contents)
-rendered_html = rendered_html.gsub(/<!-- Registration Dialog Box -->\s*<div id="registrationModal".*?<\/div>\s*<!--/m, '<!--')
-# Also remove the specific registration scripts if any were missed, but ensure we don't catch the easter egg logic
-rendered_html = rendered_html.gsub(/<div id="registrationModal"[^>]*>.*?<\/div>\s*(?=<script)/m, '') if rendered_html.include?('registrationModal')
+# Remove registration modal from read-only Firebase templates. Spring keeps it
+# because Clippy is its registration entry point.
+unless TEMPLATE_NAME == "spring"
+  rendered_html = rendered_html.gsub(/<!-- Registration Dialog Box -->\s*<div id="registrationModal".*?<\/div>\s*<!--/m, '<!--')
+  rendered_html = rendered_html.gsub(/<div id="registrationModal"[^>]*>.*?<\/div>\s*(?=<script)/m, '') if rendered_html.include?('registrationModal')
+end
 
 # Remove registration scripts
-rendered_html = rendered_html.gsub(%r{<script src="/js/registration\.js"></script>\s*}, '')
+rendered_html = rendered_html.gsub(%r{<script src="/js/registration\.js"></script>\s*}, '') unless TEMPLATE_NAME == "spring"
 rendered_html = rendered_html.gsub(%r{<script src="/js/stickers-dashboard\.js"></script>\s*}, '') if TEMPLATE_NAME == "stickers"
 
 # Add Firebase-specific styles before </head>
@@ -205,7 +213,7 @@ firebase_styles = <<~FIREBASE_CSS
     }
 
     /* Hide register button in Firebase mode */
-    .register-button, .register-button-wc, .packet-button, .register-button-ns {
+    .register-button, .register-button-wc, .packet-button, .register-button-ns, .register-btn {
       display: none !important;
     }
 
@@ -300,13 +308,15 @@ LOADING_HTML
 
 rendered_html = rendered_html.sub(/(<body[^>]*>)/, "\\1\n#{loading_divs}")
 
-# Wrap the container div to be hidden initially
+# Keep the server-rendered template visible while Firebase connects. This is
+# important for public embeds: a transient database/configuration failure
+# should never turn the whole page into a blank screen.
 if TEMPLATE_NAME == "stickers"
-  rendered_html = rendered_html.sub(/<div class="album-container[^"]*">/, '<div class="album-container" id="album-container" style="display: none;">')
+  rendered_html = rendered_html.sub(/<div class="([^"]*\balbum-container\b[^"]*)">/, '<div class="\1" id="album-container">')
 elsif TEMPLATE_NAME == "nostalgia"
   rendered_html = rendered_html.sub(/<main class="nostalgia-stage">/, '<main class="nostalgia-stage" id="dashboard">')
 else
-  rendered_html = rendered_html.sub(/<div class="container[^"]*">/, '<div class="container" id="dashboard" style="display: none;">')
+  rendered_html = rendered_html.sub(/<div class="([^"]*\bcontainer\b[^"]*)">/, '<div class="\1" id="dashboard">')
 end
 
 

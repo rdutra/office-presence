@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Windows XP Office - Montevideo</title>
+    <link rel="preload" as="image" href="/img/spring/windows-xp.jpg">
+    <link rel="stylesheet" href="/css/spring.css">
+    <link rel="stylesheet" href="/css/registration_modal.css">
+  </head>
+  <body class="spring-theme">
+    
+    <!-- Generated raster background -->
+    <div class="sky-background"></div>
+    
+    <div class="container full-field">
+      
+      <!-- Active people become desktop shortcuts -->
+      <div class="icon-field" id="spring-present-container">
+        <!-- Rendered by JS as desktop icons -->
+      </div>
+
+      <!-- Top attendees: a playful Post-it ranking -->
+      <div class="ranking-window" id="spring-top-container">
+        <div class="ranking-titlebar"><span>📌 Weekly MVPs</span><span>_ □ ×</span></div>
+        <div class="ranking-content">
+          <div class="ranking-heading">Pinned to the team wall</div>
+          <div class="ranking-list"><!-- Rendered by JS --></div>
+        </div>
+      </div>
+
+      <!-- Ground (Recent Absentees as Leaves on the ground) -->
+      <div class="fallen-leaves" id="spring-recent-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="xp-taskbar" role="navigation" aria-label="Windows XP taskbar">
+        <button class="start-button" type="button"><span class="start-orb">⊞</span><strong>start</strong></button>
+        <div class="quick-launch"><span>▣</span><span>🌐</span><span>✉</span></div>
+        <div class="task-button">🖥️ Office Presence</div>
+        <button class="clippy-task-button" id="clippyRegister" type="button" aria-label="Register with Clippy">📎 Register</button>
+        <div class="system-tray"><span>🔊</span><span>📶</span><span id="xp-tray-time">--:--</span></div>
+      </div>
+      
+    </div>
+
+    <!-- Registration Dialog Box -->
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <script>
+      window.springInitialData = <%= JSON.generate({ mapped_present: mapped_present, top_attendees: top_attendees, mapped_absent: mapped_absent }).gsub("</", "<\\/") %>;
+    </script>
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/spring.js"></script>
+    <script type="module">
+      import { initAgent } from "https://cdn.jsdelivr.net/npm/clippyjs@0.1.0/dist/index.mjs";
+      import * as agents from "https://cdn.jsdelivr.net/npm/clippyjs@0.1.0/dist/agents/index.mjs";
+
+      const clippy = await initAgent(agents.Clippy);
+      clippy.show();
+      clippy.speak("Need help finding who's in the office? I can keep an eye on the desktop.");
+      window.officeClippy = clippy;
+
+      document.getElementById('clippyRegister')?.addEventListener('click', () => {
+        if (window.officeClippy) {
+          window.officeClippy.show();
+          window.officeClippy.speak("Let's get you registered. Tell me who you are, and I'll open the form.");
+        }
+        const modal = document.getElementById('registrationModal');
+        const openButton = document.getElementById('openRegistrationBtn');
+        if (openButton) {
+          openButton.click();
+        } else if (modal) {
+          modal.classList.add('is-open');
+          modal.setAttribute('aria-hidden', 'false');
+          if (typeof initializeRegistration === 'function') initializeRegistration();
+        }
+      });
+    </script>
+  </body>
+</html>
