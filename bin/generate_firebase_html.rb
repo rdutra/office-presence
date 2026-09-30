@@ -328,6 +328,10 @@ rendered_html = rendered_html.gsub(%r{<script src="/js/nostalgia-dashboard\.js">
 # Actually, for consistency with the user's request, we keep it for worldcup
 rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"></script>\s*}, '') if TEMPLATE_NAME != "worldcup"
 
+if TEMPLATE_NAME == "spring"
+  rendered_html = rendered_html.sub('<script src="/js/spring.js"></script>', "<script>window.firebaseMode = true;</script>\n    <script src=\"/js/spring.js\"></script>")
+end
+
 # Add Firebase JavaScript before closing body tag
 script_filename = if TEMPLATE_NAME == "worldcup"
                     "firebase_worldcup_dashboard_script.js"

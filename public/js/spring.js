@@ -2,9 +2,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Render the server snapshot immediately, then keep it live.
   if (window.springInitialData) updateDashboard(window.springInitialData);
 
-  // Fetch Dashboard Data
-  fetchDashboardData();
-  setInterval(fetchDashboardData, 5000);
+  // Firebase Hosting serves a static page and receives live data through the
+  // Firebase listener. Only the app-hosted template can poll the local API.
+  if (!window.firebaseMode) {
+    fetchDashboardData();
+    setInterval(fetchDashboardData, 5000);
+  }
 });
 
 function trimPersonName(name) {

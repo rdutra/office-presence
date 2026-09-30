@@ -101,6 +101,7 @@ function updateDashboard(data) {
   if (springTime) springTime.textContent = formatClock(nowUtc);
   const trayTime = document.getElementById('xp-tray-time');
   if (trayTime) trayTime.textContent = formatClock(nowUtc);
+  if (typeof renderIcons === 'function') renderIcons(data.mapped_present || []);
   if (typeof renderFlowers === 'function') renderFlowers(data.mapped_present || []);
   if (typeof renderRankingNotes === 'function') renderRankingNotes(data.top_attendees || []);
   if (typeof renderLeaves === 'function') renderLeaves(data.mapped_absent || []);
