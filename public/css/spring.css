@@ -43,7 +43,8 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(104px, 112px));
   align-content: start;
   padding: 3rem;
-  gap: 4.5rem;
+  column-gap: 3.5rem;
+  row-gap: 2rem;
   pointer-events: auto;
 }
 
