@@ -203,7 +203,8 @@ module OfficePresence
       def last_week_bounds
         start_date, _ = current_week_bounds
         last_week_start = start_date - 7
-        [last_week_start, last_week_start + 6]
+        # Adjusting the last week to be a 5-day work week (Monday to Friday)
+        [last_week_start, last_week_start + 4]
       end
 
       def last_week_winner_data
