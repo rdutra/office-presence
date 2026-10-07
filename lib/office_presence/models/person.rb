@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "securerandom"
+
 module OfficePresence
   module Models
     class Person
@@ -39,9 +41,19 @@ module OfficePresence
         db[:people].where(device_id: device_id).first
       end
 
-      def create_or_update(mac:, person:, device:, visible: true, device_id: nil, image_url: nil, audio_filename: nil)
+      def find_by_user_id(user_id)
+        return nil if user_id.nil? || user_id.empty?
+        db[:people].where(user_id: user_id).first
+      end
+
+      def create_or_update(mac:, person:, device:, visible: true, device_id: nil, user_id: nil, image_url: nil, audio_filename: nil)
+        existing = find_by_mac(mac)
+        requested_user_id = user_id unless user_id.to_s.empty?
+        stable_user_id = requested_user_id || existing&.[](:user_id) || user_id_for_device(device_id) || SecureRandom.uuid
+
         updates = { person: person, device: device, visible: visible }
         updates[:device_id] = device_id if device_id && !device_id.empty?
+        updates[:user_id] = stable_user_id
         updates[:image_url] = image_url if image_url && !image_url.empty?
         updates[:audio_filename] = audio_filename if audio_filename && !audio_filename.empty?
 
@@ -52,6 +64,7 @@ module OfficePresence
           visible: visible
         }
         attributes[:device_id] = device_id if device_id && !device_id.empty?
+        attributes[:user_id] = stable_user_id
         attributes[:image_url] = image_url if image_url && !image_url.empty?
         attributes[:audio_filename] = audio_filename if audio_filename && !audio_filename.empty?
 
@@ -59,6 +72,17 @@ module OfficePresence
           target: :mac,
           update: updates
         ).insert(attributes)
+      end
+
+      private
+
+      def user_id_for_device(device_id)
+        return nil if device_id.nil? || device_id.empty?
+
+        user_ids = db[:people].where(device_id: device_id).exclude(user_id: nil).select_map(:user_id).uniq
+        raise ArgumentError, "device_id maps to conflicting user IDs: #{device_id}" if user_ids.length > 1
+
+        user_ids.first
       end
       
       def toggle_visibility(mac:)

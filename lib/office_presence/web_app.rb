@@ -265,6 +265,7 @@ module OfficePresence
         device: device_name || "",
         visible: visible,
         device_id: device[:device_id],
+        user_id: existing&.[](:user_id),
         image_url: image_url,
         audio_filename: audio_filename
       )

@@ -17,6 +17,10 @@ module OfficePresence
         updates[:device_id] = existing_record[:device_id] if existing_record[:device_id]
 
         @db.transaction do
+          old_person = @db[:people].where(mac: old_mac).first
+          replaced_person = @db[:people].where(mac: new_mac).first
+          stable_user_id = old_person&.[](:user_id) || replaced_person&.[](:user_id)
+
           merge_attendance_records(from_mac: new_mac, to_mac: old_mac)
 
           @db[:devices].where(mac: new_mac).delete
@@ -25,8 +29,15 @@ module OfficePresence
           @db[:devices].where(mac: old_mac).update(updates)
           people_updates = { mac: new_mac }
           people_updates[:device_id] = existing_record[:device_id] if existing_record[:device_id]
+          people_updates[:user_id] = stable_user_id if stable_user_id
           @db[:people].where(mac: old_mac).update(people_updates)
           @db[:attendance].where(mac: old_mac).update(mac: new_mac)
+
+          if stable_user_id && @db.table_exists?(:weekly_winners) && @db[:weekly_winners].columns.include?(:user_id)
+            @db[:weekly_winners]
+              .where(person_mac: old_mac, user_id: nil)
+              .update(user_id: stable_user_id)
+          end
         end
       end
 
