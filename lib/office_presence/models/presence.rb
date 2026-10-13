@@ -266,7 +266,11 @@ module OfficePresence
       end
 
       def entry_person_key(entry)
-        entry[:person] || entry[:person_key] || entry[:mac]
+        # Medal counts are grouped by the stable device/person key in
+        # WeeklyWinner#counts_by_person_key. Display names are not unique, so
+        # using `person` here can give a duplicate-name registration another
+        # person's medals.
+        entry[:person_key] || entry[:mac]
       end
 
       def winner_display_name(winner)
