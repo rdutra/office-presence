@@ -12,12 +12,12 @@ require_relative "../lib/office_presence/database"
 # database. Keep these explicit: display names alone are not identity proof.
 REVIEWED_MAC_ALIASES = {
   "0a:fe:18:f3:b2:9d" => "b6:e6:9f:ff:a9:7c", # Pancho
-  "42:e8:8e:d3:5d:06" => "b6:b8:71:e2:39:10", # Fernando Casalongue
-  "b2:4a:5d:09:f5:b7" => "b6:b8:71:e2:39:10", # Fernando Casalongue
-  "7a:15:06:5b:e6:e9" => "b6:b8:71:e2:39:10", # Fernando Casalongue
-  "36:fb:ee:da:c0:40" => "b6:b8:71:e2:39:10", # Fernando Casalongue
+  "42:e8:8e:d3:5d:06" => "ce:6e:42:43:80:29", # Fernando Casalongue
+  "b2:4a:5d:09:f5:b7" => "ce:6e:42:43:80:29", # Fernando Casalongue
+  "7a:15:06:5b:e6:e9" => "ce:6e:42:43:80:29", # Fernando Casalongue
+  "36:fb:ee:da:c0:40" => "ce:6e:42:43:80:29", # Fernando Casalongue
   "6a:4c:a3:ba:77:9c" => "ca:2f:4b:fd:fe:cb", # Flor
-  "26:11:ed:28:03:2b" => "62:5a:18:9d:66:b0"  # Rodrigo Dutra
+  "26:11:ed:28:03:2b" => "de:2c:08:17:87:3a"  # Rodrigo Dutra
 }.freeze
 
 options = { apply: false, database: nil, json: false }
