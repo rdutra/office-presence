@@ -12,15 +12,13 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Trend data is sorted by date descending (newest first). 
-  // Reverse it to plot chronologically (left to right).
-  const sortedTrend = [...trendData].reverse();
+  const sortedTrend = weekdaysChronologically(trendData);
   const labels = sortedTrend.map(row => row.date);
   const dataPoints = sortedTrend.map(row => row.unique_people);
 
   const ctx = document.getElementById('trendChart').getContext('2d');
 
-  // Calculate 7-day moving average for trend line
+  // Calculate a 7-weekday moving average for trend line
   const n = dataPoints.length;
   const trendLineData = [];
   const windowSize = 7;
@@ -272,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update Trend Chart
     if (data.attendance_trend && window.trendChartInstance) {
-      const sortedTrend = [...data.attendance_trend].reverse();
+      const sortedTrend = weekdaysChronologically(data.attendance_trend);
       const labels = sortedTrend.map(row => row.date);
       const dataPoints = sortedTrend.map(row => row.unique_people);
 
@@ -301,3 +299,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   setInterval(fetchDashboardData, 30000);
 });
+
+function weekdaysChronologically(rows) {
+  return [...rows]
+    .filter(row => {
+      const weekday = new Date(`${row.date}T00:00:00Z`).getUTCDay();
+      return weekday !== 0 && weekday !== 6;
+    })
+    .reverse();
+}
