@@ -85,6 +85,15 @@ changes = REVIEWED_MAC_ALIASES.map do |historical_mac, current_mac|
 
   first_seen = earliest_date(existing_history&.[](:first_seen_at), winners.first&.[](:week_start))
   last_seen = latest_date(existing_history&.[](:last_seen_at), winners.last&.[](:week_end))
+  attendance_rows = if db.table_exists?(:attendance) && db[:attendance].columns.include?(:user_id)
+    rows = db[:attendance].where(mac: historical_mac).where(Sequel.|({ user_id: nil }, { user_id: "" }))
+    rows = rows.where(Sequel[:date] >= date_part(first_seen)) if first_seen
+    rows = rows.where(Sequel[:date] <= date_part(last_seen)) if last_seen
+    rows.count
+  else
+    0
+  end
+
   {
     historical_mac: historical_mac,
     current_mac: current_mac,
@@ -92,6 +101,7 @@ changes = REVIEWED_MAC_ALIASES.map do |historical_mac, current_mac|
     user_id: person&.[](:user_id),
     weeks: winners.map { |winner| winner[:week_start] },
     winners_to_update: winners.count { |winner| winner[:user_id].to_s.empty? },
+    attendance_rows_to_update: attendance_rows,
     history_action: existing_history ? "update" : "insert",
     first_seen_at: first_seen,
     last_seen_at: last_seen,
@@ -108,6 +118,13 @@ if options[:apply]
         .where(person_mac: change[:historical_mac])
         .where(Sequel.|({ user_id: nil }, { user_id: "" }))
         .update(user_id: change[:user_id])
+
+      if db.table_exists?(:attendance) && db[:attendance].columns.include?(:user_id)
+        rows = db[:attendance].where(mac: change[:historical_mac]).where(Sequel.|({ user_id: nil }, { user_id: "" }))
+        rows = rows.where(Sequel[:date] >= date_part(change[:first_seen_at])) if change[:first_seen_at]
+        rows = rows.where(Sequel[:date] <= date_part(change[:last_seen_at])) if change[:last_seen_at]
+        rows.update(user_id: change[:user_id])
+      end
 
       db[:person_mac_history].insert_conflict(
         target: [:user_id, :mac],
@@ -132,6 +149,7 @@ report = {
   database: options[:database] && File.expand_path(options[:database]),
   mappings: changes,
   winner_rows_to_update: changes.sum { |change| change[:conflicts].empty? ? change[:winners_to_update] : 0 },
+  attendance_rows_to_update: changes.sum { |change| change[:conflicts].empty? ? change[:attendance_rows_to_update] : 0 },
   conflicts: changes.count { |change| !change[:conflicts].empty? }
 }
 
@@ -140,6 +158,7 @@ if options[:json]
 else
   puts "Historical winner user ID repair (#{report[:mode]})"
   puts "Winner rows to update: #{report[:winner_rows_to_update]}"
+  puts "Attendance rows to update: #{report[:attendance_rows_to_update]}"
   puts "Mappings with conflicts: #{report[:conflicts]}"
   changes.each do |change|
     state = change[:conflicts].empty? ? "#{change[:winners_to_update]} winner(s)" : "CONFLICT: #{change[:conflicts].join('; ')}"

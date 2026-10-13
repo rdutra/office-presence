@@ -221,6 +221,9 @@ if options[:apply]
         last_seen_at: last_seen,
         source: "user_id_backfill"
       )
+      if db[:attendance].columns.include?(:user_id)
+        db[:attendance].where(mac: person[:mac]).where(Sequel.|({ user_id: nil }, { user_id: "" })).update(user_id: user_id)
+      end
     end
 
     mac_alias_history.each do |history|
