@@ -132,16 +132,18 @@ module OfficePresence
       }
     end
 
-    get "/admin/person/:person_name" do
+    get "/admin/person/:user_id" do
       admin_protected!
-      
-      person_name = params[:person_name]
-      summary_stats = Models::Attendance.new(db).person_stats_summary_by_name(person_name: person_name)
-      timeline = Models::Attendance.new(db).person_daily_timeline_by_name(person_name: person_name)
+      user_id = params[:user_id]
+      person = db[:people].where(user_id: user_id).first
+      halt 404, "Person not found" unless person
+
+      summary_stats = Models::Attendance.new(db).person_stats_summary_by_user_id(user_id: user_id)
+      timeline = Models::Attendance.new(db).person_daily_timeline_by_user_id(user_id: user_id)
       
       erb :person_detail, locals: {
         now: Time.now,
-        person_name: person_name,
+        person_name: person[:person],
         summary: summary_stats,
         timeline: timeline
       }

@@ -66,12 +66,13 @@ module OfficePresence
           .join(:people, mac: :mac)
           .where(Sequel[:people][:visible] => true)
           .select_all(:devices)
-          .select_append(Sequel[:people][:person], Sequel[:people][:device].as(:device_name), Sequel[:people][:image_url], Sequel[:people][:audio_filename])
+          .select_append(Sequel[:people][:person], Sequel[:people][:user_id], Sequel[:people][:device].as(:device_name), Sequel[:people][:image_url], Sequel[:people][:audio_filename])
           .order(Sequel.desc(:last_seen_utc))
           .all
           .map do |row|
             {
               person: row[:person],
+              user_id: row[:user_id],
               device: row[:device_name],
               mac: row[:mac],
               ip: row[:ip],
@@ -165,11 +166,29 @@ module OfficePresence
         )
 
         current_person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:weekly_winners][:person])
+        historical_user_id = Sequel.lit(<<~SQL)
+          (SELECT person_mac_history.user_id
+           FROM person_mac_history
+           WHERE person_mac_history.mac = weekly_winners.person_mac
+             AND (person_mac_history.first_seen_at IS NULL OR date(weekly_winners.week_end) >= date(person_mac_history.first_seen_at))
+             AND (person_mac_history.last_seen_at IS NULL OR date(weekly_winners.week_start) <= date(person_mac_history.last_seen_at))
+           ORDER BY person_mac_history.first_seen_at DESC
+           LIMIT 1)
+        SQL
+        current_identity_expr = Sequel.function(
+          :coalesce,
+          Sequel[:weekly_winners][:user_id],
+          historical_user_id,
+          Sequel[:people][:user_id],
+          Sequel[:people][:mac],
+          Sequel[:weekly_winners][:person_mac]
+        )
 
         aggregated_winners = weekly_winner_model.db[:weekly_winners]
           .left_join(:people, mac: :person_mac)
           .exclude(Person.anonymous_name_condition(Sequel[:weekly_winners][:person]))
-          .group_and_count(current_person_expr.as(:person))
+          .select(current_person_expr.as(:person), Sequel.function(:count, Sequel.lit("*")).as(:count))
+          .group(current_identity_expr, current_person_expr)
           .order(Sequel.desc(:count), current_person_expr)
           .all
 
@@ -239,6 +258,7 @@ module OfficePresence
           week_end: end_date,
           person: winner[:person],
           person_mac: winner[:person_key],
+          user_id: winner[:user_id],
           days: winner[:days]
         )
 
@@ -250,7 +270,7 @@ module OfficePresence
 
         # Sort candidates by their total wins (ascending), then by name for stability
         candidates.min_by do |candidate|
-          wins = win_counts[candidate[:person_key]] || 0
+          wins = win_counts[candidate[:user_id] || candidate[:person_key]] || 0
           [wins, candidate[:person].to_s.downcase]
         end
       end
@@ -270,10 +290,13 @@ module OfficePresence
         # WeeklyWinner#counts_by_person_key. Display names are not unique, so
         # using `person` here can give a duplicate-name registration another
         # person's medals.
-        entry[:person_key] || entry[:mac]
+        entry[:user_id] || entry[:person_key] || entry[:mac]
       end
 
       def winner_display_name(winner)
+        person = person_model.find_by_user_id(winner[:user_id]) if winner[:user_id]
+        return person[:person] if person
+
         mac = winner[:person_mac]
         return winner[:person] unless mac
 
@@ -284,6 +307,9 @@ module OfficePresence
       def anonymous_winner?(winner)
         return false unless winner
         return true if Person.anonymous_name?(winner[:person])
+
+        person = person_model.find_by_user_id(winner[:user_id]) if winner[:user_id]
+        return Person.anonymous_name?(person&.[](:person)) if person
 
         mac = winner[:person_mac]
         return false unless mac

@@ -24,13 +24,17 @@ module OfficePresence
       def record(mac:, timestamp: nil, date: nil)
         timestamp ||= Time.now.utc.iso8601.gsub(/\+00:00\z/, "Z")
         date ||= Time.now.utc.strftime("%Y-%m-%d")
+        user_id = db[:people].where(mac: mac).get(:user_id) if db[:people].columns.include?(:user_id)
         
+        conflict_update = { last_seen_utc: timestamp }
+        conflict_update[:user_id] = user_id if user_id
         db[:attendance].insert_conflict(
           target: [:mac, :date],
-          update: { last_seen_utc: timestamp }
+          update: conflict_update
         ).insert(
           mac: mac,
           date: date,
+          user_id: user_id,
           first_seen_utc: timestamp,
           last_seen_utc: timestamp
         )
@@ -57,7 +61,10 @@ module OfficePresence
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        user_id_expr = Sequel.function(:coalesce, Sequel[:attendance][:user_id], Sequel[:people][:user_id], Sequel[:people_by_device][:user_id])
+        identity_expr = user_id_expr
         person_key_expr = Sequel.function(:coalesce, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
+        identity_expr = Sequel.function(:coalesce, identity_expr, person_key_expr)
         visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
 
         dataset = db[:attendance]
@@ -82,15 +89,16 @@ module OfficePresence
 
         dataset
           .select(
-            person_key_expr.as(:person_key),
+            Sequel.function(:min, person_key_expr).as(:person_key),
             person_expr.as(:person),
+            user_id_expr.as(:user_id),
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
           )
-          .group(person_key_expr, person_expr)
+          .group(identity_expr, person_expr, user_id_expr)
           .order(Sequel.desc(:days), person_expr)
           .limit(limit)
           .all
-          .map { |row| { person_key: row[:person_key], person: row[:person], days: row[:days] } }
+          .map { |row| { person_key: row[:person_key], person: row[:person], user_id: row[:user_id], days: row[:days] } }
       end
 
       def top_attendees_for_week(reference_time: Time.now, limit: 10)
@@ -114,6 +122,8 @@ module OfficePresence
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
+        user_id_expr = Sequel.function(:coalesce, Sequel[:attendance][:user_id], Sequel[:people][:user_id], Sequel[:people_by_device][:user_id])
+        identity_expr = Sequel.function(:coalesce, user_id_expr, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
         person_key_expr = Sequel.function(:coalesce, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
         visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
 
@@ -141,18 +151,20 @@ module OfficePresence
 
         dataset
           .select(
-            person_key_expr.as(:person_key),
+            Sequel.function(:min, person_key_expr).as(:person_key),
             person_expr.as(:person),
+            user_id_expr.as(:user_id),
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days_attended),
             hours_expr.as(:total_hours)
           )
-          .group(person_key_expr, person_expr)
+          .group(identity_expr, person_expr, user_id_expr)
           .order(Sequel.desc(:total_hours), person_expr)
           .all
           .map do |row|
             {
               person_key: row[:person_key],
               person: row[:person],
+              user_id: row[:user_id],
               days_attended: row[:days_attended],
               total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
             }
@@ -166,7 +178,8 @@ module OfficePresence
         devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
         people_by_device = db[:people].as(:people_by_device)
         person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
-        person_key_expr = Sequel.function(:coalesce, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
+        user_id_expr = Sequel.function(:coalesce, Sequel[:attendance][:user_id], Sequel[:people][:user_id], Sequel[:people_by_device][:user_id])
+        person_key_expr = Sequel.function(:coalesce, user_id_expr, Sequel[:people][:mac], Sequel[:people_by_device][:mac], Sequel[:attendance][:mac])
         visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
 
         dataset = db[:attendance]
@@ -212,19 +225,8 @@ module OfficePresence
         end
       end
 
-      def person_daily_timeline_by_name(person_name:)
-        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
-        people_by_device = db[:people].as(:people_by_device)
-        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
-        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
-
-        dataset = db[:attendance]
-          .left_join(:people, mac: :mac)
-          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
-          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
-          .where(person_expr => person_name)
-          .where(visible_expr => true)
-
+      def person_daily_timeline_by_user_id(user_id:)
+        dataset = db[:attendance].where(user_id: user_id)
         hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
 
         dataset
@@ -247,19 +249,8 @@ module OfficePresence
           end
       end
 
-      def person_stats_summary_by_name(person_name:)
-        devices_for_attendance = db[:devices].select(:mac, :device_id).as(:devices_for_attendance)
-        people_by_device = db[:people].as(:people_by_device)
-        person_expr = Sequel.function(:coalesce, Sequel[:people][:person], Sequel[:people_by_device][:person])
-        visible_expr = Sequel.function(:coalesce, Sequel[:people][:visible], Sequel[:people_by_device][:visible], true)
-
-        dataset = db[:attendance]
-          .left_join(:people, mac: :mac)
-          .left_join(devices_for_attendance, Sequel[:attendance][:mac] => Sequel[:devices_for_attendance][:mac])
-          .left_join(people_by_device, Sequel[:people_by_device][:device_id] => Sequel[:devices_for_attendance][:device_id])
-          .where(person_expr => person_name)
-          .where(visible_expr => true)
-
+      def person_stats_summary_by_user_id(user_id:)
+        dataset = db[:attendance].where(user_id: user_id)
         hours_expr = Sequel.lit("SUM(strftime('%s', attendance.last_seen_utc) - strftime('%s', attendance.first_seen_utc)) / 3600.0")
 
         row = dataset
@@ -270,7 +261,7 @@ module OfficePresence
           .first
 
         {
-          person: person_name,
+          user_id: user_id,
           days_attended: row[:days_attended] || 0,
           total_hours: row[:total_hours] ? row[:total_hours].round(2) : 0.0
         }

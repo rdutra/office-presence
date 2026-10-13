@@ -37,11 +37,22 @@ module OfficePresence
       end
 
       def counts_by_person_key
+        historical_user_id = Sequel.lit(<<~SQL)
+          (SELECT person_mac_history.user_id
+           FROM person_mac_history
+           WHERE person_mac_history.mac = weekly_winners.person_mac
+             AND (person_mac_history.first_seen_at IS NULL OR date(weekly_winners.week_end) >= date(person_mac_history.first_seen_at))
+             AND (person_mac_history.last_seen_at IS NULL OR date(weekly_winners.week_start) <= date(person_mac_history.last_seen_at))
+           ORDER BY person_mac_history.first_seen_at DESC
+           LIMIT 1)
+        SQL
         current_person_key_expr = Sequel.function(
           :coalesce,
+          Sequel[:weekly_winners][:user_id],
+          historical_user_id,
+          Sequel[:people][:user_id],
           Sequel[:people][:mac],
-          Sequel[:weekly_winners][:person_mac],
-          Sequel[:weekly_winners][:person]
+          Sequel[:weekly_winners][:person_mac]
         )
 
         db[:weekly_winners]

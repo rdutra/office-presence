@@ -68,10 +68,16 @@ module OfficePresence
         attributes[:image_url] = image_url if image_url && !image_url.empty?
         attributes[:audio_filename] = audio_filename if audio_filename && !audio_filename.empty?
 
-        db[:people].insert_conflict(
-          target: :mac,
-          update: updates
-        ).insert(attributes)
+        db.transaction do
+          db[:people].insert_conflict(
+            target: :mac,
+            update: updates
+          ).insert(attributes)
+          record_mac_history(user_id: stable_user_id, mac: mac, seen_at: Time.now.utc.iso8601, source: "registration")
+          if db.table_exists?(:attendance) && db[:attendance].columns.include?(:user_id)
+            db[:attendance].where(mac: mac, user_id: nil).update(user_id: stable_user_id)
+          end
+        end
       end
 
       private
@@ -83,6 +89,21 @@ module OfficePresence
         raise ArgumentError, "device_id maps to conflicting user IDs: #{device_id}" if user_ids.length > 1
 
         user_ids.first
+      end
+
+      def record_mac_history(user_id:, mac:, seen_at:, source:)
+        return unless db.table_exists?(:person_mac_history)
+
+        db[:person_mac_history].insert_conflict(
+          target: [:user_id, :mac],
+          update: { last_seen_at: seen_at, source: source }
+        ).insert(
+          user_id: user_id,
+          mac: mac,
+          first_seen_at: seen_at,
+          last_seen_at: seen_at,
+          source: source
+        )
       end
       
       def toggle_visibility(mac:)

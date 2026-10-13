@@ -21,6 +21,8 @@ module OfficePresence
           replaced_person = @db[:people].where(mac: new_mac).first
           stable_user_id = old_person&.[](:user_id) || replaced_person&.[](:user_id)
 
+          record_mac_history(user_id: stable_user_id, mac: old_mac, seen_at: existing_record[:last_seen_utc], source: "identity_change")
+
           merge_attendance_records(from_mac: new_mac, to_mac: old_mac)
 
           @db[:devices].where(mac: new_mac).delete
@@ -31,7 +33,10 @@ module OfficePresence
           people_updates[:device_id] = existing_record[:device_id] if existing_record[:device_id]
           people_updates[:user_id] = stable_user_id if stable_user_id
           @db[:people].where(mac: old_mac).update(people_updates)
-          @db[:attendance].where(mac: old_mac).update(mac: new_mac)
+          record_mac_history(user_id: stable_user_id, mac: new_mac, seen_at: last_seen_utc, source: "identity_change")
+          attendance_updates = { mac: new_mac }
+          attendance_updates[:user_id] = stable_user_id if stable_user_id && @db[:attendance].columns.include?(:user_id)
+          @db[:attendance].where(mac: old_mac).update(attendance_updates)
 
           if stable_user_id && @db.table_exists?(:weekly_winners) && @db[:weekly_winners].columns.include?(:user_id)
             @db[:weekly_winners]
@@ -42,6 +47,21 @@ module OfficePresence
       end
 
       private
+
+      def record_mac_history(user_id:, mac:, seen_at:, source:)
+        return if user_id.to_s.empty? || !@db.table_exists?(:person_mac_history)
+
+        @db[:person_mac_history].insert_conflict(
+          target: [:user_id, :mac],
+          update: { last_seen_at: seen_at, source: source }
+        ).insert(
+          user_id: user_id,
+          mac: mac,
+          first_seen_at: seen_at,
+          last_seen_at: seen_at,
+          source: source
+        )
+      end
 
       def merge_attendance_records(from_mac:, to_mac:)
         return if from_mac.nil? || to_mac.nil? || from_mac == to_mac
@@ -54,11 +74,14 @@ module OfficePresence
             last_seen = [existing[:last_seen_utc], row[:last_seen_utc]].compact.max
             attendance.where(id: existing[:id]).update(
               first_seen_utc: first_seen,
-              last_seen_utc: last_seen
+              last_seen_utc: last_seen,
+              user_id: existing[:user_id] || row[:user_id]
             )
             attendance.where(id: row[:id]).delete
           else
-            attendance.where(id: row[:id]).update(mac: to_mac)
+            updates = { mac: to_mac }
+            updates[:user_id] = row[:user_id] if attendance.columns.include?(:user_id) && row[:user_id]
+            attendance.where(id: row[:id]).update(updates)
           end
         end
       end

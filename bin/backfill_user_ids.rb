@@ -9,15 +9,27 @@ require "optparse"
 require_relative "../lib/office_presence"
 require_relative "../lib/office_presence/database"
 
-options = { apply: false, json: false }
+options = { apply: false, json: false, database: nil, mac_aliases: {} }
 OptionParser.new do |parser|
-  parser.banner = "Usage: bundle exec ruby bin/backfill_user_ids.rb [--apply] [--json]"
+  parser.banner = "Usage: bundle exec ruby bin/backfill_user_ids.rb [--database PATH] [--mac-alias OLD=NEW] [--apply] [--json]"
   parser.on("--apply", "Write confident assignments; default is report-only") { options[:apply] = true }
   parser.on("--json", "Print the report as JSON") { options[:json] = true }
+  parser.on("--database PATH", "Use a specific SQLite database") { |value| options[:database] = value }
+  parser.on("--mac-alias OLD=NEW", "Resolve a reviewed historical MAC to its current MAC") do |value|
+    old_mac, current_mac = value.split("=", 2).map { |mac| OfficePresence::Utils.normalize_mac(mac) }
+    abort "Invalid --mac-alias value: #{value.inspect}" unless old_mac && current_mac
+    options[:mac_aliases][old_mac] = current_mac
+  end
   parser.on("-h", "--help", "Show help") { puts parser; exit 0 }
 end.parse!
 
-db = OfficePresence::Database.connection
+db = if options[:database]
+  database = Sequel.sqlite(File.expand_path(options[:database]))
+  OfficePresence::Database.run_migrations(database)
+  database
+else
+  OfficePresence::Database.connection
+end
 abort "people table does not exist" unless db.table_exists?(:people)
 abort "user_id migration has not been applied to people" unless db[:people].columns.include?(:user_id)
 
@@ -26,6 +38,7 @@ winners = db.table_exists?(:weekly_winners) ? db[:weekly_winners].order(:week_st
 devices = db.table_exists?(:devices) ? db[:devices].all : []
 devices_by_mac = devices.to_h { |device| [device[:mac], device] }
 people_by_mac = people.to_h { |person| [person[:mac], person] }
+mac_history_by_mac = db.table_exists?(:person_mac_history) ? db[:person_mac_history].all.group_by { |row| row[:mac] } : {}
 people_by_device_id = people.reject { |person| person[:device_id].to_s.empty? }
                              .group_by { |person| person[:device_id] }
 
@@ -110,17 +123,43 @@ winners.each do |winner|
     end
   end
 
+  aliased_person = nil
+  if candidates.empty? && (current_mac = options[:mac_aliases][winner[:person_mac]])
+    aliased_person = people_by_mac[current_mac]
+    candidates << aliased_person if aliased_person
+  end
+
   candidate_macs = candidates.map { |row| row[:mac] }.uniq
   resolved_ids = candidate_macs.map { |mac| people_resolution[mac] }.uniq
-  if !candidates.empty? && !resolved_ids.include?(:ambiguous) && resolved_ids.length == 1 && resolved_ids.first
+  history_matches = mac_history_by_mac.fetch(winner[:person_mac], []).select do |history|
+    begins_before_week_ends = history[:first_seen_at].nil? || history[:first_seen_at][0, 10] <= winner[:week_end]
+    ends_after_week_starts = history[:last_seen_at].nil? || history[:last_seen_at][0, 10] >= winner[:week_start]
+    begins_before_week_ends && ends_after_week_starts
+  end
+  history_ids = history_matches.map { |row| row[:user_id] }.uniq
+  resolved_id = if !candidates.empty? && !resolved_ids.include?(:ambiguous) && resolved_ids.length == 1
+    resolved_ids.first
+  elsif candidates.empty? && history_ids.length == 1
+    history_ids.first
+  end
+
+  if resolved_id
     winner_assignments << {
       table: "weekly_winners",
       key: { id: winner[:id] },
       week_start: winner[:week_start],
       person: winner[:person],
       person_mac: winner[:person_mac],
-      user_id: resolved_ids.first,
-      reason: direct_person ? "current_person_mac_match" : "device_id_match"
+      user_id: resolved_id,
+      reason: if direct_person
+        "current_person_mac_match"
+      elsif aliased_person
+        "reviewed_mac_alias"
+      elsif candidates.empty?
+        "mac_history_match"
+      else
+        "device_id_match"
+      end
     }
   else
     reviews << {
@@ -129,15 +168,32 @@ winners.each do |winner|
       person: winner[:person],
       person_mac: winner[:person_mac],
       candidate_macs: candidate_macs,
-      reason: candidates.empty? ? "no_current_person_or_device_match" : "ambiguous_or_unresolved_identity"
+      candidate_user_ids: history_ids,
+      reason: candidates.empty? && history_ids.empty? ? "no_current_person_or_device_match" : "ambiguous_or_unresolved_identity"
     }
   end
 end
 
+mac_alias_history = options[:mac_aliases].map do |old_mac, current_mac|
+  person = people_by_mac[current_mac]
+  user_id = people_resolution[current_mac] || person&.[](:user_id)
+  alias_winners = winners.select { |winner| winner[:person_mac] == old_mac }
+  {
+    old_mac: old_mac,
+    current_mac: current_mac,
+    user_id: user_id,
+    first_seen_at: alias_winners.map { |winner| winner[:week_start] }.min,
+    last_seen_at: alias_winners.map { |winner| winner[:week_end] }.max,
+    reason: person && user_id ? "reviewed_mac_alias" : "current_mac_not_resolved"
+  }
+end
+
 report = {
   mode: options[:apply] ? "apply" : "dry_run",
+  database: options[:database] && File.expand_path(options[:database]),
   people_assignments: assignments,
   winner_assignments: winner_assignments,
+  mac_alias_history: mac_alias_history,
   review_required: reviews
 }
 
@@ -146,6 +202,42 @@ if options[:apply]
     assignments.each do |assignment|
       db[assignment[:table].to_sym].where(assignment[:key]).where(user_id: nil).update(user_id: assignment[:user_id])
     end
+
+    people.each do |person|
+      user_id = people_resolution[person[:mac]]
+      next if user_id.nil? || user_id == :ambiguous
+
+      attendance = db[:attendance].where(mac: person[:mac])
+      first_seen = attendance.min(:first_seen_utc)
+      last_seen = attendance.max(:last_seen_utc)
+      last_seen ||= devices_by_mac.dig(person[:mac], :last_seen_utc)
+      db[:person_mac_history].insert_conflict(
+        target: [:user_id, :mac],
+        update: { last_seen_at: last_seen, source: "user_id_backfill" }
+      ).insert(
+        user_id: user_id,
+        mac: person[:mac],
+        first_seen_at: first_seen,
+        last_seen_at: last_seen,
+        source: "user_id_backfill"
+      )
+    end
+
+    mac_alias_history.each do |history|
+      next unless history[:user_id]
+
+      db[:person_mac_history].insert_conflict(
+        target: [:user_id, :mac],
+        update: { last_seen_at: history[:last_seen_at], source: "reviewed_alias" }
+      ).insert(
+        user_id: history[:user_id],
+        mac: history[:old_mac],
+        first_seen_at: history[:first_seen_at],
+        last_seen_at: history[:last_seen_at],
+        source: "reviewed_alias"
+      )
+    end
+
     winner_assignments.each do |assignment|
       db[:weekly_winners].where(id: assignment[:key][:id]).where(user_id: nil).update(user_id: assignment[:user_id])
     end
@@ -164,6 +256,9 @@ else
   end
   winner_assignments.each do |row|
     puts "  winner #{row[:week_start]} #{row[:person].inspect} -> #{row[:user_id]} (#{row[:reason]})"
+  end
+  mac_alias_history.each do |row|
+    puts "  MAC alias #{row[:old_mac]} -> #{row[:current_mac]} for #{row[:user_id] || 'UNRESOLVED'} (#{row[:reason]})"
   end
   reviews.each do |row|
     puts "  REVIEW #{row[:type]}: #{row.to_json}"
