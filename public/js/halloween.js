@@ -240,9 +240,9 @@ class HalloweenDashboard {
       }
 
       return `
-        <div class="person-card big-portrait-card status-${status}" data-mac="${this.escapeHtml(person.mac || '')}" data-person-name="${this.escapeHtml(rawName)}">
-          <div class="portrait-container big-portrait">
-            <div class="vintage-frame big-frame">
+        <div class="person-card hero-portrait-card status-${status}" data-mac="${this.escapeHtml(person.mac || '')}" data-person-name="${this.escapeHtml(rawName)}">
+          <div class="portrait-container hero-portrait">
+            <div class="vintage-frame hero-frame">
               <div class="costume-overlay costume-${costumeIdx}" aria-hidden="true"></div>
               ${photoHtml}
               <div class="aura-glow"></div>
@@ -250,18 +250,14 @@ class HalloweenDashboard {
             </div>
             <div class="status-soul-flame status-${status}" title="Status: ${status}"></div>
           </div>
-          <div class="person-info">
-            <div class="person-name-row">
-              <h3 class="person-name">${this.escapeHtml(name)}</h3>
-            </div>
-            <div class="person-role-title">${roleTitle}</div>
-            <div class="person-device">
+          <div class="person-info-compact">
+            <h3 class="person-name-compact">${this.escapeHtml(name)}</h3>
+            <div class="person-role-tag">${roleTitle}</div>
+            <div class="person-device-line">
               <span class="device-icon">💻</span>
               <span class="device-text">${this.escapeHtml(device)}</span>
             </div>
-            <div class="person-days-tag">
-              <span class="pumpkin-tag">🎃 ${daysText}</span>
-            </div>
+            <div class="pumpkin-days-tag">🎃 ${days} ${days === 1 ? 'day' : 'days'}</div>
           </div>
         </div>
       `;
@@ -280,14 +276,14 @@ class HalloweenDashboard {
     }
 
     let podiumContainer = this.topAttendeesSection.querySelector('.coven-podium-cards');
-    let empty = this.topAttendeesSection.querySelector('.empty-state');
+    let empty = this.topAttendeesSection.querySelector('.empty-state-compact');
 
     if (attendees.length === 0) {
       if (podiumContainer) podiumContainer.style.display = 'none';
       if (!empty) {
         empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = 'No spells cast this week yet 🔮';
+        empty.className = 'empty-state-compact';
+        empty.textContent = 'No spells cast yet 🔮';
         this.topAttendeesSection.appendChild(empty);
       }
       empty.style.display = '';
@@ -298,7 +294,7 @@ class HalloweenDashboard {
 
     if (!podiumContainer) {
       podiumContainer = document.createElement('div');
-      podiumContainer.className = 'coven-podium-cards';
+      podiumContainer.className = 'coven-podium-cards compact-podium';
       this.topAttendeesSection.appendChild(podiumContainer);
     }
     podiumContainer.style.display = '';
@@ -312,7 +308,6 @@ class HalloweenDashboard {
       const rawName = attendee.person || 'Unknown';
       const initial = rawName.trim().charAt(0).toUpperCase() || '?';
       const days = attendee.days || 1;
-      const daysText = `${days} ${days === 1 ? 'day' : 'days'}`;
 
       let photoHtml = '';
       if (attendee.image_url) {
@@ -325,20 +320,16 @@ class HalloweenDashboard {
       }
 
       return `
-        <div class="podium-card ${rankClasses[index] || ''}">
-          <div class="podium-rank-badge">
-            <span class="rank-medal">${rankEmojis[index] || '⭐'}</span>
-          </div>
-          <div class="podium-portrait-frame">
+        <div class="podium-card-compact ${rankClasses[index] || ''}">
+          <span class="podium-rank-emoji">${rankEmojis[index] || '⭐'}</span>
+          <div class="podium-frame-compact">
             ${photoHtml}
-            <div class="podium-halo"></div>
           </div>
-          <div class="podium-info">
-            <div class="podium-name">${this.escapeHtml(name)}</div>
-            <div class="podium-title">${rankTitles[index] || 'Coven Member'}</div>
-            <div class="podium-days">
-              <span class="flame-icon">🔥</span>
-              <strong>${days}</strong> ${days === 1 ? 'day' : 'days'}
+          <div class="podium-info-compact">
+            <div class="podium-name-compact">${this.escapeHtml(name)}</div>
+            <div class="podium-meta-compact">
+              <span class="podium-title-text">${rankTitles[index] || 'Coven Member'}</span>
+              <span class="flame-days">🔥 <strong>${days}</strong>d</span>
             </div>
           </div>
         </div>
@@ -352,15 +343,15 @@ class HalloweenDashboard {
   renderDepartedSpirits(absentPeople) {
     if (!this.recentSection) return;
 
-    let graveyard = this.recentSection.querySelector('.departed-graveyard');
-    let empty = this.recentSection.querySelector('.empty-state');
+    let graveyard = this.recentSection.querySelector('.departed-graveyard-compact');
+    let empty = this.recentSection.querySelector('.empty-state-compact');
 
     if (absentPeople.length === 0) {
       if (graveyard) graveyard.style.display = 'none';
       if (!empty) {
         empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = 'No spirits have departed into the shadows yet 👻';
+        empty.className = 'empty-state-compact';
+        empty.textContent = 'No spirits departed yet 👻';
         this.recentSection.appendChild(empty);
       }
       empty.style.display = '';
@@ -371,12 +362,12 @@ class HalloweenDashboard {
 
     if (!graveyard) {
       graveyard = document.createElement('div');
-      graveyard.className = 'recent-list departed-graveyard';
+      graveyard.className = 'recent-list departed-graveyard-compact';
       this.recentSection.appendChild(graveyard);
     }
     graveyard.style.display = '';
 
-    graveyard.innerHTML = absentPeople.slice(0, 8).map((person) => {
+    graveyard.innerHTML = absentPeople.slice(0, 6).map((person) => {
       const name = this.formatDisplayName(person);
       const rawName = person.person || 'Departed Soul';
       const initial = rawName.trim().charAt(0).toUpperCase() || '?';
@@ -392,19 +383,12 @@ class HalloweenDashboard {
       }
 
       return `
-        <div class="departed-tombstone">
-          <div class="tombstone-top">
-            <span class="rip-text">R.I.P</span>
+        <div class="departed-tombstone-compact">
+          <span class="rip-tag">RIP</span>
+          <div class="ghost-portrait-compact">
+            ${photoHtml}
           </div>
-          <div class="tombstone-content">
-            <div class="ghost-portrait">
-              ${photoHtml}
-            </div>
-            <div class="departed-info">
-              <div class="departed-name">${this.escapeHtml(name)}</div>
-              <div class="departed-status">👻 Left the crypt</div>
-            </div>
-          </div>
+          <div class="departed-name-compact">${this.escapeHtml(name)}</div>
         </div>
       `;
     }).join('');

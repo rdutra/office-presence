@@ -21,19 +21,16 @@
       <!-- GIT WEB: Top Left (Git branch spiderweb network) -->
       <div class="git-web git-web-top-left">
         <svg viewBox="0 0 320 280" class="git-web-svg" xmlns="http://www.w3.org/2000/svg">
-          <!-- Web radial strands (acting as git branches) -->
           <path d="M 0 0 L 280 20" stroke="rgba(200, 180, 240, 0.3)" stroke-width="1.5" stroke-dasharray="4 2"/>
           <path d="M 0 0 L 260 90" stroke="rgba(200, 180, 240, 0.35)" stroke-width="1.5"/>
           <path d="M 0 0 L 220 180" stroke="rgba(200, 180, 240, 0.35)" stroke-width="1.5"/>
           <path d="M 0 0 L 140 240" stroke="rgba(200, 180, 240, 0.3)" stroke-width="1.5"/>
           <path d="M 0 0 L 40 270" stroke="rgba(200, 180, 240, 0.25)" stroke-width="1.5"/>
 
-          <!-- Connecting web threads (curved git merges) -->
           <path d="M 90 6 Q 85 30 80 55 Q 65 65 50 80 Q 30 85 12 90" fill="none" stroke="rgba(255, 117, 24, 0.4)" stroke-width="1.5"/>
           <path d="M 180 12 Q 170 60 155 110 Q 125 135 100 160 Q 60 170 25 180" fill="none" stroke="rgba(157, 78, 221, 0.45)" stroke-width="1.5"/>
           <path d="M 270 19 Q 250 85 215 175 Q 165 210 135 235 Q 80 250 38 265" fill="none" stroke="rgba(57, 255, 20, 0.35)" stroke-width="1.5"/>
 
-          <!-- Git Commit Nodes woven in the web -->
           <g class="git-node" transform="translate(80, 55)">
             <circle r="5" fill="#39ff14" filter="drop-shadow(0 0 5px #39ff14)"/>
             <text x="8" y="4" font-size="9" fill="#39ff14" font-family="monospace">init:crypt</text>
@@ -47,14 +44,11 @@
             <text x="10" y="4" font-size="9" fill="#c77dff" font-family="monospace">HEAD->coven</text>
           </g>
 
-          <!-- Animated Spider Crawling on Left Web -->
           <g class="spider-crawler spider-crawling-left" transform="translate(120, 85)">
             <ellipse cx="0" cy="0" rx="7" ry="9" fill="#0c0414" stroke="#ff7518" stroke-width="1.5"/>
             <circle cx="0" cy="-6" r="4" fill="#140624" stroke="#ff7518" stroke-width="1"/>
-            <!-- Glowing Red Eyes -->
             <circle cx="-1.5" cy="-7" r="1" fill="#ff0055"/>
             <circle cx="1.5" cy="-7" r="1" fill="#ff0055"/>
-            <!-- 8 Legs -->
             <path d="M -5 -3 Q -14 -8 -18 -4 M -5 0 Q -15 0 -19 6 M -5 3 Q -14 7 -16 14 M -4 6 Q -10 14 -12 20" stroke="#ff7518" stroke-width="1.5" fill="none"/>
             <path d="M 5 -3 Q 14 -8 18 -4 M 5 0 Q 15 0 19 6 M 5 3 Q 14 7 16 14 M 4 6 Q 10 14 12 20" stroke="#ff7518" stroke-width="1.5" fill="none"/>
           </g>
@@ -92,16 +86,13 @@
         <div class="dangling-spider-rig" id="danglingSpider" title="Click me to spook!">
           <div class="spider-thread"></div>
           <div class="interactive-spider">
-            <svg viewBox="0 0 60 70" width="46" height="54">
+            <svg viewBox="0 0 60 70" width="44" height="52">
               <ellipse cx="30" cy="38" rx="14" ry="18" fill="#11051f" stroke="#a855f7" stroke-width="2"/>
               <circle cx="30" cy="22" r="10" fill="#18072b" stroke="#a855f7" stroke-width="1.5"/>
-              <!-- Glowing Red Eyes -->
               <circle cx="26" cy="20" r="2.2" fill="#ff0055" filter="drop-shadow(0 0 4px #ff0055)"/>
               <circle cx="34" cy="20" r="2.2" fill="#ff0055" filter="drop-shadow(0 0 4px #ff0055)"/>
-              <!-- Legs -->
               <path d="M 20 28 Q 6 22 2 12 M 18 34 Q 4 36 0 46 M 18 42 Q 4 52 2 64 M 22 48 Q 12 60 10 70" stroke="#c084fc" stroke-width="2" fill="none" stroke-linecap="round"/>
               <path d="M 40 28 Q 54 22 58 12 M 42 34 Q 56 36 60 46 M 42 42 Q 56 52 58 64 M 38 48 Q 48 60 50 70" stroke="#c084fc" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <!-- Hourglass mark on back -->
               <polygon points="27,33 33,33 30,37" fill="#ff0055"/>
               <polygon points="30,37 27,41 33,41" fill="#ff0055"/>
             </svg>
@@ -110,9 +101,10 @@
       </div>
     </div>
 
-    <div class="container" id="dashboard">
-      <!-- HEADER -->
-      <header class="halloween-header">
+    <!-- MAIN SINGLE-SCREEN CONTAINER -->
+    <div class="container single-screen-container" id="dashboard">
+      <!-- COMPACT HEADER (Single Row) -->
+      <header class="halloween-header compact-header">
         <div class="header-left">
           <div class="time-container">
             <span class="candle-icon">🕯️</span>
@@ -134,10 +126,9 @@
             <span class="date"><%= now.strftime("%A, %B %d") %></span>
           </div>
           <div class="interactive-controls">
-            <!-- Audio Controller with Sound Effect Selector -->
             <button class="spooky-toggle-btn sound-btn" id="soundToggleBtn" type="button" title="Toggle background creepy sounds" aria-label="Toggle Halloween Sound Effects">
               <span class="btn-icon">🔊</span>
-              <span class="btn-label">Ambient SFX</span>
+              <span class="btn-label">SFX: On</span>
             </button>
             <button class="spooky-action-btn trigger-spook-btn" id="triggerSpookBtn" type="button" title="Trigger a random spooky sound!">
               <span>⚡ Spook Me!</span>
@@ -154,37 +145,92 @@
       </header>
 
       <!-- ====================================================================
-           CENTERPIECE: THE BOILING CAULDRON OF SOULS & METRICS
+           STAGE: 3-COLUMN NO-SCROLL WIDESCREEN LAYOUT
+           Column 1: High Council (Champions) + Departed Graveyard
+           Column 2: The Boiling Cauldron of Souls + Flask Stats
+           Column 3: The Haunted Portrait Gallery (Big Pictures)
            ==================================================================== -->
-      <section class="cauldron-centerpiece" aria-label="The Boiling Cauldron of Presence">
-        <div class="cauldron-altar">
-          <!-- Left Altar Flasks -->
-          <div class="altar-flasks altar-flasks-left">
-            <% if show_registered_users_tile %>
-              <div class="magic-flask stat-card" data-stat="total" title="Total registered coven members">
-                <div class="flask-bubble-aura"></div>
-                <div class="flask-icon">📜</div>
-                <div class="flask-data">
-                  <div class="flask-number stat-number"><%= total_people %></div>
-                  <div class="flask-label">Coven Members</div>
-                </div>
+      <main class="single-screen-stage">
+        <!-- LEFT WING: Council & Graveyard -->
+        <aside class="stage-column column-left-wing">
+          <!-- TOP ATTENDEES (High Council Podium) -->
+          <div class="stage-card council-card" data-section="top-attendees">
+            <div class="card-header-compact">
+              <div class="card-title-compact">
+                <span class="icon">🧙‍♀️</span>
+                <h3>High Council</h3>
               </div>
-            <% end %>
+              <span class="week-range-pill" data-week-range><%= "#{current_week_start} to #{current_week_end}" %></span>
+            </div>
 
-            <% if show_today_record_tile %>
-              <div class="magic-flask stat-card" data-stat="daily-record" title="Today's highest attendance spike">
-                <div class="flask-bubble-aura"></div>
-                <div class="flask-icon">⚡</div>
-                <div class="flask-data">
-                  <div class="flask-number stat-number"><%= daily_record %></div>
-                  <div class="flask-label">Peak Haunting Today</div>
-                </div>
+            <% if top_attendees.empty? %>
+              <div class="empty-state-compact">No spells cast yet 🔮</div>
+            <% else %>
+              <div class="coven-podium-cards compact-podium">
+                <% top_attendees.take(3).each_with_index do |attendee, index| %>
+                  <% rank_classes = ['rank-first', 'rank-second', 'rank-third'] %>
+                  <% rank_emojis = ['🥇', '🥈', '🥉'] %>
+                  <% rank_titles = ['Grand Sorcerer', 'Arch-Phantom', 'Crypt Keeper'] %>
+                  <div class="podium-card-compact <%= rank_classes[index] %>">
+                    <span class="podium-rank-emoji"><%= rank_emojis[index] %></span>
+                    <div class="podium-frame-compact">
+                      <% if attendee[:image_url] && !attendee[:image_url].empty? %>
+                        <img class="podium-photo" src="<%= attendee[:image_url] %>" alt="<%= attendee[:person] %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                        <div class="podium-initials" style="display:none;"><%= attendee[:person][0].upcase %></div>
+                      <% else %>
+                        <div class="podium-initials"><%= attendee[:person][0].upcase %></div>
+                      <% end %>
+                    </div>
+                    <div class="podium-info-compact">
+                      <div class="podium-name-compact"><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></div>
+                      <div class="podium-meta-compact">
+                        <span class="podium-title-text"><%= rank_titles[index] %></span>
+                        <span class="flame-days">🔥 <strong><%= attendee[:days] %></strong>d</span>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
               </div>
             <% end %>
           </div>
 
-          <!-- Central Grand Boiling Cauldron -->
-          <div class="cauldron-vessel-stage" id="cauldronStage">
+          <!-- DEPARTED SPIRITS (Earlier Today Graveyard) -->
+          <div class="stage-card departed-card" data-section="recent">
+            <div class="card-header-compact">
+              <div class="card-title-compact">
+                <span class="icon">🪦</span>
+                <h3>Departed Spirits</h3>
+              </div>
+              <span class="card-subtitle-compact">Earlier Today</span>
+            </div>
+
+            <% if mapped_absent.empty? %>
+              <div class="empty-state-compact">No spirits departed yet 👻</div>
+            <% else %>
+              <div class="recent-list departed-graveyard-compact">
+                <% mapped_absent.take(6).each do |person| %>
+                  <div class="departed-tombstone-compact">
+                    <span class="rip-tag">RIP</span>
+                    <div class="ghost-portrait-compact">
+                      <% if person[:image_url] && !person[:image_url].empty? %>
+                        <img class="ghost-photo" src="<%= person[:image_url] %>" alt="<%= person[:person] %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                        <div class="ghost-initials" style="display:none;"><%= person[:person][0].upcase %></div>
+                      <% else %>
+                        <div class="ghost-initials"><%= person[:person][0].upcase %></div>
+                      <% end %>
+                    </div>
+                    <div class="departed-name-compact"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </aside>
+
+        <!-- CENTER STAGE: The Boiling Cauldron & Altar Flasks -->
+        <section class="stage-column column-cauldron" aria-label="The Boiling Cauldron of Presence">
+          <!-- The Animated Boiling Cauldron Vessel -->
+          <div class="cauldron-vessel-stage" id="cauldronStage" title="Click the cauldron to bubble and brew!">
             <!-- Rising Steam & Magical Bubbles -->
             <div class="cauldron-steam-container" aria-hidden="true">
               <div class="steam-puff steam-1"></div>
@@ -194,28 +240,20 @@
               <div class="magic-bubble bubble-2"></div>
               <div class="magic-bubble bubble-3"></div>
               <div class="magic-bubble bubble-4"></div>
-              <div class="magic-bubble bubble-5"></div>
             </div>
 
             <!-- Cauldron Pot Graphics -->
             <div class="cauldron-pot">
-              <div class="cauldron-potion-glow"></div>
               <div class="cauldron-rim">
-                <div class="potion-surface">
-                  <span class="bubble-pop bp-1"></span>
-                  <span class="bubble-pop bp-2"></span>
-                  <span class="bubble-pop bp-3"></span>
-                </div>
+                <div class="potion-surface"></div>
               </div>
               <div class="cauldron-belly">
                 <!-- Presence Count displayed directly on the Cauldron! -->
                 <div class="cauldron-stat stat-card" data-stat="present">
-                  <div class="cauldron-stat-glow"></div>
                   <div class="cauldron-count stat-number"><%= present_count %></div>
-                  <div class="cauldron-label">Souls in the Office 🎃</div>
+                  <div class="cauldron-label">Souls in Office 🎃</div>
                 </div>
               </div>
-              <!-- Cauldron Feet & Crackling Flame -->
               <div class="cauldron-feet">
                 <div class="foot foot-left"></div>
                 <div class="foot foot-right"></div>
@@ -224,207 +262,123 @@
                 <div class="fire-flame flame-1"></div>
                 <div class="fire-flame flame-2"></div>
                 <div class="fire-flame flame-3"></div>
-                <div class="fire-embers"></div>
               </div>
             </div>
           </div>
 
-          <!-- Right Altar Flasks -->
-          <div class="altar-flasks altar-flasks-right">
+          <!-- Enchanted Altar Flasks Stack -->
+          <div class="altar-flasks-stack">
+            <% if show_registered_users_tile %>
+              <div class="magic-flask-compact stat-card" data-stat="total">
+                <span class="flask-icon-compact">📜</span>
+                <div class="flask-content-compact">
+                  <div class="flask-number stat-number"><%= total_people %></div>
+                  <div class="flask-label">Coven Members</div>
+                </div>
+              </div>
+            <% end %>
+
+            <% if show_today_record_tile %>
+              <div class="magic-flask-compact stat-card" data-stat="daily-record">
+                <span class="flask-icon-compact">⚡</span>
+                <div class="flask-content-compact">
+                  <div class="flask-number stat-number"><%= daily_record %></div>
+                  <div class="flask-label">Today's Peak</div>
+                </div>
+              </div>
+            <% end %>
+
             <% if show_all_time_record_tile %>
-              <div class="magic-flask stat-card" data-stat="all-time-record" title="All-time highest concurrent presence">
-                <div class="flask-bubble-aura"></div>
-                <div class="flask-icon">🔮</div>
-                <div class="flask-data">
+              <div class="magic-flask-compact stat-card" data-stat="all-time-record">
+                <span class="flask-icon-compact">🔮</span>
+                <div class="flask-content-compact">
                   <div class="flask-number stat-number"><%= all_time_record %></div>
-                  <div class="flask-label">All-Time High Curse</div>
+                  <div class="flask-label">All-Time Curse</div>
                 </div>
               </div>
             <% end %>
 
             <% if last_week_winner %>
-              <div class="magic-flask winner-flask stat-card" data-stat="last-week-winner" data-last-week-winner title="Last week's attendance champion">
-                <div class="flask-bubble-aura gold-aura"></div>
-                <div class="winner-flask-row">
-                  <div class="winner-cauldron-avatar">
-                    <% if last_week_winner[:image_url] && !last_week_winner[:image_url].empty? %>
-                      <img src="<%= last_week_winner[:image_url] %>" alt="<%= last_week_winner[:person] %>" class="winner-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                      <div class="winner-initials-avatar" style="display:none;"><%= last_week_winner[:person][0].upcase %></div>
-                    <% else %>
-                      <div class="winner-initials-avatar"><%= last_week_winner[:person][0].upcase %></div>
-                    <% end %>
-                    <span class="winner-crown-prop">👑</span>
-                  </div>
-                  <div class="winner-flask-info">
-                    <div class="flask-badge">Reigning Supreme</div>
-                    <div class="badge-name"><%= last_week_winner[:person] %></div>
-                    <div class="badge-meta"><%= last_week_winner[:days] %> days</div>
-                  </div>
+              <div class="magic-flask-compact winner-flask-compact stat-card" data-stat="last-week-winner" data-last-week-winner>
+                <div class="winner-avatar-compact">
+                  <% if last_week_winner[:image_url] && !last_week_winner[:image_url].empty? %>
+                    <img src="<%= last_week_winner[:image_url] %>" alt="<%= last_week_winner[:person] %>" class="winner-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="winner-initials-avatar" style="display:none;"><%= last_week_winner[:person][0].upcase %></div>
+                  <% else %>
+                    <div class="winner-initials-avatar"><%= last_week_winner[:person][0].upcase %></div>
+                  <% end %>
+                  <span class="crown-mini">👑</span>
+                </div>
+                <div class="winner-info-compact">
+                  <span class="winner-badge-pill">Reigning Supreme</span>
+                  <div class="badge-name"><%= last_week_winner[:person] %></div>
+                  <div class="badge-meta"><%= last_week_winner[:days] %> days</div>
                 </div>
               </div>
             <% end %>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- ====================================================================
-           MAIN GALLERY: BIG PICTURES OF THE PEOPLE IN THE OFFICE
-           ==================================================================== -->
-      <section class="haunted-gallery-section" data-section="present" aria-label="People currently in the office">
-        <div class="section-header">
-          <div class="section-title">
-            <span class="icon">🕯️</span>
-            <h2>The Haunted Portrait Gallery</h2>
-            <span class="section-count-badge" id="presentCountBadge"><%= present_count %> in the crypt</span>
-          </div>
-          <div class="section-sub">Live presence portraits of mortals actively haunting the office</div>
-        </div>
-
-        <% if mapped_present.empty? %>
-          <div class="empty-state grand-empty-state">
-            <div class="empty-ghost-graphic">👻</div>
-            <div class="empty-title">The crypt is dead silent...</div>
-            <div class="empty-desc">No souls have arrived yet! Grab a coffee and be the first to awaken the spirits ☕🕯️</div>
-          </div>
-        <% else %>
-          <div class="people-list big-portraits-grid">
-            <% mapped_present.each_with_index do |person, idx| %>
-              <div class="person-card big-portrait-card status-<%= person[:status] || 'active' %>" data-mac="<%= person[:mac] %>" data-person-name="<%= person[:person] %>">
-                <!-- Large Gothic Portrait Frame -->
-                <div class="portrait-container big-portrait">
-                  <div class="vintage-frame big-frame">
-                    <!-- Spooky Costume Overlay (witch hat, vampire collar, etc.) -->
-                    <div class="costume-overlay costume-<%= idx % 6 %>" aria-hidden="true"></div>
-
-                    <% if person[:image_url] && !person[:image_url].empty? %>
-                      <img class="person-photo big-photo" src="<%= person[:image_url] %>" alt="<%= person[:person] %>" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
-                      <div class="spooky-avatar-fallback monster-<%= idx % 8 %>" style="display:none;">
-                        <span class="spooky-initials"><%= person[:person][0].upcase %></span>
-                      </div>
-                    <% else %>
-                      <div class="spooky-avatar-fallback monster-<%= idx % 8 %>">
-                        <span class="spooky-initials"><%= person[:person][0].upcase %></span>
-                      </div>
-                    <% end %>
-
-                    <!-- Ectoplasm / Candle glow aura -->
-                    <div class="aura-glow"></div>
-                    <!-- Corner Spiderweb -->
-                    <span class="corner-web" aria-hidden="true">🕸️</span>
-                  </div>
-                  <!-- Status Glow Indicator -->
-                  <div class="status-soul-flame status-<%= person[:status] || 'active' %>" title="Status: <%= person[:status] || 'active' %>"></div>
-                </div>
-
-                <div class="person-info">
-                  <div class="person-name-row">
-                    <h3 class="person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></h3>
-                  </div>
-                  <div class="person-role-title"><%= ['High Sorcerer', 'Phantom Lead', 'Crypt Architect', 'Witch of Quality', 'Necromancer', 'Werewolf Dev', 'Shadow Weaver', 'Alchemist'][idx % 8] %></div>
-                  <div class="person-device">
-                    <span class="device-icon">💻</span>
-                    <span class="device-text"><%= person[:device] || 'Mortal Device' %></span>
-                  </div>
-                  <div class="person-days-tag">
-                    <span class="pumpkin-tag">🎃 <%= person[:days] || 1 %> <%= (person[:days] || 1) == 1 ? 'day this week' : 'days this week' %></span>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </section>
-
-      <!-- ====================================================================
-           LOWER ROW: HIGH COUNCIL PODIUM & GRAVEYARD OF DEPARTED SPIRITS
-           ==================================================================== -->
-      <div class="lower-realms-row">
-        <!-- TOP ATTENDEES (The High Council of the Coven) -->
-        <div class="council-section" data-section="top-attendees">
-          <div class="section-header">
-            <div class="section-title">
-              <span class="icon">🧙‍♀️</span>
-              <h2>High Council of the Coven</h2>
+        <!-- RIGHT WING: The Haunted Portrait Gallery (Big Pictures) -->
+        <section class="stage-column column-gallery" data-section="present" aria-label="People currently in the office">
+          <div class="gallery-header-compact">
+            <div class="gallery-title-row">
+              <span class="icon">🕯️</span>
+              <h2>The Haunted Portrait Gallery</h2>
+              <span class="section-count-badge" id="presentCountBadge"><%= present_count %> in the crypt</span>
             </div>
-            <div class="section-meta">
-              <span class="week-range" data-week-range><%= "#{current_week_start} to #{current_week_end}" %></span>
-            </div>
+            <div class="gallery-sub-text">Live presence portraits of mortals actively haunting the office</div>
           </div>
 
-          <% if top_attendees.empty? %>
-            <div class="empty-state">No spells cast this week yet 🔮</div>
+          <% if mapped_present.empty? %>
+            <div class="empty-state-hero">
+              <div class="empty-ghost-graphic">👻</div>
+              <div class="empty-title">The crypt is dead silent...</div>
+              <div class="empty-desc">No souls are in the office yet — grab a coffee and be the first to awaken the spirits! ☕🕯️</div>
+            </div>
           <% else %>
-            <div class="coven-podium-cards">
-              <% top_attendees.take(3).each_with_index do |attendee, index| %>
-                <% rank_classes = ['rank-first', 'rank-second', 'rank-third'] %>
-                <% rank_emojis = ['🥇', '🥈', '🥉'] %>
-                <% rank_titles = ['Grand Sorcerer', 'Arch-Phantom', 'Crypt Keeper'] %>
-                <div class="podium-card <%= rank_classes[index] %>">
-                  <div class="podium-rank-badge">
-                    <span class="rank-medal"><%= rank_emojis[index] %></span>
-                  </div>
-                  <div class="podium-portrait-frame">
-                    <% if attendee[:image_url] && !attendee[:image_url].empty? %>
-                      <img class="podium-photo" src="<%= attendee[:image_url] %>" alt="<%= attendee[:person] %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
-                      <div class="podium-initials" style="display:none;"><%= attendee[:person][0].upcase %></div>
-                    <% else %>
-                      <div class="podium-initials"><%= attendee[:person][0].upcase %></div>
-                    <% end %>
-                    <div class="podium-halo"></div>
-                  </div>
-                  <div class="podium-info">
-                    <div class="podium-name"><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></div>
-                    <div class="podium-title"><%= rank_titles[index] %></div>
-                    <div class="podium-days">
-                      <span class="flame-icon">🔥</span>
-                      <strong><%= attendee[:days] %></strong> <%= attendee[:days] == 1 ? 'day' : 'days' %>
-                    </div>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
+            <div class="people-list hero-portraits-grid">
+              <% mapped_present.each_with_index do |person, idx| %>
+                <div class="person-card hero-portrait-card status-<%= person[:status] || 'active' %>" data-mac="<%= person[:mac] %>" data-person-name="<%= person[:person] %>">
+                  <!-- Large Gothic Portrait Frame -->
+                  <div class="portrait-container hero-portrait">
+                    <div class="vintage-frame hero-frame">
+                      <!-- Spooky Costume Overlay -->
+                      <div class="costume-overlay costume-<%= idx % 6 %>" aria-hidden="true"></div>
 
-        <!-- DEPARTED SPIRITS (Earlier Today) -->
-        <div class="departed-section" data-section="recent">
-          <div class="section-header">
-            <div class="section-title">
-              <span class="icon">🪦</span>
-              <h2>Departed Spirits</h2>
-            </div>
-            <span class="departed-subtitle">Visited Earlier Today</span>
-          </div>
-
-          <% if mapped_absent.empty? %>
-            <div class="empty-state">No spirits have departed into the shadows yet 👻</div>
-          <% else %>
-            <div class="recent-list departed-graveyard">
-              <% mapped_absent.take(8).each do |person| %>
-                <div class="departed-tombstone">
-                  <div class="tombstone-top">
-                    <span class="rip-text">R.I.P</span>
-                  </div>
-                  <div class="tombstone-content">
-                    <div class="ghost-portrait">
                       <% if person[:image_url] && !person[:image_url].empty? %>
-                        <img class="ghost-photo" src="<%= person[:image_url] %>" alt="<%= person[:person] %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
-                        <div class="ghost-initials" style="display:none;"><%= person[:person][0].upcase %></div>
+                        <img class="person-photo hero-photo" src="<%= person[:image_url] %>" alt="<%= person[:person] %>" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                        <div class="spooky-avatar-fallback monster-<%= idx % 8 %>" style="display:none;">
+                          <span class="spooky-initials"><%= person[:person][0].upcase %></span>
+                        </div>
                       <% else %>
-                        <div class="ghost-initials"><%= person[:person][0].upcase %></div>
+                        <div class="spooky-avatar-fallback monster-<%= idx % 8 %>">
+                          <span class="spooky-initials"><%= person[:person][0].upcase %></span>
+                        </div>
                       <% end %>
+
+                      <div class="aura-glow"></div>
+                      <span class="corner-web" aria-hidden="true">🕸️</span>
                     </div>
-                    <div class="departed-info">
-                      <div class="departed-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
-                      <div class="departed-status">👻 Left the crypt</div>
+                    <!-- Status Soul Flame -->
+                    <div class="status-soul-flame status-<%= person[:status] || 'active' %>" title="Status: <%= person[:status] || 'active' %>"></div>
+                  </div>
+
+                  <div class="person-info-compact">
+                    <h3 class="person-name-compact"><%= [person[:person], person[:medal]].compact.join(" ") %></h3>
+                    <div class="person-role-tag"><%= ['High Sorcerer', 'Phantom Lead', 'Crypt Architect', 'Witch of Quality', 'Necromancer', 'Werewolf Dev', 'Shadow Weaver', 'Alchemist'][idx % 8] %></div>
+                    <div class="person-device-line">
+                      <span class="device-icon">💻</span>
+                      <span class="device-text"><%= person[:device] || 'Mortal Device' %></span>
                     </div>
+                    <div class="pumpkin-days-tag">🎃 <%= person[:days] || 1 %> <%= (person[:days] || 1) == 1 ? 'day' : 'days' %></div>
                   </div>
                 </div>
               <% end %>
             </div>
           <% end %>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
 
     <!-- REGISTRATION MODAL -->
