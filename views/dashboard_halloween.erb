@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>🎃 The Haunted Office — Halloween Presence 🦇</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Cinzel:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/halloween.css">
+    <link rel="stylesheet" href="/css/registration_modal.css">
+    <link rel="preload" as="image" href="/img/halloween/background.svg">
+  </head>
+  <body class="halloween-theme">
+    <!-- Atmospheric Ambient Scene -->
+    <div class="halloween-bg-layer" aria-hidden="true">
+      <div class="fog-drift fog-drift-1"></div>
+      <div class="fog-drift fog-drift-2"></div>
+      <div class="floating-bats-container" id="batsContainer"></div>
+    </div>
+
+    <div class="container" id="dashboard">
+      <!-- HEADER -->
+      <header class="halloween-header">
+        <div class="header-left">
+          <div class="time-container">
+            <span class="candle-icon">🕯️</span>
+            <span class="current-time" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span>
+          </div>
+          <div class="header-titles">
+            <h1 class="glow-title">
+              <span class="spooky-emoji jack">🎃</span>
+              <span>The Haunted Office</span>
+              <span class="spooky-emoji ghost">👻</span>
+            </h1>
+            <div class="coven-tagline">Montevideo Coven & Spooky HQ</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="date-badge">
+            <span class="spider-icon">🕷️</span>
+            <span class="date"><%= now.strftime("%A, %B %d") %></span>
+          </div>
+          <div class="interactive-controls">
+            <button class="spooky-toggle-btn" id="soundToggleBtn" type="button" title="Toggle eerie sounds" aria-label="Toggle Halloween Sound Effects">
+              <span class="btn-icon">🔇</span>
+              <span class="btn-label">Spooky SFX</span>
+            </button>
+            <button class="spooky-toggle-btn active" id="costumeToggleBtn" type="button" title="Toggle Halloween costume props" aria-label="Toggle Halloween Costumes">
+              <span class="btn-icon">🧙</span>
+              <span class="btn-label">Costumes</span>
+            </button>
+            <button class="register-button summon-btn" id="openRegistrationBtn" type="button">
+              <span class="btn-sparkle">✨</span> Summon Device
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- STATS TILES -->
+      <div class="stats">
+        <% if show_in_office_tile %>
+          <div class="stat-card" data-stat="present">
+            <div class="stat-glow"></div>
+            <div class="stat-icon-wrapper">🎃</div>
+            <div class="stat-content">
+              <div class="stat-number"><%= present_count %></div>
+              <div class="stat-label">Haunting the Office 🦇</div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if show_registered_users_tile %>
+          <div class="stat-card" data-stat="total">
+            <div class="stat-glow"></div>
+            <div class="stat-icon-wrapper">📜</div>
+            <div class="stat-content">
+              <div class="stat-number"><%= total_people %></div>
+              <div class="stat-label">Coven Members 🔮</div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if show_today_record_tile %>
+          <div class="stat-card" data-stat="daily-record">
+            <div class="stat-glow"></div>
+            <div class="stat-icon-wrapper">⚡</div>
+            <div class="stat-content">
+              <div class="stat-number"><%= daily_record %></div>
+              <div class="stat-label">Peak Haunting Today 🕯️</div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if show_all_time_record_tile %>
+          <div class="stat-card" data-stat="all-time-record">
+            <div class="stat-glow"></div>
+            <div class="stat-icon-wrapper">🌟</div>
+            <div class="stat-content">
+              <div class="stat-number"><%= all_time_record %></div>
+              <div class="stat-label">All-Time High Curse 💀</div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if last_week_winner %>
+          <div class="stat-card last-week-winner" data-stat="last-week-winner" data-last-week-winner>
+            <div class="stat-glow"></div>
+            <div class="winner-card-inner">
+              <div class="badge-label">👑 Reigning Supreme 👑</div>
+              <div class="winner-row">
+                <div class="winner-frame">
+                  <% if last_week_winner[:image_url] && !last_week_winner[:image_url].empty? %>
+                    <img src="<%= last_week_winner[:image_url] %>" alt="<%= last_week_winner[:person] %>" class="winner-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="winner-initials-avatar" style="display:none;"><%= last_week_winner[:person][0].upcase %></div>
+                  <% else %>
+                    <div class="winner-initials-avatar"><%= last_week_winner[:person][0].upcase %></div>
+                  <% end %>
+                  <span class="winner-crown-prop">👑</span>
+                </div>
+                <div class="winner-info">
+                  <div class="badge-name"><%= last_week_winner[:person] %></div>
+                  <div class="badge-meta"><%= last_week_winner[:days] %> days (<%= last_week_winner[:week_start] %> to <%= last_week_winner[:week_end] %>)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- MAIN CONTENT COLUMNS -->
+      <div class="columns">
+        <!-- LEFT COLUMN: The Haunted Gallery (In Office) -->
+        <div class="column haunted-gallery-column" data-section="present">
+          <div class="section-header">
+            <div class="section-title">
+              <span class="icon">🕯️</span>
+              <h2>The Haunted Gallery</h2>
+              <span class="section-count-badge" id="presentCountBadge"><%= present_count %> present</span>
+            </div>
+            <div class="section-sub">Spirits actively haunting the premises</div>
+          </div>
+
+          <% if mapped_present.empty? %>
+            <div class="empty-state">
+              <div class="empty-icon">🏚️</div>
+              <div class="empty-title">The manor is dead silent...</div>
+              <div class="empty-desc">No souls are here yet — be the first to awaken the spirits! ☕🕯️</div>
+            </div>
+          <% else %>
+            <div class="people-list">
+              <% mapped_present.each_with_index do |person, idx| %>
+                <div class="person-card status-<%= person[:status] || 'active' %>" data-mac="<%= person[:mac] %>" data-person-name="<%= person[:person] %>">
+                  <!-- Haunted Vintage Portrait Frame -->
+                  <div class="portrait-container">
+                    <div class="vintage-frame">
+                      <!-- Costume Accessory Overlay (witch hat, vampire cloak, horns, etc.) -->
+                      <div class="costume-overlay costume-<%= idx % 6 %>" aria-hidden="true"></div>
+                      
+                      <% if person[:image_url] && !person[:image_url].empty? %>
+                        <img class="person-photo" src="<%= person[:image_url] %>" alt="<%= person[:person] %>" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                        <div class="spooky-avatar-fallback monster-<%= idx % 8 %>" style="display:none;">
+                          <span class="spooky-initials"><%= person[:person][0].upcase %></span>
+                        </div>
+                      <% else %>
+                        <div class="spooky-avatar-fallback monster-<%= idx % 8 %>">
+                          <span class="spooky-initials"><%= person[:person][0].upcase %></span>
+                        </div>
+                      <% end %>
+                      
+                      <!-- Ectoplasm / Candle glow aura -->
+                      <div class="aura-glow"></div>
+                      <!-- Corner Spiderweb -->
+                      <span class="corner-web" aria-hidden="true">🕸️</span>
+                    </div>
+                  </div>
+
+                  <div class="person-info">
+                    <div class="person-header-line">
+                      <div class="person-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                      <span class="status-wisp status-<%= person[:status] || 'active' %>" title="Status: <%= person[:status] || 'active' %>"></span>
+                    </div>
+                    <div class="person-device">
+                      <span class="device-icon">💻</span>
+                      <span><%= person[:device] || 'Mortal Device' %></span>
+                    </div>
+                    <div class="person-days-tag">
+                      <span class="pumpkin-tag">🎃 <%= person[:days] || 1 %> <%= (person[:days] || 1) == 1 ? 'day' : 'days' %></span>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- RIGHT COLUMN: Top Attendees + Departed Spirits -->
+        <div class="right-column-sections">
+          <!-- TOP ATTENDEES (The High Coven Podium) -->
+          <div class="right-section high-coven-section" data-section="top-attendees">
+            <div class="section-header">
+              <div class="section-title">
+                <span class="icon">🧙‍♀️</span>
+                <h3>High Council of the Coven</h3>
+              </div>
+              <div class="section-meta">
+                <span class="week-range" data-week-range><%= "#{current_week_start} to #{current_week_end}" %></span>
+              </div>
+            </div>
+
+            <% if top_attendees.empty? %>
+              <div class="empty-state">No spells cast this week yet 🔮</div>
+            <% else %>
+              <div class="coven-podium-container">
+                <% top_attendees.take(3).each_with_index do |attendee, index| %>
+                  <% rank_classes = ['rank-first', 'rank-second', 'rank-third'] %>
+                  <% rank_emojis = ['🥇', '🥈', '🥉'] %>
+                  <% rank_titles = ['Grand Sorcerer', 'Arch-Phantom', 'Crypt Keeper'] %>
+                  <div class="podium-card <%= rank_classes[index] %>">
+                    <div class="podium-rank-badge">
+                      <span class="rank-medal"><%= rank_emojis[index] %></span>
+                    </div>
+                    <div class="podium-portrait-frame">
+                      <% if attendee[:image_url] && !attendee[:image_url].empty? %>
+                        <img class="podium-photo" src="<%= attendee[:image_url] %>" alt="<%= attendee[:person] %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                        <div class="podium-initials" style="display:none;"><%= attendee[:person][0].upcase %></div>
+                      <% else %>
+                        <div class="podium-initials"><%= attendee[:person][0].upcase %></div>
+                      <% end %>
+                      <div class="podium-halo"></div>
+                    </div>
+                    <div class="podium-info">
+                      <div class="podium-name"><%= [attendee[:person], attendee[:medal]].compact.join(" ") %></div>
+                      <div class="podium-title"><%= rank_titles[index] %></div>
+                      <div class="podium-days">
+                        <span class="flame-icon">🔥</span>
+                        <strong><%= attendee[:days] %></strong> <%= attendee[:days] == 1 ? 'day' : 'days' %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- DEPARTED SPIRITS (Earlier Today) -->
+          <div class="right-section departed-spirits-section" data-section="recent">
+            <div class="section-header">
+              <div class="section-title">
+                <span class="icon">🪦</span>
+                <h3>Departed Spirits</h3>
+              </div>
+              <span class="departed-subtitle">Visited Earlier Today</span>
+            </div>
+
+            <% if mapped_absent.empty? %>
+              <div class="empty-state">No spirits have departed into the shadows yet 👻</div>
+            <% else %>
+              <div class="recent-list departed-graveyard">
+                <% mapped_absent.take(8).each_with_index do |person, idx| %>
+                  <div class="departed-tombstone">
+                    <div class="tombstone-top">
+                      <span class="rip-text">R.I.P</span>
+                    </div>
+                    <div class="tombstone-content">
+                      <div class="ghost-portrait">
+                        <% if person[:image_url] && !person[:image_url].empty? %>
+                          <img class="ghost-photo" src="<%= person[:image_url] %>" alt="<%= person[:person] %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                          <div class="ghost-initials" style="display:none;"><%= person[:person][0].upcase %></div>
+                        <% else %>
+                          <div class="ghost-initials"><%= person[:person][0].upcase %></div>
+                        <% end %>
+                      </div>
+                      <div class="departed-info">
+                        <div class="departed-name"><%= [person[:person], person[:medal]].compact.join(" ") %></div>
+                        <div class="departed-status">👻 Left the crypt</div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTRATION MODAL (Same contract as all templates) -->
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <!-- Audio / Visual interactive toast container -->
+    <div class="spooky-toast-container" id="spookyToastContainer" aria-live="polite"></div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/halloween.js"></script>
+  </body>
+</html>

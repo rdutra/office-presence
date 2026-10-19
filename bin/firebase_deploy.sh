@@ -16,7 +16,7 @@ while [[ $# -gt 0 ]]; do
             TEMPLATE="$2"
             shift 2
             ;;
-            modern|geocities|christmas|summer|easter|autumn|spring|worldcup|stickers|nostalgia|enterprise)
+            modern|geocities|christmas|summer|easter|autumn|spring|worldcup|stickers|nostalgia|enterprise|halloween)
             TEMPLATE="$1"
             shift
             ;;
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  TEMPLATE               Template to deploy (shorthand)"
-            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, spring, worldcup, stickers, nostalgia, enterprise)"
+            echo "  --template TEMPLATE    Template to deploy (modern, geocities, christmas, summer, easter, autumn, spring, worldcup, stickers, nostalgia, enterprise, halloween)"
             echo "                         Default: modern"
             echo ""
             echo "Examples:"

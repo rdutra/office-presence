@@ -234,11 +234,17 @@ module OfficePresence
 
         return nil unless winner
 
+        winner_person = person_model.db[:people].where(user_id: winner[:user_id]).first ||
+                        person_model.db[:people].where(mac: winner[:person_mac]).first ||
+                        person_model.db[:people].where(person: winner[:person]).first
+        image_url = winner_person ? winner_person[:image_url] : nil
+
         {
           person: winner_display_name(winner),
           days: winner[:days],
           week_start: winner[:week_start],
-          week_end: winner[:week_end]
+          week_end: winner[:week_end],
+          image_url: image_url
         }
       end
 

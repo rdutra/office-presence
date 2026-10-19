@@ -1,0 +1,1194 @@
+/* ==========================================================================
+   THE HAUNTED OFFICE — HALLOWEEN DASHBOARD THEME
+   ========================================================================== */
+
+:root {
+  --bg-deep: #07030e;
+  --bg-card: rgba(18, 9, 31, 0.88);
+  --bg-card-hover: rgba(26, 13, 44, 0.95);
+  --border-purple: rgba(157, 78, 221, 0.35);
+  --border-orange: rgba(255, 117, 24, 0.5);
+  --pumpkin-orange: #ff7518;
+  --pumpkin-bright: #ff9233;
+  --pumpkin-glow: rgba(255, 117, 24, 0.4);
+  --ectoplasm-green: #39ff14;
+  --ectoplasm-glow: rgba(57, 255, 20, 0.45);
+  --ghost-purple: #9d4edd;
+  --ghost-purple-light: #c77dff;
+  --witch-magenta: #e0218a;
+  --candle-gold: #ffbe0b;
+  --candle-glow: rgba(255, 190, 11, 0.4);
+  --blood-red: #d90429;
+  --tombstone-grey: #4a4556;
+  --text-main: #f8f6fc;
+  --text-muted: #b8a9c9;
+  --text-dim: #7d6f8f;
+  --font-gothic: 'Cinzel', 'Georgia', serif;
+  --font-spooky: 'Creepster', cursive, sans-serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Base Body Setup */
+body.halloween-theme {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg-deep);
+  background-image: url('/img/halloween/background.svg');
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  position: relative;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Atmospheric Fog & Ambient Particles */
+.halloween-bg-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.fog-drift {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 250px;
+  background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.15) 0%, rgba(18, 9, 31, 0) 70%);
+  filter: blur(30px);
+  animation: fogDrift 28s ease-in-out infinite alternate;
+}
+
+.fog-drift-2 {
+  bottom: 40px;
+  background: radial-gradient(ellipse at center, rgba(255, 117, 24, 0.08) 0%, rgba(7, 3, 14, 0) 70%);
+  animation: fogDrift 38s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes fogDrift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-40%); }
+}
+
+/* Flying Bats Animation Container */
+.floating-bats-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.floating-bat {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.6;
+  user-select: none;
+  pointer-events: none;
+  animation: flyBat linear infinite;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+}
+
+@keyframes flyBat {
+  0% {
+    transform: translate(-100px, var(--start-y, 100px)) scale(var(--scale, 1)) rotate(5deg);
+  }
+  25% {
+    transform: translate(25vw, calc(var(--start-y, 100px) - 40px)) scale(var(--scale, 1)) rotate(-8deg);
+  }
+  50% {
+    transform: translate(55vw, calc(var(--start-y, 100px) + 20px)) scale(var(--scale, 1)) rotate(6deg);
+  }
+  75% {
+    transform: translate(80vw, calc(var(--start-y, 100px) - 30px)) scale(var(--scale, 1)) rotate(-4deg);
+  }
+  100% {
+    transform: translate(calc(100vw + 100px), var(--start-y, 100px)) scale(var(--scale, 1)) rotate(5deg);
+  }
+}
+
+/* Layout Container */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.halloween-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  padding: 1.25rem 1.75rem;
+  background: rgba(14, 7, 24, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-purple);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.time-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(30, 15, 50, 0.8);
+  border: 1px solid var(--border-orange);
+  border-radius: 12px;
+  box-shadow: 0 0 15px var(--pumpkin-glow);
+}
+
+.candle-icon {
+  font-size: 1.25rem;
+  animation: flicker 1.8s infinite alternate;
+}
+
+@keyframes flicker {
+  0%, 100% { filter: drop-shadow(0 0 4px #ffbe0b); opacity: 1; }
+  50% { filter: drop-shadow(0 0 8px #ff7518); opacity: 0.85; }
+}
+
+.current-time {
+  font-family: var(--font-gothic);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--candle-gold);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(255, 190, 11, 0.5);
+}
+
+.header-titles h1 {
+  margin: 0;
+  font-family: var(--font-gothic);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-shadow: 0 0 12px var(--pumpkin-glow), 0 2px 4px #000;
+}
+
+.spooky-emoji.jack {
+  display: inline-block;
+  animation: floatBounce 3s ease-in-out infinite;
+}
+
+.spooky-emoji.ghost {
+  display: inline-block;
+  animation: floatBounce 3.5s ease-in-out infinite reverse;
+}
+
+@keyframes floatBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.coven-tagline {
+  font-size: 0.88rem;
+  color: var(--pumpkin-bright);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.date-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(22, 11, 38, 0.7);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.interactive-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.spooky-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  background: rgba(25, 12, 45, 0.9);
+  border: 1px solid var(--border-purple);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spooky-toggle-btn:hover {
+  background: rgba(45, 20, 80, 0.95);
+  border-color: var(--ghost-purple-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3);
+}
+
+.spooky-toggle-btn.active {
+  border-color: var(--pumpkin-orange);
+  background: rgba(50, 20, 30, 0.9);
+  color: var(--pumpkin-bright);
+  box-shadow: 0 0 10px var(--pumpkin-glow);
+}
+
+.register-button.summon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(135deg, #ff7518 0%, #b5179e 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 117, 24, 0.45);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.register-button.summon-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(255, 117, 24, 0.6);
+  filter: brightness(1.1);
+}
+
+/* ==========================================================================
+   STATS TILES
+   ========================================================================== */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.1rem;
+}
+
+.stat-card {
+  position: relative;
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-purple);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--pumpkin-orange);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 18px var(--pumpkin-glow);
+}
+
+.stat-icon-wrapper {
+  font-size: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  filter: drop-shadow(0 0 8px rgba(255, 117, 24, 0.3));
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-family: var(--font-gothic);
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Last Week Winner Stat Tile */
+.stat-card.last-week-winner {
+  border: 1px solid rgba(255, 190, 11, 0.4);
+  background: linear-gradient(135deg, rgba(35, 15, 55, 0.9) 0%, rgba(20, 8, 35, 0.95) 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 190, 11, 0.15);
+}
+
+.winner-card-inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.winner-card-inner .badge-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--candle-gold);
+  margin-bottom: 0.4rem;
+}
+
+.winner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.winner-frame {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid var(--candle-gold);
+  box-shadow: 0 0 10px rgba(255, 190, 11, 0.4);
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.winner-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.winner-initials-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b5179e 0%, #7209b7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-gothic);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.winner-crown-prop {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  font-size: 1.1rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+  animation: floatBounce 2.5s infinite;
+}
+
+.winner-info .badge-name {
+  font-family: var(--font-gothic);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.winner-info .badge-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* ==========================================================================
+   COLUMNS LAYOUT
+   ========================================================================== */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Common Section Header */
+.section-header {
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border-purple);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.section-title h2,
+.section-title h3 {
+  margin: 0;
+  font-family: var(--font-gothic);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+}
+
+.section-title .icon {
+  font-size: 1.4rem;
+}
+
+.section-sub {
+  font-size: 0.82rem;
+  color: var(--pumpkin-bright);
+}
+
+.section-count-badge {
+  background: rgba(255, 117, 24, 0.2);
+  border: 1px solid var(--border-orange);
+  color: var(--pumpkin-bright);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: rgba(14, 7, 24, 0.7);
+  border: 1px dashed var(--border-purple);
+  border-radius: 16px;
+  color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 0.6rem;
+  filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.3));
+}
+
+.empty-state .empty-title {
+  font-family: var(--font-gothic);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+
+.empty-state .empty-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   LEFT COLUMN: THE HAUNTED GALLERY (Present People Cards)
+   ========================================================================== */
+.haunted-gallery-column {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-purple);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.people-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.1rem;
+}
+
+/* Person Card */
+.person-card {
+  position: relative;
+  background: rgba(26, 12, 45, 0.85);
+  border: 1px solid var(--border-purple);
+  border-radius: 16px;
+  padding: 1rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.25s ease, box-shadow 0.25s ease;
+  overflow: visible;
+}
+
+.person-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--pumpkin-orange);
+  background: var(--bg-card-hover);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 16px var(--pumpkin-glow);
+}
+
+.person-card.status-active {
+  border-left: 4px solid var(--ectoplasm-green);
+}
+
+.person-card.status-inactive {
+  border-left: 4px solid var(--tombstone-grey);
+  opacity: 0.75;
+}
+
+/* Portrait Frame Styling */
+.portrait-container {
+  position: relative;
+  flex-shrink: 0;
+  width: 68px;
+  height: 68px;
+}
+
+.vintage-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: #10061d;
+  border: 2.5px solid var(--pumpkin-orange);
+  box-shadow: 0 0 12px var(--pumpkin-glow), inset 0 0 8px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.person-card:hover .vintage-frame {
+  border-color: var(--ectoplasm-green);
+  box-shadow: 0 0 18px var(--ectoplasm-glow), inset 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.person-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 13px;
+  transition: filter 0.3s ease, transform 0.3s ease;
+  filter: contrast(1.05) saturate(1.1);
+}
+
+.person-card:hover .person-photo {
+  transform: scale(1.06);
+}
+
+/* Corner Spiderweb on portrait */
+.corner-web {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  pointer-events: none;
+  filter: drop-shadow(0 0 2px #000);
+}
+
+/* Fallback monster avatars when image_url is missing */
+.spooky-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-gothic);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.monster-0 { background: linear-gradient(135deg, #d90429 0%, #7209b7 100%); }
+.monster-1 { background: linear-gradient(135deg, #ff7518 0%, #b5179e 100%); }
+.monster-2 { background: linear-gradient(135deg, #38b000 0%, #007200 100%); }
+.monster-3 { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); }
+.monster-4 { background: linear-gradient(135deg, #7209b7 0%, #3f37c9 100%); }
+.monster-5 { background: linear-gradient(135deg, #f72585 0%, #7209b7 100%); }
+.monster-6 { background: linear-gradient(135deg, #ffbe0b 0%, #fb5607 100%); }
+.monster-7 { background: linear-gradient(135deg, #2b2d42 0%, #1a1a2e 100%); }
+
+/* Costume Overlays */
+body.halloween-theme .costume-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+}
+
+body.halloween-theme:not(.show-costumes) .costume-overlay {
+  display: none !important;
+}
+
+/* Costume 0: Witch Hat */
+.costume-0::before {
+  content: '🧙';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-12deg);
+  font-size: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Costume 1: Vampire Fangs / Bat */
+.costume-1::before {
+  content: '🧛';
+  position: absolute;
+  top: -14px;
+  right: -8px;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Costume 2: Pumpkin Hat */
+.costume-2::before {
+  content: '🎃';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Costume 3: Devil Horns */
+.costume-3::before {
+  content: '😈';
+  position: absolute;
+  top: -14px;
+  left: -6px;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Costume 4: Ghost Hood */
+.costume-4::before {
+  content: '👻';
+  position: absolute;
+  top: -14px;
+  right: -8px;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Costume 5: Skull / Skeleton */
+.costume-5::before {
+  content: '💀';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(8deg);
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* Person Info Details */
+.person-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.person-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.person-name {
+  font-family: var(--font-gothic);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.02em;
+}
+
+.status-wisp {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-wisp.status-active {
+  background: var(--ectoplasm-green);
+  box-shadow: 0 0 10px var(--ectoplasm-green);
+  animation: pulseWisp 2s infinite alternate;
+}
+
+.status-wisp.status-inactive {
+  background: var(--tombstone-grey);
+  box-shadow: none;
+}
+
+@keyframes pulseWisp {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 14px var(--ectoplasm-green); }
+}
+
+.person-device {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-days-tag {
+  margin-top: 0.15rem;
+}
+
+.pumpkin-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 117, 24, 0.18);
+  border: 1px solid rgba(255, 117, 24, 0.35);
+  color: var(--pumpkin-bright);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+}
+
+/* ==========================================================================
+   RIGHT COLUMN: COVEN PODIUM & DEPARTED GRAVEYARD
+   ========================================================================== */
+.right-column-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.right-section {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-purple);
+  border-radius: 20px;
+  padding: 1.35rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.week-range {
+  font-size: 0.8rem;
+  color: var(--candle-gold);
+  background: rgba(255, 190, 11, 0.12);
+  border: 1px solid rgba(255, 190, 11, 0.3);
+  padding: 0.2rem 0.55rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Coven Podium Cards */
+.coven-podium-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.podium-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(25, 12, 42, 0.8);
+  border: 1px solid var(--border-purple);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.podium-card:hover {
+  transform: translateX(4px);
+}
+
+.podium-card.rank-first {
+  border-color: rgba(255, 190, 11, 0.6);
+  background: linear-gradient(135deg, rgba(45, 25, 15, 0.85) 0%, rgba(25, 12, 42, 0.8) 100%);
+  box-shadow: 0 4px 18px rgba(255, 190, 11, 0.2);
+}
+
+.podium-card.rank-second {
+  border-color: rgba(200, 205, 225, 0.5);
+  background: linear-gradient(135deg, rgba(30, 25, 45, 0.85) 0%, rgba(20, 12, 38, 0.8) 100%);
+}
+
+.podium-card.rank-third {
+  border-color: rgba(205, 127, 50, 0.5);
+  background: linear-gradient(135deg, rgba(35, 20, 25, 0.85) 0%, rgba(20, 12, 38, 0.8) 100%);
+}
+
+.podium-rank-badge {
+  font-size: 1.6rem;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.podium-portrait-frame {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  border: 2px solid var(--border-purple);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.podium-card.rank-first .podium-portrait-frame {
+  border-color: var(--candle-gold);
+  box-shadow: 0 0 10px rgba(255, 190, 11, 0.5);
+}
+
+.podium-card.rank-second .podium-portrait-frame {
+  border-color: #cbd5e1;
+  box-shadow: 0 0 8px rgba(203, 213, 225, 0.4);
+}
+
+.podium-card.rank-third .podium-portrait-frame {
+  border-color: #cd7f32;
+  box-shadow: 0 0 8px rgba(205, 127, 50, 0.4);
+}
+
+.podium-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.podium-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7209b7 0%, #3a0ca3 100%);
+  font-family: var(--font-gothic);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.podium-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.podium-name {
+  font-family: var(--font-gothic);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.podium-title {
+  font-size: 0.75rem;
+  color: var(--pumpkin-bright);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.1rem;
+}
+
+.podium-days {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.podium-days strong {
+  color: var(--candle-gold);
+}
+
+/* ==========================================================================
+   DEPARTED GRAVEYARD (Earlier Today)
+   ========================================================================== */
+.departed-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.departed-graveyard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+
+.departed-tombstone {
+  background: rgba(20, 12, 32, 0.85);
+  border: 1px solid rgba(120, 110, 140, 0.3);
+  border-radius: 18px 18px 8px 8px;
+  padding: 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.departed-tombstone:hover {
+  transform: translateY(-3px);
+  border-color: var(--ghost-purple-light);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(157, 78, 221, 0.3);
+}
+
+.tombstone-top {
+  margin-bottom: 0.4rem;
+}
+
+.rip-text {
+  font-family: var(--font-gothic);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+}
+
+.ghost-portrait {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(157, 78, 221, 0.4);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 0 8px rgba(157, 78, 221, 0.3);
+  background: #110820;
+}
+
+.ghost-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(85%) opacity(0.8) contrast(1.1);
+  transition: filter 0.25s ease;
+}
+
+.departed-tombstone:hover .ghost-photo {
+  filter: grayscale(20%) opacity(1);
+}
+
+.ghost-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 40, 80, 0.8);
+  font-family: var(--font-gothic);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.departed-info {
+  width: 100%;
+}
+
+.departed-name {
+  font-family: var(--font-gothic);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.departed-status {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
+}
+
+/* ==========================================================================
+   SPOOKY ARRIVAL TOAST (When new people arrive)
+   ========================================================================== */
+.spooky-toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.spooky-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.25rem;
+  background: rgba(18, 8, 32, 0.96);
+  border: 1.5px solid var(--pumpkin-orange);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px var(--pumpkin-glow);
+  color: #fff;
+  animation: slideInToast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), fadeOutToast 0.5s ease 4.5s forwards;
+}
+
+@keyframes slideInToast {
+  0% { transform: translateY(30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeOutToast {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+.toast-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1.5px solid var(--pumpkin-orange);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.toast-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.toast-avatar .toast-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ghost-purple);
+  font-family: var(--font-gothic);
+  font-weight: 800;
+}
+
+.toast-message {
+  font-size: 0.9rem;
+}
+
+.toast-message strong {
+  color: var(--pumpkin-bright);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 1rem 2.5rem;
+  }
+
+  .halloween-header {
+    padding: 1rem;
+  }
+
+  .header-left {
+    gap: 0.75rem;
+  }
+
+  .header-titles h1 {
+    font-size: 1.5rem;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .people-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fog-drift,
+  .floating-bat,
+  .spooky-emoji.jack,
+  .spooky-emoji.ghost,
+  .candle-icon,
+  .status-wisp.status-active,
+  .winner-crown-prop {
+    animation: none !important;
+  }
+}

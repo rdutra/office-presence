@@ -14,7 +14,7 @@ require "stringio"
 TEMPLATE_NAME = ARGV[0] || "modern"
 
 # Validate template name
-valid_templates = %w[modern geocities christmas summer easter autumn spring worldcup stickers nostalgia enterprise]
+valid_templates = %w[modern geocities christmas summer easter autumn spring worldcup stickers nostalgia enterprise halloween]
 unless valid_templates.include?(TEMPLATE_NAME)
   puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
   puts "Valid templates: #{valid_templates.join(', ')}"
@@ -330,6 +330,8 @@ rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"><
 
 if TEMPLATE_NAME == "spring"
   rendered_html = rendered_html.sub('<script src="/js/spring.js"></script>', "<script>window.firebaseMode = true;</script>\n    <script src=\"/js/spring.js\"></script>")
+elsif TEMPLATE_NAME == "halloween"
+  rendered_html = rendered_html.sub('<script src="/js/halloween.js"></script>', "<script>window.FIREBASE_MODE = true;</script>\n    <script src=\"/js/halloween.js\"></script>")
 end
 
 # Add Firebase JavaScript before closing body tag
