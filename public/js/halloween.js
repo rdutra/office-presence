@@ -140,7 +140,12 @@ class HalloweenDashboard {
 
   updateDashboard(data) {
     if (!data) return;
-    const people = Array.isArray(data.mapped_present) ? data.mapped_present : [];
+    const people = (Array.isArray(data.mapped_present) ? data.mapped_present : [])
+      .slice()
+      .sort((a, b) => {
+        const nameOrder = String(a?.person ?? '').localeCompare(String(b?.person ?? ''));
+        return nameOrder || String(a?.mac ?? '').localeCompare(String(b?.mac ?? ''));
+      });
     this.people = people;
     if (this.presentCount) this.presentCount.textContent = data.present_count ?? people.length;
     this.updateClock(data.now);
