@@ -117,9 +117,8 @@ class HalloweenDashboard {
 
   performAutoFloorScroll() {
     if (document.hidden || this.previewActive) return;
-    const occupiedFloorCount = Math.ceil(this.people.length / this.floorCapacity);
-    if (occupiedFloorCount <= 1) return;
     const floorCount = this.track?.querySelectorAll('[data-floor-index]').length || 1;
+    if (floorCount <= 1) return;
 
     let nextFloor = this.currentFloor + this.autoFloorDirection;
     if (nextFloor < 0 || nextFloor >= floorCount) {
@@ -443,8 +442,8 @@ class HalloweenDashboard {
     };
     document.addEventListener('pointerdown', unlockAudio);
     document.addEventListener('keydown', unlockAudio);
-    window.setTimeout(sendBat, 12000);
-    window.setInterval(sendBat, 90000);
+    window.setTimeout(sendBat, 18000);
+    window.setInterval(sendBat, 120000);
   }
 
   startWitchCackle() {
