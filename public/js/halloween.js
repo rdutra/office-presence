@@ -227,7 +227,7 @@ class HalloweenDashboard {
     const frames = ['portrait-frame-autumn.png', 'portrait-frame-pumpkin.png', 'portrait-frame-moon.png', 'portrait-frame-ivy.png'];
     const frame = frames[index % frames.length];
     const image = person?.image_url
-      ? `<img class="portrait-photo" src="${this.escapeHtml(person.image_url)}" alt="Portrait of ${this.escapeHtml(rawName)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="portrait-initial" hidden>${this.escapeHtml(rawName.trim().charAt(0).toUpperCase() || '?')}</span>`
+      ? `<img class="portrait-photo" src="${this.escapeHtml(person.image_url)}" alt="Portrait of ${this.escapeHtml(rawName)}" loading="eager" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="portrait-initial" hidden>${this.escapeHtml(rawName.trim().charAt(0).toUpperCase() || '?')}</span>`
       : `<span class="portrait-initial">${this.escapeHtml(rawName.trim().charAt(0).toUpperCase() || '?')}</span>`;
 
     return `
@@ -443,8 +443,8 @@ class HalloweenDashboard {
     };
     document.addEventListener('pointerdown', unlockAudio);
     document.addEventListener('keydown', unlockAudio);
-    window.setTimeout(sendBat, 6000);
-    window.setInterval(sendBat, 45000);
+    window.setTimeout(sendBat, 12000);
+    window.setInterval(sendBat, 90000);
   }
 
   startWitchCackle() {
