@@ -85,11 +85,16 @@ body.halloween-theme {
   57%, 100% { opacity: 0; transform: translate(calc(var(--crawl-x) + 5px), calc(var(--crawl-y) + 7px)) rotate(38deg); }
 }
 .bat-flock { position: absolute; z-index: 3; inset: 0; overflow: hidden; pointer-events: none; }
-.flying-bat { position: absolute; top: var(--bat-height); left: -45px; color: #090807; font-size: var(--bat-size); opacity: .58; filter: drop-shadow(0 1px 3px rgba(203,164,91,.45)); animation: bat-flight var(--bat-duration) linear forwards; }
+.bat-pack { position: absolute; top: var(--bat-height); left: -90px; width: 0; height: 0; opacity: .85; filter: drop-shadow(0 0 6px rgba(231,177,83,.65)) drop-shadow(0 2px 5px rgba(0,0,0,.6)); animation: bat-flight var(--bat-duration) linear forwards; }
+.flying-bat { position: absolute; left: var(--bat-x); top: var(--bat-y); width: var(--bat-size); height: auto; animation: bat-flap var(--bat-flap) ease-in-out infinite; }
 @keyframes bat-flight {
   0% { transform: translateX(0) translateY(0) scale(.8); }
   48% { transform: translateX(52vw) translateY(-18px) scale(1); }
-  100% { transform: translateX(calc(100vw + 90px)) translateY(8px) scale(.85); }
+  100% { transform: translateX(calc(100vw + 180px)) translateY(8px) scale(.85); }
+}
+@keyframes bat-flap {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-7px) scaleY(.78); }
 }
 
 .floor-window { position: relative; z-index: 1; width: 100%; flex: 1; min-height: 0; overflow: auto; scroll-snap-type: none; scrollbar-width: none; outline: none; }
@@ -113,6 +118,7 @@ body.halloween-theme {
 .portrait-frame { position: relative; width: auto; height: min(calc(100% - 34px), 350px); max-width: 100%; aspect-ratio: 2 / 3; }
 .portrait-photo, .portrait-initial { position: absolute; z-index: 0; top: 14%; left: 14%; width: 72%; height: 72%; object-fit: cover; background: #211910; filter: sepia(.14) saturate(.78) contrast(1.03); }
 .portrait-initial { display: grid; place-items: center; color: #e4c27d; background: radial-gradient(circle, #62502f, #1a1711 72%); font: 700 clamp(34px, 4vw, 58px) 'Cinzel', Georgia, serif; }
+.portrait-photo[hidden], .portrait-initial[hidden] { display: none; }
 .frame-art { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
 .portrait-caption { position: relative; z-index: 3; max-width: 100%; margin-top: -2px; padding: 0 9px; color: #f3e3c4; font: 700 clamp(10px, 1.1vw, 14px)/1.2 'Cinzel', Georgia, serif; text-shadow: 0 2px 5px #000, 0 0 9px #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .portrait-status { position: absolute; z-index: 4; top: 12%; right: 16%; width: 9px; height: 9px; border: 1px solid #28200f; border-radius: 50%; background: #9aa762; box-shadow: 0 0 10px rgba(174,201,96,.8); }

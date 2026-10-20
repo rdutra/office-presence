@@ -28,6 +28,7 @@ class HalloweenDashboard {
     this.setupNavigation();
     this.startAutoFloorScroll();
     this.startAmbientBats();
+    this.startWitchCackle();
     if (typeof loadDeviceInfo === 'function') loadDeviceInfo();
 
     if (!window.FIREBASE_MODE) {
@@ -86,6 +87,8 @@ class HalloweenDashboard {
         event.preventDefault();
         this.toggleStairPreview();
         this.resetAutoFloorScroll();
+      } else if (event.key.toLowerCase() === 'b') {
+        this.sendBatPack?.();
       } else if (event.key === 'Escape' && this.previewActive) {
         this.returnToStairOrigin();
       }
@@ -383,19 +386,82 @@ class HalloweenDashboard {
   startAmbientBats() {
     const flock = document.getElementById('batFlock');
     if (!flock || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    const sendBat = () => {
-      const bat = document.createElement('span');
-      const duration = 13 + Math.random() * 10;
-      bat.className = 'flying-bat';
-      bat.textContent = '🦇';
-      bat.style.setProperty('--bat-height', `${8 + Math.random() * 43}%`);
-      bat.style.setProperty('--bat-duration', `${duration}s`);
-      bat.style.setProperty('--bat-size', `${14 + Math.random() * 14}px`);
-      flock.appendChild(bat);
-      window.setTimeout(() => bat.remove(), duration * 1000);
+    this.batSound = new Audio('/audio/bat-fly.mp3');
+    this.batSound.preload = 'auto';
+    this.batSound.volume = 0.55;
+    const playBatSound = () => {
+      const sound = this.batSound;
+      if (!sound) return;
+      try { sound.currentTime = 0; } catch (error) { /* not seekable yet */ }
+      const played = sound.play();
+      if (played?.catch) {
+        played.catch(() => {
+          const retry = () => {
+            document.removeEventListener('pointerdown', retry);
+            document.removeEventListener('keydown', retry);
+            try { sound.currentTime = 0; } catch (error) { /* ignore */ }
+            sound.play().catch(() => {});
+          };
+          document.addEventListener('pointerdown', retry);
+          document.addEventListener('keydown', retry);
+        });
+      }
     };
-    window.setTimeout(sendBat, 2200);
-    window.setInterval(sendBat, 11500);
+    const sendBat = () => {
+      const pack = document.createElement('div');
+      const duration = 13 + Math.random() * 10;
+      pack.className = 'bat-pack';
+      pack.style.setProperty('--bat-height', `${8 + Math.random() * 43}%`);
+      pack.style.setProperty('--bat-duration', `${duration}s`);
+      const batCount = 4 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < batCount; i += 1) {
+        const bat = document.createElement('img');
+        bat.className = 'flying-bat';
+        bat.src = '/img/halloween/bat.png';
+        bat.alt = '';
+        bat.setAttribute('aria-hidden', 'true');
+        const column = Math.ceil(i / 2);
+        const side = i === 0 ? 0 : (i % 2 === 0 ? -1 : 1);
+        bat.style.setProperty('--bat-x', `${side * (44 + Math.random() * 42) - column * 32}px`);
+        bat.style.setProperty('--bat-y', `${side * (28 + Math.random() * 32) + (Math.random() * 30 - 15)}px`);
+        bat.style.setProperty('--bat-size', `${50 + Math.random() * 34}px`);
+        bat.style.setProperty('--bat-flap', `${0.35 + Math.random() * 0.3}s`);
+        pack.appendChild(bat);
+      }
+      flock.appendChild(pack);
+      window.setTimeout(() => pack.remove(), duration * 1000);
+      playBatSound();
+    };
+    this.sendBatPack = sendBat;
+    const unlockAudio = () => {
+      this.batSound?.play().then(() => {
+        this.batSound.pause();
+        this.batSound.currentTime = 0;
+      }).catch(() => {});
+      document.removeEventListener('pointerdown', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
+    document.addEventListener('pointerdown', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
+    window.setTimeout(sendBat, 6000);
+    window.setInterval(sendBat, 45000);
+  }
+
+  startWitchCackle() {
+    this.cackleSound = new Audio('/audio/witch-cackle.mp3');
+    this.cackleSound.volume = 0.3;
+    const playCackle = () => {
+      this.cackleSound.currentTime = 0;
+      this.cackleSound.play().catch(() => {});
+    };
+    const scheduleCackle = () => {
+      const delay = (15 + Math.random() * 15) * 60 * 1000;
+      window.setTimeout(() => {
+        if (!document.hidden) playCackle();
+        scheduleCackle();
+      }, delay);
+    };
+    scheduleCackle();
   }
 
   floorName(index) {
