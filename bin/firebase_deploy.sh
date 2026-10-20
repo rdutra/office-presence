@@ -55,11 +55,11 @@ done
 
 # Validate template
 case $TEMPLATE in
-    modern|geocities|christmas|summer|easter|autumn|spring|worldcup|stickers|nostalgia|enterprise)
+    modern|geocities|christmas|summer|easter|autumn|spring|worldcup|stickers|nostalgia|enterprise|halloween)
         ;;
     *)
         echo "❌ Error: Invalid template '$TEMPLATE'"
-        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, spring, worldcup, stickers, nostalgia, enterprise"
+        echo "Valid templates: modern, geocities, christmas, summer, easter, autumn, spring, worldcup, stickers, nostalgia, enterprise, halloween"
         exit 1
         ;;
 esac

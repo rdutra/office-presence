@@ -96,7 +96,7 @@ body.halloween-theme {
 .weekly-ranking li:nth-child(3) .weekly-rank-mark { color: #bf8b58; }
 .weekly-attendee-name { overflow: hidden; color: #f1e7d3; font: 600 10px/1.2 'Inter', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
 .weekly-attendance-days { color: #bca77d; font: 600 9px 'Inter', sans-serif; white-space: nowrap; }
-.weekly-ranking .weekly-ranking-empty { display: block; color: #b9aa92; font: 10px 'Inter', sans-serif; }
+.weekly-ranking .weekly-ranking-empty { display: block; grid-column: 1 / -1; color: #b9aa92; font: 10px 'Inter', sans-serif; }
 .bat-pack { position: absolute; top: var(--bat-height); left: -90px; width: 0; height: 0; opacity: .85; filter: drop-shadow(0 0 6px rgba(231,177,83,.65)) drop-shadow(0 2px 5px rgba(0,0,0,.6)); animation: bat-flight var(--bat-duration) linear forwards; }
 .flying-bat { position: absolute; left: var(--bat-x); top: var(--bat-y); width: var(--bat-size); height: auto; animation: bat-flap var(--bat-flap) ease-in-out infinite; }
 @keyframes bat-flight {
@@ -142,6 +142,23 @@ body.halloween-theme {
 .portrait-status { position: absolute; z-index: 4; top: 12%; right: 16%; width: 9px; height: 9px; border: 1px solid #28200f; border-radius: 50%; background: #9aa762; box-shadow: 0 0 10px rgba(174,201,96,.8); }
 .portrait-status.status-inactive { background: #72695d; box-shadow: 0 0 7px rgba(0,0,0,.8); }
 .floor-wall::after { content: ''; position: absolute; z-index: 0; right: 0; bottom: 0; left: 0; height: clamp(20px, 4vh, 42px); border-top: 2px solid rgba(180,139,82,.56); background: repeating-linear-gradient(0deg, transparent 0 9px, rgba(12,8,5,.48) 10px 11px), linear-gradient(180deg, #392817 0%, #21170f 30%, #120e0a 100%); box-shadow: 0 -8px 20px rgba(0,0,0,.35); pointer-events: none; }
+.candle-row { position: absolute; z-index: 3; top: 25%; left: 50%; display: grid; width: min(100%, 1120px); height: clamp(46px, 7vh, 76px); grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); align-items: center; justify-items: center; transform: translateX(-50%); pointer-events: none; }
+.candle-sconce:nth-child(1) { grid-column: 1 / 3; }
+.candle-sconce:nth-child(2) { grid-column: 3 / 5; }
+.candle-sconce { position: relative; display: block; width: clamp(30px, 4vw, 46px); height: clamp(45px, 6vh, 68px); min-width: 0; min-height: 0; filter: drop-shadow(0 3px 5px rgba(0,0,0,.76)); }
+.candle-sconce img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.candle-sconce.is-lit::before { content: ''; position: absolute; z-index: 1; top: 0; left: 50%; width: 15px; height: 17px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255,207,106,.9), rgba(242,121,39,.36) 42%, transparent 75%); filter: blur(4px); transform: translateX(-50%); animation: candle-glow 1.9s ease-in-out infinite alternate; }
+.candle-sconce.is-lit::after { content: ''; position: absolute; z-index: 2; top: 1px; left: 50%; width: 6px; height: 12px; border-radius: 55% 45% 55% 45%; background: radial-gradient(ellipse at 50% 68%, #fff1b3 0 18%, #ffbf4e 43%, #f17027 72%, rgba(228,77,26,.1) 100%); box-shadow: 0 0 7px rgba(255,161,53,.82); transform: translateX(-50%); transform-origin: 50% 100%; animation: candle-flicker 1.25s ease-in-out infinite alternate; }
+@keyframes candle-flicker {
+  0% { opacity: .86; transform: translateX(-50%) rotate(-5deg) scale(.92, 1.02); }
+  38% { opacity: 1; transform: translateX(-50%) rotate(4deg) scale(1.08, .94); }
+  72% { opacity: .9; transform: translateX(-50%) rotate(-2deg) scale(.94, 1.1); }
+  100% { opacity: 1; transform: translateX(-50%) rotate(5deg) scale(1.04, .96); }
+}
+@keyframes candle-glow {
+  from { opacity: .55; transform: translateX(-50%) scale(.82); }
+  to { opacity: .95; transform: translateX(-50%) scale(1.18); }
+}
 .stair-landing-corner { position: absolute; z-index: 0; right: 0; bottom: clamp(58px, 9vh, 96px); width: clamp(185px, 31vw, 430px); height: clamp(230px, 42vh, 430px); overflow: hidden; pointer-events: none; filter: drop-shadow(0 12px 10px rgba(0,0,0,.72)); }
 .stair-landing-corner img { position: absolute; left: 0; bottom: 0; width: 145vw; max-width: none; height: auto; }
 .stair-landing-left { right: auto; left: 0; }
@@ -172,8 +189,13 @@ body.halloween-theme {
 
 @media (max-width: 1050px) {
   .portrait-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .floor-wall { padding-right: 7vw; padding-left: 7vw; }
+  .floor-wall { padding: 72px 7vw 88px; }
   .house-meta { gap: 18px; }
+  .weekly-ranking { top: 8px; right: 10px; left: 10px; display: flex; width: auto; height: 54px; aspect-ratio: auto; align-items: center; gap: 14px; padding: 7px 14px; border: 1px solid rgba(198,156,86,.5); background: linear-gradient(145deg, rgba(20,16,12,.9), rgba(30,23,16,.86)); filter: drop-shadow(0 5px 10px rgba(0,0,0,.4)); }
+  .weekly-ranking::before { content: none; }
+  .weekly-ranking-heading { flex: 0 0 auto; margin: 0; font-size: 9px; }
+  .weekly-ranking ol { flex: 1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .weekly-ranking li { grid-template-columns: 14px minmax(0, 1fr) auto; gap: 5px; padding: 0; border: 0; }
 }
 @media (max-width: 680px) {
   body.halloween-theme { overflow: hidden; }
@@ -192,7 +214,7 @@ body.halloween-theme {
   .spider-a { --spider-top: 13px; --spider-left: 16px; --crawl-x: 42px; --crawl-y: 52px; }
   .spider-b { --spider-top: 35px; --spider-left: 53px; --crawl-x: 34px; --crawl-y: 45px; }
   .spider-c { --spider-top: 64px; --spider-left: 18px; --crawl-x: 56px; --crawl-y: 32px; }
-  .floor-wall { padding: 2px 18px 73px; box-shadow: inset 0 0 45px 8px rgba(0,0,0,.75), inset 0 0 0 9px rgba(19,14,9,.48); }
+  .floor-wall { padding: 68px 18px 73px; box-shadow: inset 0 0 45px 8px rgba(0,0,0,.75), inset 0 0 0 9px rgba(19,14,9,.48); }
   .floor-wall::before { inset: 7px; }
   .portrait-grid { width: min(100%, 500px); grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr) clamp(32px, 6vh, 44px) minmax(0, 1fr); gap: 2px 5px; padding: 5px 0; }
   .portrait-card { max-height: 240px; }
@@ -200,14 +222,21 @@ body.halloween-theme {
   .portrait-caption { font-size: 10px; }
   .portrait-status { top: 13%; right: 15%; width: 7px; height: 7px; }
   .wall-guardrail { height: clamp(32px, 6vh, 44px); }
+  .candle-row { width: min(100%, 500px); height: 44px; }
+  .candle-sconce { width: 26px; height: 40px; }
+  .candle-sconce.is-lit::before { width: 11px; height: 13px; }
+  .candle-sconce.is-lit::after { width: 5px; height: 9px; }
   .floor-plaque { bottom: 15px; font-size: 8px; gap: 8px; }
   .floor-navigation { min-height: 48px; gap: 16px; padding-bottom: 8px; }
   .floor-arrow { width: 30px; height: 30px; }
   .floor-indicator { font-size: 9px; }
   .shortcut-hint { font-size: 8px; }
-  .weekly-ranking { top: 8px; left: 8px; width: 138px; padding: 24px 20px; }
-  .weekly-ranking-heading { margin-bottom: 5px; font-size: 8px; }
-  .weekly-ranking li { gap: 5px; padding-top: 3px; }
+  .weekly-ranking { top: 6px; right: 7px; left: 7px; height: 50px; gap: 8px; padding: 6px 9px; }
+  .weekly-ranking-heading { font-size: 7px; letter-spacing: .08em; }
+  .weekly-ranking-heading span { display: none; }
+  .weekly-ranking ol { gap: 4px; }
+  .weekly-ranking li { grid-template-columns: 11px minmax(0, 1fr) auto; gap: 3px; }
+  .weekly-rank-mark { font-size: 11px; }
   .weekly-attendee-name { font-size: 9px; }
   .weekly-attendance-days { font-size: 8px; }
   .stairwell-panel { flex-basis: 100vw; width: 100vw; padding: 25px 5vw 70px; }

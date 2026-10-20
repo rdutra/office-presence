@@ -214,9 +214,14 @@ class HalloweenDashboard {
       const portraits = floorPeople.length
         ? floorPeople.map((person, index) => this.renderPortrait(person, floorIndex * this.floorCapacity + index)).join('')
         : '<div class="empty-gallery"><span aria-hidden="true">🕯</span><h3>The house is quiet</h3><p>When someone arrives, their portrait will appear here.</p></div>';
+      const sconces = Array.from({ length: 2 }, (_, index) => `
+        <span class="candle-sconce${index === 0 ? ' is-lit' : ''}">
+          <img src="/img/halloween/haunted-house/candle-sconce.png" alt="">
+        </span>`).join('');
       const wall = `
         <section class="floor-wall" data-floor-index="${floorIndex}" style="--panel-rise:${wallRise}px" aria-label="${this.escapeHtml(floorTitle)} portraits">
           <div class="portrait-grid">${portraits}</div>
+          <div class="candle-row" aria-hidden="true">${sconces}</div>
           <img class="wall-guardrail" src="/img/halloween/haunted-house/wall-rail.png" alt="" aria-hidden="true">
           <div class="floor-plaque"><span>✦</span><span class="floor-label">${this.escapeHtml(floorTitle)}</span><span>✦</span></div>
         </section>`;
@@ -463,8 +468,8 @@ class HalloweenDashboard {
     };
     document.addEventListener('pointerdown', unlockAudio);
     document.addEventListener('keydown', unlockAudio);
-    window.setTimeout(sendBat, 18000);
-    window.setInterval(sendBat, 120000);
+    window.setTimeout(sendBat, 30000);
+    window.setInterval(sendBat, 240000);
   }
 
   startWitchCackle() {
