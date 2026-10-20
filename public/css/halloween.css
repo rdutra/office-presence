@@ -85,6 +85,18 @@ body.halloween-theme {
   57%, 100% { opacity: 0; transform: translate(calc(var(--crawl-x) + 5px), calc(var(--crawl-y) + 7px)) rotate(38deg); }
 }
 .bat-flock { position: absolute; z-index: 3; inset: 0; overflow: hidden; pointer-events: none; }
+.weekly-ranking { position: absolute; z-index: 4; top: clamp(14px, 2.5vh, 28px); left: clamp(12px, 2vw, 30px); width: clamp(158px, 12vw, 180px); aspect-ratio: 4 / 5; padding: clamp(34px, 3vw, 42px) clamp(25px, 2.4vw, 34px); color: #eee0c2; background: url('/img/halloween/haunted-house/weekly-ranking-frame.png') center / 100% 100% no-repeat; filter: drop-shadow(0 9px 16px rgba(0,0,0,.56)); pointer-events: none; }
+.weekly-ranking::before { content: ''; position: absolute; z-index: 0; inset: 18% 14% 16%; background: linear-gradient(145deg, rgba(20,16,12,.82), rgba(30,23,16,.76)); }
+.weekly-ranking > * { position: relative; z-index: 1; }
+.weekly-ranking-heading { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 7px; color: #e1bd75; font: 700 10px 'Cinzel', Georgia, serif; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+.weekly-ranking ol { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.weekly-ranking li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 7px; min-width: 0; padding-top: 4px; border-top: 1px solid rgba(220,188,132,.14); }
+.weekly-rank-mark { color: #e7ca88; font: 700 14px/1 Georgia, serif; text-align: center; }
+.weekly-ranking li:nth-child(2) .weekly-rank-mark { color: #c6c6b7; }
+.weekly-ranking li:nth-child(3) .weekly-rank-mark { color: #bf8b58; }
+.weekly-attendee-name { overflow: hidden; color: #f1e7d3; font: 600 10px/1.2 'Inter', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.weekly-attendance-days { color: #bca77d; font: 600 9px 'Inter', sans-serif; white-space: nowrap; }
+.weekly-ranking .weekly-ranking-empty { display: block; color: #b9aa92; font: 10px 'Inter', sans-serif; }
 .bat-pack { position: absolute; top: var(--bat-height); left: -90px; width: 0; height: 0; opacity: .85; filter: drop-shadow(0 0 6px rgba(231,177,83,.65)) drop-shadow(0 2px 5px rgba(0,0,0,.6)); animation: bat-flight var(--bat-duration) linear forwards; }
 .flying-bat { position: absolute; left: var(--bat-x); top: var(--bat-y); width: var(--bat-size); height: auto; animation: bat-flap var(--bat-flap) ease-in-out infinite; }
 @keyframes bat-flight {
@@ -193,6 +205,11 @@ body.halloween-theme {
   .floor-arrow { width: 30px; height: 30px; }
   .floor-indicator { font-size: 9px; }
   .shortcut-hint { font-size: 8px; }
+  .weekly-ranking { top: 8px; left: 8px; width: 138px; padding: 24px 20px; }
+  .weekly-ranking-heading { margin-bottom: 5px; font-size: 8px; }
+  .weekly-ranking li { gap: 5px; padding-top: 3px; }
+  .weekly-attendee-name { font-size: 9px; }
+  .weekly-attendance-days { font-size: 8px; }
   .stairwell-panel { flex-basis: 100vw; width: 100vw; padding: 25px 5vw 70px; }
   .stairwell-art { left: -32vw; width: 150vw; }
   .stairwell-note { top: 18%; }

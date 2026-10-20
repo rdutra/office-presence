@@ -149,10 +149,26 @@ class HalloweenDashboard {
     this.people = people;
     if (this.presentCount) this.presentCount.textContent = data.present_count ?? people.length;
     this.updateClock(data.now);
+    this.renderWeeklyRanking(data.top_attendees);
     const peopleKey = JSON.stringify(people.map(person => [person?.person, person?.medal, person?.status, person?.image_url, person?.mac]));
     if (this.hasRendered && peopleKey === this.peopleKey) return;
     this.peopleKey = peopleKey;
     this.renderFloors(people, this.currentFloor, this.hasRendered);
+  }
+
+  renderWeeklyRanking(attendees) {
+    const ranking = document.querySelector('#weeklyRanking ol');
+    if (!ranking) return;
+    if (!Array.isArray(attendees) || attendees.length === 0) {
+      ranking.innerHTML = '<li class="weekly-ranking-empty">No standings yet</li>';
+      return;
+    }
+    const rankMarks = ['♛', '✦', '✧'];
+    ranking.innerHTML = attendees.slice(0, 3).map((attendee, index) => {
+      const name = [attendee?.person, attendee?.medal].filter(Boolean).join(' ');
+      const days = Number(attendee?.days) || 0;
+      return `<li><span class="weekly-rank-mark" aria-label="Rank ${index + 1}">${rankMarks[index]}</span><span class="weekly-attendee-name" title="${this.escapeHtml(name)}">${this.escapeHtml(name || 'Unknown spirit')}</span><span class="weekly-attendance-days">${days}d</span></li>`;
+    }).join('');
   }
 
   updateClock(utcNow) {
