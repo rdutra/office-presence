@@ -112,9 +112,13 @@ body.halloween-theme {
 .floor-wall::before { content: none; }
 .portrait-grid { position: relative; z-index: 1; display: grid; width: min(100%, 1120px); height: 100%; max-height: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); align-items: center; justify-items: center; gap: clamp(6px, 1vw, 16px); padding: 8px 0; }
 .portrait-card { position: relative; display: flex; min-width: 0; width: 100%; height: 100%; max-height: 350px; flex-direction: column; align-items: center; justify-content: center; text-align: center; filter: drop-shadow(0 9px 12px rgba(0,0,0,.62)); }
-.portrait-card:nth-child(4n + 2) { transform: translateY(9px) rotate(-1deg); }
-.portrait-card:nth-child(4n + 3) { transform: translateY(-5px) rotate(1deg); }
-.portrait-card:nth-child(5n) { transform: translateY(5px) rotate(-.5deg); }
+.portrait-card:nth-child(7n + 1) { transform: translateY(7px) rotate(-2.2deg); }
+.portrait-card:nth-child(7n + 2) { transform: translateY(-5px) rotate(1.8deg); }
+.portrait-card:nth-child(7n + 3) { transform: translateY(10px) rotate(-1.4deg); }
+.portrait-card:nth-child(7n + 4) { transform: translateY(-8px) rotate(2.4deg); }
+.portrait-card:nth-child(7n + 5) { transform: translateY(5px) rotate(-2deg); }
+.portrait-card:nth-child(7n + 6) { transform: translateY(-4px) rotate(1.3deg); }
+.portrait-card:nth-child(7n) { transform: translateY(8px) rotate(-1.7deg); }
 .portrait-frame { position: relative; width: auto; height: min(calc(100% - 34px), 350px); max-width: 100%; aspect-ratio: 2 / 3; }
 .portrait-photo, .portrait-initial { position: absolute; z-index: 0; top: 14%; left: 14%; width: 72%; height: 72%; object-fit: cover; background: #211910; filter: sepia(.28) saturate(.76) contrast(1.04) brightness(.96); }
 .portrait-initial { display: grid; place-items: center; color: #e4c27d; background: radial-gradient(circle, #62502f, #1a1711 72%); font: 700 clamp(34px, 4vw, 58px) 'Cinzel', Georgia, serif; }

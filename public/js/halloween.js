@@ -38,7 +38,7 @@ class HalloweenDashboard {
   }
 
   getFloorCapacity() {
-    return 8;
+    return 7;
   }
 
   setupNavigation() {
