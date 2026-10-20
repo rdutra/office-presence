@@ -315,6 +315,8 @@ if TEMPLATE_NAME == "stickers"
   rendered_html = rendered_html.sub(/<div class="([^"]*\balbum-container\b[^"]*)">/, '<div class="\1" id="album-container">')
 elsif TEMPLATE_NAME == "nostalgia"
   rendered_html = rendered_html.sub(/<main class="nostalgia-stage">/, '<main class="nostalgia-stage" id="dashboard">')
+elsif TEMPLATE_NAME == "halloween"
+  rendered_html = rendered_html.sub(/<main class="house-experience"/, '<main class="house-experience" id="dashboard"')
 else
   rendered_html = rendered_html.sub(/<div class="([^"]*\bcontainer\b[^"]*)">/, '<div class="\1" id="dashboard">')
 end
