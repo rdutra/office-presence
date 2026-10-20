@@ -14,7 +14,7 @@ require "stringio"
 TEMPLATE_NAME = ARGV[0] || "modern"
 
 # Validate template name
-valid_templates = %w[modern geocities christmas summer easter autumn spring worldcup stickers nostalgia enterprise]
+valid_templates = %w[modern geocities christmas summer easter autumn spring worldcup stickers nostalgia enterprise halloween]
 unless valid_templates.include?(TEMPLATE_NAME)
   puts "❌ Error: Invalid template '#{TEMPLATE_NAME}'"
   puts "Valid templates: #{valid_templates.join(', ')}"
@@ -315,6 +315,8 @@ if TEMPLATE_NAME == "stickers"
   rendered_html = rendered_html.sub(/<div class="([^"]*\balbum-container\b[^"]*)">/, '<div class="\1" id="album-container">')
 elsif TEMPLATE_NAME == "nostalgia"
   rendered_html = rendered_html.sub(/<main class="nostalgia-stage">/, '<main class="nostalgia-stage" id="dashboard">')
+elsif TEMPLATE_NAME == "halloween"
+  rendered_html = rendered_html.sub(/<main class="house-experience"/, '<main class="house-experience" id="dashboard"')
 else
   rendered_html = rendered_html.sub(/<div class="([^"]*\bcontainer\b[^"]*)">/, '<div class="\1" id="dashboard">')
 end
@@ -330,6 +332,8 @@ rendered_html = rendered_html.gsub(%r{<script src="/js/worldcup-dashboard\.js"><
 
 if TEMPLATE_NAME == "spring"
   rendered_html = rendered_html.sub('<script src="/js/spring.js"></script>', "<script>window.firebaseMode = true;</script>\n    <script src=\"/js/spring.js\"></script>")
+elsif TEMPLATE_NAME == "halloween"
+  rendered_html = rendered_html.sub('<script src="/js/halloween.js"></script>', "<script>window.FIREBASE_MODE = true;</script>\n    <script src=\"/js/halloween.js\"></script>")
 end
 
 # Add Firebase JavaScript before closing body tag

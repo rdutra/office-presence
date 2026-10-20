@@ -87,18 +87,21 @@ module OfficePresence
           dataset = dataset.where { Sequel[:attendance][:date] <= end_date.to_s }
         end
 
+        image_url_expr = Sequel.function(:coalesce, Sequel[:people][:image_url], Sequel[:people_by_device][:image_url])
+
         dataset
           .select(
             Sequel.function(:min, person_key_expr).as(:person_key),
             person_expr.as(:person),
             user_id_expr.as(:user_id),
+            Sequel.function(:max, image_url_expr).as(:image_url),
             Sequel.function(:count, Sequel.function(:distinct, Sequel[:attendance][:date])).as(:days)
           )
           .group(identity_expr, person_expr, user_id_expr)
           .order(Sequel.desc(:days), person_expr)
           .limit(limit)
           .all
-          .map { |row| { person_key: row[:person_key], person: row[:person], user_id: row[:user_id], days: row[:days] } }
+          .map { |row| { person_key: row[:person_key], person: row[:person], user_id: row[:user_id], days: row[:days], image_url: row[:image_url] } }
       end
 
       def top_attendees_for_week(reference_time: Time.now, limit: 10)

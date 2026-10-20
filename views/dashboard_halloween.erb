@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#17130f"/>
+    <title>The Haunted House — Office Portraits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/halloween.css">
+    <link rel="stylesheet" href="/css/registration_modal.css">
+  </head>
+  <body class="halloween-theme">
+    <header class="house-header">
+      <div class="house-brand">
+        <span class="brand-mark" aria-hidden="true">☾</span>
+        <div>
+          <p class="eyebrow">The old manor · Montevideo</p>
+          <h1>House of the Living</h1>
+        </div>
+      </div>
+      <div class="house-meta">
+        <div class="live-count"><span class="live-lamp"></span><strong id="presentCount"><%= present_count %></strong><span>in the house</span></div>
+        <div class="house-clock"><span id="currentTime" data-utc="<%= now.utc.strftime("%Y-%m-%d %H:%M:%S") %>"><%= now.strftime("%H:%M") %></span><span class="clock-divider">·</span><span id="currentDate"><%= now.strftime("%A, %B %d") %></span></div>
+        <button class="summon-button" id="openRegistrationBtn" type="button"><span aria-hidden="true">✦</span> Add your portrait</button>
+      </div>
+    </header>
+
+    <main class="house-experience" aria-label="Haunted house portrait gallery">
+      <div class="house-scene">
+        <div class="ceiling-shadow" aria-hidden="true"></div>
+        <div class="corner-web corner-web-left" aria-hidden="true">
+          <svg viewBox="0 0 240 210">
+            <path d="M0 0L240 0M0 0L240 35M0 0L225 78M0 0L185 145M0 0L125 195M0 0L0 210"/>
+            <path d="M35 0Q31 22 9 31M68 0Q62 42 18 59M103 0Q94 66 31 90M143 0Q132 91 47 121M187 0Q169 116 72 154M0 35Q25 31 35 9M0 68Q48 62 68 18M0 103Q70 94 103 31M0 143Q96 132 143 47M0 187Q119 169 187 72"/>
+            <path d="M0 18Q7 10 14 8M0 49Q18 31 37 28M0 83Q31 54 61 49M0 121Q48 83 87 75M0 162Q68 113 117 101M0 202Q87 142 145 127"/>
+          </svg>
+          <span class="web-spider spider-a">🕷</span><span class="web-spider spider-b">🕷</span><span class="web-spider spider-c">🕷</span>
+        </div>
+        <div class="corner-web corner-web-right" aria-hidden="true">
+          <svg viewBox="0 0 240 210">
+            <path d="M0 0L240 0M0 0L240 35M0 0L225 78M0 0L185 145M0 0L125 195M0 0L0 210"/>
+            <path d="M35 0Q31 22 9 31M68 0Q62 42 18 59M103 0Q94 66 31 90M143 0Q132 91 47 121M187 0Q169 116 72 154M0 35Q25 31 35 9M0 68Q48 62 68 18M0 103Q70 94 103 31M0 143Q96 132 143 47M0 187Q119 169 187 72"/>
+            <path d="M0 18Q7 10 14 8M0 49Q18 31 37 28M0 83Q31 54 61 49M0 121Q48 83 87 75M0 162Q68 113 117 101M0 202Q87 142 145 127"/>
+          </svg>
+          <span class="web-spider spider-a">🕷</span><span class="web-spider spider-b">🕷</span><span class="web-spider spider-c">🕷</span>
+        </div>
+        <div class="bat-flock" id="batFlock" aria-hidden="true"></div>
+
+        <aside class="weekly-ranking" id="weeklyRanking" aria-label="This week's attendance ranking">
+          <div class="weekly-ranking-heading"><span aria-hidden="true">✦</span> This Week <span aria-hidden="true">✦</span></div>
+          <ol><li class="weekly-ranking-empty">Summoning the standings…</li></ol>
+        </aside>
+
+        <div class="floor-window" id="floorWindow" tabindex="0" aria-label="Portrait gallery. Use left and right arrow keys to change floors.">
+          <div class="floor-track" id="floorTrack">
+            <section class="floor-wall" data-floor="0" aria-label="First floor portraits">
+              <div class="portrait-grid" id="portraitGrid">
+                <div class="empty-gallery" id="emptyGallery">
+                  <span aria-hidden="true">🕯</span>
+                  <h3>The house is quiet</h3>
+                  <p>When someone arrives, their portrait will appear here.</p>
+                </div>
+              </div>
+              <div class="stair-landing-corner" aria-hidden="true"><img src="/img/halloween/haunted-house/stair-handrail.png" alt=""></div>
+              <img class="wall-guardrail" src="/img/halloween/haunted-house/wall-rail.png" alt="" aria-hidden="true">
+              <div class="floor-plaque"><span>✦</span><span class="floor-label">Ground floor</span><span>✦</span></div>
+            </section>
+          </div>
+        </div>
+
+        <nav class="floor-navigation" aria-label="Gallery floors">
+          <button class="floor-arrow" id="previousFloor" type="button" aria-label="Previous floor" disabled><span aria-hidden="true">←</span></button>
+        <div class="floor-indicator" aria-live="polite"><span id="floorIndicator">Ground floor</span><span class="shortcut-hint" id="shortcutHint">L: preview stairs</span></div>
+          <button class="floor-arrow" id="nextFloor" type="button" aria-label="Next floor" disabled><span aria-hidden="true">→</span></button>
+        </nav>
+
+      </div>
+    </main>
+
+    <div class="spooky-toast-container" id="spookyToastContainer" aria-live="polite"></div>
+
+    <div id="registrationModal" class="registration-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Register your device">
+        <button type="button" class="modal-close" id="closeRegistrationBtn" aria-label="Close registration form">&times;</button>
+        <%= erb :_registration %>
+      </div>
+    </div>
+
+    <script src="/js/timezone.js"></script>
+    <script src="/js/registration.js"></script>
+    <script src="/js/halloween.js"></script>
+  </body>
+</html>

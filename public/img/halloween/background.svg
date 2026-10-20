@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Sky gradient -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#06020c"/>
+      <stop offset="40%" stop-color="#120724"/>
+      <stop offset="75%" stop-color="#210a38"/>
+      <stop offset="100%" stop-color="#0a0314"/>
+    </linearGradient>
+
+    <!-- Moon glow -->
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff8db" stop-opacity="1"/>
+      <stop offset="35%" stop-color="#ffd56b" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#ff9922" stop-opacity="0.4"/>
+      <stop offset="85%" stop-color="#e05511" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#801b44" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Window glow -->
+    <radialGradient id="windowGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff9b0"/>
+      <stop offset="70%" stop-color="#ff9d00"/>
+      <stop offset="100%" stop-color="#ff5500"/>
+    </radialGradient>
+
+    <!-- Fog gradient -->
+    <linearGradient id="fogGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#140624" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#2d124d" stop-opacity="0.5"/>
+      <stop offset="80%" stop-color="#481861" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Ground gradient -->
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#150722"/>
+      <stop offset="100%" stop-color="#07020b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sky background -->
+  <rect width="1920" height="1080" fill="url(#skyGrad)"/>
+
+  <!-- Distant Stars -->
+  <g fill="#ffffff" opacity="0.6">
+    <circle cx="120" cy="90" r="1.5"/>
+    <circle cx="280" cy="160" r="1"/>
+    <circle cx="450" cy="70" r="1.2"/>
+    <circle cx="620" cy="180" r="1"/>
+    <circle cx="890" cy="95" r="1.8"/>
+    <circle cx="1150" cy="140" r="1.2"/>
+    <circle cx="1320" cy="65" r="1.5"/>
+    <circle cx="1490" cy="175" r="1"/>
+    <circle cx="1680" cy="110" r="1.6"/>
+    <circle cx="1820" cy="80" r="1.2"/>
+    <circle cx="210" cy="280" r="1"/>
+    <circle cx="390" cy="310" r="1.4"/>
+    <circle cx="750" cy="260" r="1.2"/>
+    <circle cx="1600" cy="270" r="1.5"/>
+    <circle cx="1750" cy="220" r="1"/>
+  </g>
+
+  <!-- Giant Harvest Moon with Atmospheric Glow -->
+  <circle cx="1400" cy="300" r="320" fill="url(#moonGlow)"/>
+  <circle cx="1400" cy="300" r="140" fill="#fffbe8" opacity="0.95"/>
+  <!-- Subtle Moon Craters -->
+  <path d="M1360 250 a 25 25 0 1 0 35 15 a 20 20 0 0 1 -35 -15" fill="#edd9a6" opacity="0.4"/>
+  <circle cx="1430" cy="320" r="28" fill="#e8d097" opacity="0.35"/>
+  <circle cx="1370" cy="350" r="18" fill="#edd9a6" opacity="0.3"/>
+  <circle cx="1465" cy="265" r="14" fill="#e8d097" opacity="0.35"/>
+
+  <!-- Distant Misty Hills -->
+  <path d="M0 650 Q 400 580 900 640 T 1920 620 L 1920 1080 L 0 1080 Z" fill="#140620" opacity="0.7"/>
+  <path d="M0 720 Q 550 630 1100 700 T 1920 680 L 1920 1080 L 0 1080 Z" fill="#180727" opacity="0.85"/>
+
+  <!-- Haunted Mansion Silhouette on the Right Hill -->
+  <g fill="#0b0312" transform="translate(1220, 360)">
+    <!-- Base and wings -->
+    <rect x="100" y="240" width="220" height="150"/>
+    <polygon points="90,240 210,130 330,240"/>
+    
+    <!-- Central Tower -->
+    <rect x="170" y="110" width="80" height="130"/>
+    <polygon points="155,110 210,10 265,110"/>
+    <!-- Weather vane / spire cross -->
+    <line x1="210" y1="10" x2="210" y2="-15" stroke="#0b0312" stroke-width="3"/>
+    <line x1="200" y1="-8" x2="220" y2="-8" stroke="#0b0312" stroke-width="2"/>
+
+    <!-- Left Turret -->
+    <rect x="70" y="180" width="55" height="180"/>
+    <polygon points="60,180 97,70 135,180"/>
+    <line x1="97" y1="70" x2="97" y2="50" stroke="#0b0312" stroke-width="2.5"/>
+
+    <!-- Right Wing & Chimney -->
+    <rect x="300" y="210" width="70" height="150"/>
+    <polygon points="290,210 335,140 380,210"/>
+    <rect x="340" y="110" width="18" height="40"/>
+    <rect x="337" y="105" width="24" height="6"/>
+
+    <!-- Glowing Candlelit Windows -->
+    <rect x="195" y="150" width="30" height="45" rx="15" fill="url(#windowGlow)"/>
+    <line x1="210" y1="150" x2="210" y2="195" stroke="#0b0312" stroke-width="2"/>
+    <line x1="195" y1="172" x2="225" y2="172" stroke="#0b0312" stroke-width="2"/>
+
+    <rect x="85" y="210" width="24" height="36" rx="12" fill="url(#windowGlow)"/>
+    <line x1="97" y1="210" x2="97" y2="246" stroke="#0b0312" stroke-width="1.5"/>
+
+    <rect x="135" y="270" width="28" height="40" rx="4" fill="url(#windowGlow)"/>
+    <rect x="255" y="270" width="28" height="40" rx="4" fill="url(#windowGlow)"/>
+    <rect x="320" y="235" width="24" height="34" rx="3" fill="url(#windowGlow)"/>
+  </g>
+
+  <!-- Spooky Twisted Bare Tree on the Left -->
+  <g fill="#0b0312">
+    <!-- Gnarled Trunk -->
+    <path d="M 120 1080 Q 150 900 130 780 Q 110 680 180 560 Q 140 600 120 700 Q 100 820 60 1080 Z"/>
+    <!-- Main Left Branch -->
+    <path d="M 150 680 Q 90 600 40 590 Q 20 585 0 620 Q 30 570 70 575 Q 120 580 160 660 Z"/>
+    <path d="M 60 580 Q 20 520 -20 510 Q 10 500 40 530 Q 60 550 70 575 Z"/>
+    <!-- High Twisting Branches across the Sky -->
+    <path d="M 180 560 Q 230 460 320 400 Q 400 350 480 370 Q 420 375 350 420 Q 260 480 200 580 Z"/>
+    <path d="M 280 430 Q 310 340 370 290 Q 410 260 450 250 Q 410 275 370 325 Q 320 380 290 440 Z"/>
+    <path d="M 330 330 Q 360 280 430 230 Q 400 245 350 300 Z"/>
+    <path d="M 220 500 Q 260 490 310 520 Q 360 550 410 540 Q 360 565 300 535 Q 250 515 210 520 Z"/>
+    <!-- Roots -->
+    <path d="M 60 1080 Q 30 1040 -10 1060 L -10 1080 Z"/>
+    <path d="M 120 1080 Q 160 1050 210 1070 L 210 1080 Z"/>
+  </g>
+
+  <!-- Flying Bats across the Moon and Sky -->
+  <g fill="#12041e">
+    <!-- Bat 1 (Near Moon) -->
+    <path d="M 1260 220 Q 1280 200 1300 215 Q 1315 190 1330 210 Q 1320 220 1315 225 Q 1310 220 1300 225 Q 1285 220 1260 220 Z" transform="scale(1.5) translate(-420, -60)"/>
+    <!-- Bat 2 -->
+    <path d="M 1360 160 Q 1375 145 1390 156 Q 1400 138 1412 153 Q 1404 161 1400 165 Q 1396 161 1388 165 Q 1378 161 1360 160 Z" transform="scale(1.2) translate(-220, -10)"/>
+    <!-- Bat 3 -->
+    <path d="M 1480 260 Q 1495 245 1510 256 Q 1520 238 1532 253 Q 1524 261 1520 265 Q 1516 261 1508 265 Q 1498 261 1480 260 Z"/>
+    <!-- Bat 4 (Mid sky) -->
+    <path d="M 980 240 Q 1000 220 1020 235 Q 1035 210 1050 230 Q 1040 240 1035 245 Q 1030 240 1020 245 Q 1005 240 980 240 Z" transform="scale(0.9) translate(100, 30)"/>
+    <!-- Bat 5 (Distant) -->
+    <path d="M 820 180 Q 832 168 845 178 Q 855 162 865 175 Q 858 182 855 185 Q 852 182 845 185 Q 836 182 820 180 Z" transform="scale(0.7) translate(350, 40)"/>
+  </g>
+
+  <!-- Foreground Cemetery / Rolling Ground Silhouette -->
+  <path d="M 0 880 Q 300 810 750 860 T 1500 850 Q 1750 840 1920 890 L 1920 1080 L 0 1080 Z" fill="url(#groundGrad)"/>
+
+  <!-- Gravestones on Hill Silhouette -->
+  <g fill="#08020d">
+    <!-- Gravestone 1 -->
+    <rect x="520" y="810" width="36" height="50" rx="18"/>
+    <!-- Gravestone 2 (Crooked Cross) -->
+    <g transform="translate(620, 800) rotate(8)">
+      <rect x="12" y="0" width="10" height="55"/>
+      <rect x="0" y="15" width="34" height="9"/>
+    </g>
+    <!-- Gravestone 3 -->
+    <rect x="800" y="825" width="42" height="45" rx="8"/>
+    <!-- Gravestone 4 (Crooked cross on right) -->
+    <g transform="translate(1620, 820) rotate(-12)">
+      <rect x="10" y="0" width="9" height="50"/>
+      <rect x="0" y="14" width="28" height="8"/>
+    </g>
+  </g>
+
+  <!-- Rolling Eerie Fog Overlay -->
+  <rect x="0" y="650" width="1920" height="430" fill="url(#fogGrad)"/>
+
+  <!-- Subtle glowing jack-o-lantern in foreground right -->
+  <g transform="translate(1720, 930) scale(0.9)">
+    <!-- Pumpkin Body -->
+    <ellipse cx="60" cy="50" rx="55" ry="42" fill="#d35400"/>
+    <ellipse cx="40" cy="50" rx="40" ry="40" fill="#e67e22"/>
+    <ellipse cx="80" cy="50" rx="40" ry="40" fill="#e67e22"/>
+    <ellipse cx="60" cy="50" rx="35" ry="38" fill="#f39c12"/>
+    <!-- Stem -->
+    <path d="M 56 12 Q 52 -2 68 -8 Q 63 6 64 12 Z" fill="#27ae60"/>
+    <!-- Glowing Face -->
+    <polygon points="35,38 48,30 45,44" fill="#fffb99" filter="drop-shadow(0 0 6px #ff7700)"/>
+    <polygon points="85,38 72,30 75,44" fill="#fffb99" filter="drop-shadow(0 0 6px #ff7700)"/>
+    <polygon points="60,42 54,50 66,50" fill="#fffb99" filter="drop-shadow(0 0 6px #ff7700)"/>
+    <!-- Sinister Grin -->
+    <path d="M 30 60 Q 60 84 90 60 Q 82 72 74 65 Q 67 76 60 65 Q 53 76 46 65 Q 38 72 30 60 Z" fill="#fffb99" filter="drop-shadow(0 0 8px #ff7700)"/>
+  </g>
+
+  <!-- Subtle glowing jack-o-lantern on the left -->
+  <g transform="translate(320, 950) scale(0.75)">
+    <!-- Pumpkin Body -->
+    <ellipse cx="60" cy="50" rx="55" ry="42" fill="#d35400"/>
+    <ellipse cx="40" cy="50" rx="40" ry="40" fill="#e67e22"/>
+    <ellipse cx="80" cy="50" rx="40" ry="40" fill="#e67e22"/>
+    <ellipse cx="60" cy="50" rx="35" ry="38" fill="#f39c12"/>
+    <!-- Stem -->
+    <path d="M 56 12 Q 62 -4 52 -10 Q 57 5 62 12 Z" fill="#27ae60"/>
+    <!-- Glowing Face -->
+    <polygon points="35,38 48,32 44,45" fill="#fffb99" filter="drop-shadow(0 0 6px #ff7700)"/>
+    <polygon points="85,38 72,32 76,45" fill="#fffb99" filter="drop-shadow(0 0 6px #ff7700)"/>
+    <polygon points="60,44 55,52 65,52" fill="#fffb99" filter="drop-shadow(0 0 6px #ff7700)"/>
+    <!-- Sinister Grin -->
+    <path d="M 32 62 Q 60 82 88 62 Q 80 72 72 65 Q 60 74 50 65 Q 40 72 32 62 Z" fill="#fffb99" filter="drop-shadow(0 0 8px #ff7700)"/>
+  </g>
+</svg>

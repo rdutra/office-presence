@@ -76,6 +76,11 @@ function updateDashboard(data) {
 
   showDashboard();
 
+  if (window.halloweenDashboard && typeof window.halloweenDashboard.updateDashboard === 'function') {
+    window.halloweenDashboard.updateDashboard(data);
+    return;
+  }
+
   // Update time and date
   const nowUtc = data.now || data.last_updated;
   const timeEl = document.querySelector('.current-time');
