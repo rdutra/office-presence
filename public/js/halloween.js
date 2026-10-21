@@ -117,15 +117,19 @@ class HalloweenDashboard {
 
   performAutoFloorScroll() {
     if (document.hidden || this.previewActive) return;
-    const floorCount = this.track?.querySelectorAll('[data-floor-index]').length || 1;
-    if (floorCount <= 1) return;
+    const populatedFloors = [...(this.track?.querySelectorAll('[data-floor-index]') || [])]
+      .filter(wall => wall.querySelector('.portrait-card'))
+      .map(wall => Number(wall.dataset.floorIndex));
+    if (populatedFloors.length <= 1) return;
 
-    let nextFloor = this.currentFloor + this.autoFloorDirection;
-    if (nextFloor < 0 || nextFloor >= floorCount) {
+    let currentPosition = populatedFloors.indexOf(this.currentFloor);
+    if (currentPosition < 0) currentPosition = this.autoFloorDirection > 0 ? -1 : populatedFloors.length;
+    let nextPosition = currentPosition + this.autoFloorDirection;
+    if (nextPosition < 0 || nextPosition >= populatedFloors.length) {
       this.autoFloorDirection *= -1;
-      nextFloor = this.currentFloor + this.autoFloorDirection;
+      nextPosition = currentPosition + this.autoFloorDirection;
     }
-    this.goToFloor(nextFloor);
+    this.goToFloor(populatedFloors[nextPosition]);
   }
 
   async fetchDashboardData() {
@@ -163,8 +167,8 @@ class HalloweenDashboard {
       ranking.innerHTML = '<li class="weekly-ranking-empty">No standings yet</li>';
       return;
     }
-    const rankMarks = ['♛', '✦', '✧'];
-    ranking.innerHTML = attendees.slice(0, 3).map((attendee, index) => {
+    const rankMarks = ['♛', '✦', '✧', '◇', '◈'];
+    ranking.innerHTML = attendees.slice(0, 5).map((attendee, index) => {
       const name = [attendee?.person, attendee?.medal].filter(Boolean).join(' ');
       const days = Number(attendee?.days) || 0;
       return `<li><span class="weekly-rank-mark" aria-label="Rank ${index + 1}">${rankMarks[index]}</span><span class="weekly-attendee-name" title="${this.escapeHtml(name)}">${this.escapeHtml(name || 'Unknown spirit')}</span><span class="weekly-attendance-days">${days}d</span></li>`;

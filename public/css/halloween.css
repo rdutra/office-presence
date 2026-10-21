@@ -194,7 +194,7 @@ body.halloween-theme {
   .weekly-ranking { top: 8px; right: 10px; left: 10px; display: flex; width: auto; height: 54px; aspect-ratio: auto; align-items: center; gap: 14px; padding: 7px 14px; border: 1px solid rgba(198,156,86,.5); background: linear-gradient(145deg, rgba(20,16,12,.9), rgba(30,23,16,.86)); filter: drop-shadow(0 5px 10px rgba(0,0,0,.4)); }
   .weekly-ranking::before { content: none; }
   .weekly-ranking-heading { flex: 0 0 auto; margin: 0; font-size: 9px; }
-  .weekly-ranking ol { flex: 1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .weekly-ranking ol { flex: 1; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
   .weekly-ranking li { grid-template-columns: 14px minmax(0, 1fr) auto; gap: 5px; padding: 0; border: 0; }
 }
 @media (max-width: 680px) {
